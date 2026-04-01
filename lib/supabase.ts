@@ -18,6 +18,10 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
  *   scan_count_this_month int not null default 0
  * );
  *
+ * If you see PGRST204 / "Could not find the 'card_name' column", run:
+ *   alter table public.scans add column if not exists card_name text;
+ *   (Then reload schema: Dashboard → Project Settings → API → "Reload schema cache" if needed.)
+ *
  * -- Optional: sync scan_count_this_month via trigger or cron; API counts from scans for limits.
  * -- RLS: enable as needed; server routes use service role for inserts/reads when set.
  */
