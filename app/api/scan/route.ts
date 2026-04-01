@@ -59,11 +59,19 @@ export async function POST(req: Request) {
     }
   }
 
-  const [ai, ebay, psa] = await Promise.all([
-    analyzeCardWithOpenAI(cardName, condition),
-    searchEbayItemPrices(cardName),
-    fetchPsaPopulation(cardName),
-  ]);
+  let ai: Awaited<ReturnType<typeof analyzeCardWithOpenAI>>;
+  let ebay: Awaited<ReturnType<typeof searchEbayItemPrices>>;
+  let psa: Awaited<ReturnType<typeof fetchPsaPopulation>>;
+  try {
+    [ai, ebay, psa] = await Promise.all([
+      analyzeCardWithOpenAI(cardName, condition),
+      searchEbayItemPrices(cardName),
+      fetchPsaPopulation(cardName),
+    ]);
+  } catch (e) {
+    console.error("scan upstream error", e);
+    return NextResponse.json({ error: "openai_or_upstream_failed" }, { status: 502 });
+  }
 
   const merged = mergeScanResults(ai, ebay, psa);
 
@@ -79,7 +87,15 @@ export async function POST(req: Request) {
 
   if (insertError) {
     console.error("scan insert error", insertError);
-    return NextResponse.json({ error: "save_failed" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "save_failed",
+        ...(process.env.NODE_ENV === "development"
+          ? { hint: insertError.message }
+          : {}),
+      },
+      { status: 500 }
+    );
   }
 
   let scansUsedThisMonth = 0;

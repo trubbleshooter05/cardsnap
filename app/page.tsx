@@ -82,9 +82,14 @@ export default function Home() {
       }
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
+        const err = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          hint?: string;
+        };
         console.error(err);
-        alert("Something went wrong. Try again.");
+        const code = err.error ?? `http_${res.status}`;
+        const extra = err.hint ? `\n\n${err.hint}` : "";
+        alert(`Something went wrong (${code}). Try again.${extra}`);
         return;
       }
 
