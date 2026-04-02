@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
 import { ResultCard } from "@/components/ResultCard";
@@ -129,7 +130,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <header className="flex items-center justify-end px-4 py-3 sm:px-6">
+      <header className="flex items-center justify-between px-4 py-3 sm:px-6">
+        <Link
+          href="/cards"
+          className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+        >
+          Card values
+        </Link>
         <span className="text-sm text-zinc-600 dark:text-zinc-400">
           {userId ? scansLabel : "…"}
         </span>
