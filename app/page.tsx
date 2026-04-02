@@ -168,6 +168,10 @@ export default function Home() {
               <ResultCard
                 data={result}
                 scanId={result.scanId}
+                onNewScan={() => {
+                  setResult(null);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
               />
             </div>
           )}
