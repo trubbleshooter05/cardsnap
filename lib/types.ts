@@ -26,7 +26,21 @@ export type PsaPop = {
   totalPop: number | null;
 };
 
+export type GradingRoi = {
+  rawLiquidationUsd: number;
+  declaredValueForFeeUsd: number;
+  psaGradingFeeUsd: number;
+  psaFeeTierCapUsd: number;
+  shippingInsuranceEstimateUsd: number;
+  totalCostToGradeUsd: number;
+  netIfPSA9: number;
+  netIfPSA10: number;
+  headlineNetUsd: number;
+  headlineVerdict: "grade" | "skip";
+};
+
 export type ScanResultPayload = CardAnalysis & {
   ebay: EbayComp;
   psa: PsaPop | null;
+  roi?: GradingRoi;
 };

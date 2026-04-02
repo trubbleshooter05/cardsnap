@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import type { ScanResultPayload } from "@/lib/types";
-import { formatUsd } from "@/lib/format-currency";
+import { formatUsd, formatUsdSigned } from "@/lib/format-currency";
+import { computeGradingRoi } from "@/lib/roi";
 
 type Props = {
   data: ScanResultPayload;
@@ -16,13 +17,13 @@ function hasEbayPrice(avg: number | null | undefined): boolean {
 }
 
 export function ResultCard({ data, scanId, onNewScan }: Props) {
-  const worth = data.worthGrading;
+  const roi = data.roi ?? computeGradingRoi(data);
+  const worth = roi.headlineVerdict === "grade";
   const psa = data.psa;
   const ebayOk = hasEbayPrice(data.ebay.avgSoldPrice);
 
   return (
     <div className="w-full max-w-md">
-      {/* Fixed dark palette so screenshots look consistent in light or dark OS theme */}
       <div
         className="relative overflow-hidden rounded-[1.25rem] border border-zinc-600/40 bg-zinc-950 text-zinc-100 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06]"
         data-testid="scan-result-card"
@@ -43,44 +44,101 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             {[data.year, data.player, data.set].filter(Boolean).join(" · ")}
           </p>
 
+          {/* ROI headline — screenshot-focused */}
           <div
-            className={`mt-6 flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between ${
+            className={`mt-6 rounded-2xl border p-4 sm:p-5 ${
               worth
-                ? "border-emerald-500/35 bg-emerald-500/[0.08]"
-                : "border-rose-500/35 bg-rose-500/[0.08]"
+                ? "border-emerald-500/40 bg-emerald-500/[0.1]"
+                : "border-rose-500/40 bg-rose-500/[0.1]"
             }`}
           >
-            <div className="flex items-center gap-3">
-              <span
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-bold ${
-                  worth
-                    ? "bg-emerald-500/25 text-emerald-300"
-                    : "bg-rose-500/25 text-rose-300"
-                }`}
-                aria-hidden
-              >
-                {worth ? "✓" : "✕"}
-              </span>
-              <div>
-                <p
-                  className={`text-xs font-semibold uppercase tracking-wider ${
-                    worth ? "text-emerald-400/90" : "text-rose-400/90"
-                  }`}
-                >
-                  {worth ? "Worth grading" : "Skip grading"}
-                </p>
-                <p className="text-lg font-bold leading-snug text-white sm:text-xl">
-                  {worth ? "Expected upside vs cost" : "Cost likely exceeds upside"}
-                </p>
+            <p
+              className={`text-center text-[11px] font-bold uppercase tracking-[0.25em] ${
+                worth ? "text-emerald-400" : "text-rose-400"
+              }`}
+            >
+              {worth ? "Grade it" : "Skip it"}
+            </p>
+            <p className="mt-2 text-center text-3xl font-black tabular-nums tracking-tight text-white sm:text-4xl">
+              {formatUsdSigned(roi.headlineNetUsd)}
+            </p>
+            <p className="mt-1 text-center text-xs leading-snug text-zinc-500">
+              Expected net if PSA 10 vs selling raw, after PSA fee &amp; est.
+              shipping
+            </p>
+          </div>
+
+          <div
+            className={`mt-4 flex items-start gap-3 rounded-xl border p-3 ${
+              worth
+                ? "border-emerald-500/25 bg-emerald-500/[0.06]"
+                : "border-rose-500/25 bg-rose-500/[0.06]"
+            }`}
+          >
+            <span
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-bold ${
+                worth
+                  ? "bg-emerald-500/20 text-emerald-300"
+                  : "bg-rose-500/20 text-rose-300"
+              }`}
+              aria-hidden
+            >
+              {worth ? "✓" : "✕"}
+            </span>
+            <p className="text-[15px] leading-relaxed text-zinc-300">
+              {data.verdictReason}
+            </p>
+          </div>
+
+          <div className="mt-7 space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Costs &amp; net scenarios
+            </p>
+            <div className="space-y-2 rounded-xl bg-zinc-900/80 p-3 text-sm text-zinc-400 ring-1 ring-zinc-800">
+              <div className="flex justify-between gap-2">
+                <span>Est. raw sale (mid)</span>
+                <span className="font-medium tabular-nums text-zinc-200">
+                  {formatUsd(roi.rawLiquidationUsd)}
+                </span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span>PSA grading fee (tier)</span>
+                <span className="font-medium tabular-nums text-zinc-200">
+                  {formatUsd(roi.psaGradingFeeUsd)}
+                </span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span>Est. shipping + insurance</span>
+                <span className="font-medium tabular-nums text-zinc-200">
+                  {formatUsd(roi.shippingInsuranceEstimateUsd)}
+                </span>
+              </div>
+              <div className="border-t border-zinc-700 pt-2 font-medium text-zinc-300">
+                <div className="flex justify-between gap-2">
+                  <span>Net if PSA 9</span>
+                  <span
+                    className={`tabular-nums ${
+                      roi.netIfPSA9 >= 0 ? "text-emerald-400" : "text-rose-400"
+                    }`}
+                  >
+                    {formatUsdSigned(roi.netIfPSA9)}
+                  </span>
+                </div>
+                <div className="mt-1 flex justify-between gap-2">
+                  <span>Net if PSA 10</span>
+                  <span
+                    className={`tabular-nums ${
+                      roi.netIfPSA10 >= 0 ? "text-emerald-400" : "text-rose-400"
+                    }`}
+                  >
+                    {formatUsdSigned(roi.netIfPSA10)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <p className="mt-4 text-[15px] leading-relaxed text-zinc-300">
-            {data.verdictReason}
-          </p>
-
-          <div className="mt-7 space-y-3">
+          <div className="mt-5 space-y-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
               Values
             </p>
@@ -93,7 +151,7 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               <StatCell
                 label="eBay comps"
                 value={ebayOk ? formatUsd(data.ebay.avgSoldPrice) : "—"}
-                sub={ebayOk ? "Recent listings avg" : "Add eBay API for live comps"}
+                sub={ebayOk ? "Recent listings avg" : "Configure eBay for live comps"}
                 muted={!ebayOk}
               />
               <StatCell
@@ -106,6 +164,10 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               />
             </div>
           </div>
+
+          <p className="mt-4 text-[11px] leading-relaxed text-zinc-600">
+            Estimates only; PSA prices and fees change. Not financial advice.
+          </p>
 
           <div className="mt-5 rounded-xl border border-zinc-700/80 bg-zinc-900/50 px-3.5 py-3 text-sm leading-snug text-zinc-400">
             {psa && (psa.psa9Pop != null || psa.psa10Pop != null) ? (

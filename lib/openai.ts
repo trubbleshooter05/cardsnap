@@ -42,7 +42,7 @@ Using your knowledge of recent eBay market comps and hobby pricing for this card
   "gradedPSA9Value": number,
   "gradedPSA10Value": number,
   "worthGrading": boolean,
-  "verdictReason": string (one short sentence explaining the grading verdict)
+  "verdictReason": string (2–3 short sentences: key value drivers, risk if the card grades below a 10, and whether upside likely beats typical PSA fees + shipping)
 }
 
 Estimate raw value range for the stated condition. If the exact card is unknown, infer the best match and say so in verdictReason.
