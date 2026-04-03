@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "CardSnap — Is your card worth grading?",
   description:
     "Sports card value ranges, PSA comps, and a clear grading verdict in seconds.",
+  verification: {
+    google: "EdP7De48YXoMCUbFmJu9PoxdBlBof-HSUxlZTYVnjiQ",
+  },
 };
 
 export default function RootLayout({
