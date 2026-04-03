@@ -60,6 +60,61 @@ function jsonLdArticle(card: CardPage) {
   };
 }
 
+function jsonLdFaq(card: CardPage) {
+  const name = `${card.playerName} ${card.year} ${card.brand} #${card.cardNumber}`;
+  const verdictText =
+    card.gradingVerdict === "worth_grading"
+      ? `Yes. The ${name} is generally worth grading. A PSA 10 copy is estimated at $${card.psa10Value}, compared to a raw value of $${card.rawValueLow}–$${card.rawValueHigh}. After PSA grading fees and shipping, the net return is typically positive.`
+      : `No. The ${name} is usually not worth grading. A raw copy sells for $${card.rawValueLow}–$${card.rawValueHigh} and a PSA 10 fetches around $${card.psa10Value}, which often doesn't justify the PSA grading fee and shipping costs.`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `How much is a ${name} worth?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `A raw ${name} in typical condition is worth approximately $${card.rawValueLow} to $${card.rawValueHigh}. A PSA 9 graded copy is worth around $${card.psa9Value} and a PSA 10 is worth approximately $${card.psa10Value}.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Is the ${name} worth grading?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: verdictText,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `What is the PSA 10 value of the ${name}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `A PSA 10 graded ${name} is estimated to be worth approximately $${card.psa10Value} based on recent comparable sales. PSA 9 copies sell for around $${card.psa9Value}.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `How many ${name} cards have been graded by PSA?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Approximately ${card.popCount.toLocaleString()} copies of the ${name} have been submitted and graded by PSA. A higher population generally means more competition in the market and can affect the premium a graded copy commands.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `What is the difference between a raw and graded ${name}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `A "raw" ${name} is ungraded and sells for around $${card.rawValueLow}–$${card.rawValueHigh}. A graded copy has been authenticated and assigned a grade (1–10) by PSA. A PSA 10 (Gem Mint) ${name} commands a significant premium at approximately $${card.psa10Value}, reflecting the card's verified condition and collector confidence.`,
+        },
+      },
+    ],
+  };
+}
+
 export default function CardSeoPage({ params }: Props) {
   const card = getCardPageBySlug(params.slug);
   if (!card) notFound();
@@ -73,6 +128,12 @@ export default function CardSeoPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLdArticle(card)),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLdFaq(card)),
         }}
       />
       <SeoSiteNav />
@@ -183,6 +244,44 @@ export default function CardSeoPage({ params }: Props) {
             Scan your card →
           </Link>
         </aside>
+
+        {/* FAQ section — visible on page AND in structured data */}
+        <section className="mt-12">
+          <h2 className="text-lg font-semibold text-white">
+            Frequently asked questions
+          </h2>
+          <div className="mt-4 space-y-4">
+            {[
+              {
+                q: `How much is a ${card.playerName} ${card.year} ${card.brand} #${card.cardNumber} worth?`,
+                a: `A raw copy in typical condition is worth approximately ${formatUsd(card.rawValueLow)}–${formatUsd(card.rawValueHigh)}. A PSA 9 graded copy is worth around ${formatUsd(card.psa9Value)} and a PSA 10 is worth approximately ${formatUsd(card.psa10Value)}.`,
+              },
+              {
+                q: `Is the ${card.playerName} ${card.year} ${card.brand} #${card.cardNumber} worth grading?`,
+                a:
+                  card.gradingVerdict === "worth_grading"
+                    ? `Yes — in most cases. A PSA 10 commands a strong premium over the raw value, and after grading fees and shipping the net return is typically positive. Use CardSnap to get a personalized ROI calculation for your specific copy.`
+                    : `Generally no. The premium between raw and graded isn't large enough to offset PSA grading fees and shipping in most scenarios. Use CardSnap to run the exact numbers for your copy.`,
+              },
+              {
+                q: `How many ${card.playerName} ${card.year} ${card.brand} #${card.cardNumber} cards have been graded by PSA?`,
+                a: `Approximately ${card.popCount.toLocaleString()} copies have been graded by PSA. A higher population means more supply in the graded market, which tends to compress the premium over raw.`,
+              },
+            ].map(({ q, a }) => (
+              <details
+                key={q}
+                className="group rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4"
+              >
+                <summary className="cursor-pointer list-none text-sm font-medium text-zinc-200 marker:content-none group-open:text-white">
+                  <span className="mr-2 text-amber-400 group-open:hidden">+</span>
+                  <span className="mr-2 hidden text-amber-400 group-open:inline">−</span>
+                  {q}
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-400">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
 
         <section className="mt-12">
           <h2 className="text-lg font-semibold text-white">Related cards</h2>
