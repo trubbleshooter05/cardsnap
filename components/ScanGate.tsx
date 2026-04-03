@@ -12,36 +12,60 @@ export function ScanGate({ open, onClose, onUpgrade, upgrading }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="scan-gate-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-zinc-900">
+      <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl shadow-black/60">
+        {/* Icon */}
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/20">
+          <span className="text-2xl">⚡</span>
+        </div>
+
         <h2
           id="scan-gate-title"
-          className="text-lg font-bold text-zinc-900 dark:text-zinc-50"
+          className="text-xl font-bold text-white"
         >
-          You&apos;ve used your 5 free scans this month
+          Free scans used up
         </h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
-          $9.99/month for unlimited scans
+        <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
+          You&apos;ve used your 5 free scans this month. Upgrade to Pro for
+          unlimited scans and priority analysis.
         </p>
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-11 rounded-lg border border-zinc-300 px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
-          >
-            Not now
-          </button>
+
+        {/* Pro benefits */}
+        <ul className="mt-4 space-y-2">
+          {[
+            "Unlimited card scans",
+            "Full PSA population data",
+            "Detailed ROI breakdown",
+          ].map((b) => (
+            <li key={b} className="flex items-center gap-2 text-sm text-zinc-300">
+              <span className="text-amber-400 font-bold">✓</span>
+              {b}
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-6 flex flex-col gap-2.5">
           <button
             type="button"
             disabled={upgrading}
             onClick={onUpgrade}
-            className="h-11 rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+            className="btn-amber flex h-12 w-full items-center justify-center rounded-xl text-sm font-bold shadow-lg shadow-amber-500/20"
           >
-            {upgrading ? "Redirecting…" : "Upgrade to Pro"}
+            {upgrading ? "Redirecting…" : "Upgrade to Pro — $9.99/mo"}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-10 w-full items-center justify-center rounded-xl text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            Maybe later
           </button>
         </div>
       </div>
