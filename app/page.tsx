@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
 import { ResultCard } from "@/components/ResultCard";
 import { ScanGate } from "@/components/ScanGate";
-import { getOrCreateAnonymousId } from "@/lib/anonymous-id";
+import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import type { ScanResultPayload } from "@/lib/types";
 
 type ScanResponse = ScanResultPayload & {
@@ -27,10 +27,13 @@ export default function Home() {
   useEffect(() => {
     const id = getOrCreateAnonymousId();
     setUserId(id);
+    persistAnonymousId(id);
   }, []);
 
   const refreshUsage = useCallback(async (uid: string) => {
-    const res = await fetch(`/api/usage?userId=${encodeURIComponent(uid)}`);
+    const res = await fetch(`/api/usage?userId=${encodeURIComponent(uid)}`, {
+      cache: "no-store",
+    });
     if (!res.ok) return;
     const data = (await res.json()) as {
       count: number;
@@ -69,6 +72,7 @@ export default function Home() {
     try {
       const res = await fetch("/api/scan", {
         method: "POST",
+        cache: "no-store",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           cardName: payload.cardName,
@@ -98,6 +102,7 @@ export default function Home() {
       setResult(data);
       setUsageCount(data.scansUsedThisMonth);
       setIsPro(data.isPro);
+      persistAnonymousId(userId);
     } finally {
       setLoading(false);
     }

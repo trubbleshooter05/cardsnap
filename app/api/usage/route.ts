@@ -11,7 +11,14 @@ function startOfMonthUtc(): string {
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get("userId");
   if (!userId) {
-    return NextResponse.json({ count: 0, isPro: false, limit: 5 });
+    return NextResponse.json(
+      { count: 0, isPro: false, limit: 5 },
+      {
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0",
+        },
+      }
+    );
   }
 
   const supabase = createServerSupabase();
@@ -34,13 +41,23 @@ export async function GET(req: NextRequest) {
     console.error("usage count error", error);
     return NextResponse.json(
       { error: "usage_fetch_failed" },
-      { status: 500 }
+      {
+        status: 500,
+        headers: { "Cache-Control": "private, no-store, max-age=0" },
+      }
     );
   }
 
-  return NextResponse.json({
-    count: count ?? 0,
-    isPro,
-    limit: 5,
-  });
+  return NextResponse.json(
+    {
+      count: count ?? 0,
+      isPro,
+      limit: 5,
+    },
+    {
+      headers: {
+        "Cache-Control": "private, no-store, max-age=0",
+      },
+    }
+  );
 }
