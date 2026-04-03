@@ -238,6 +238,30 @@ export default function Home() {
         {/* Form card */}
         <div className="mt-10 w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
           <ScanForm disabled={loading} onSubmit={handleSubmit} />
+
+          {/* Scan counter — visible inline so mobile users see it update */}
+          {userId && !isPro && (
+            <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
+              <div className="flex gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 w-6 rounded-full transition-colors ${
+                      i < usageCount ? "bg-amber-400" : "bg-zinc-700"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-zinc-500">
+                {usageCount} of 5 free scans used
+              </span>
+            </div>
+          )}
+          {isPro && (
+            <div className="mt-4 border-t border-zinc-800 pt-3 text-center text-xs text-amber-400 font-medium">
+              ⚡ Pro — unlimited scans
+            </div>
+          )}
         </div>
 
         {/* Loading */}
