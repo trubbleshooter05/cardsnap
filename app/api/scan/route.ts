@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase";
 import { analyzeCardWithOpenAI } from "@/lib/openai";
@@ -7,6 +8,13 @@ import { fetchPsaPopulation } from "@/lib/psa";
 import { mergeScanResults } from "@/lib/merge-scan";
 
 export const dynamic = "force-dynamic";
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidUuid(s: string | undefined): boolean {
+  return Boolean(s && UUID_RE.test(s));
+}
 
 const bodySchema = z.object({
   cardName: z.string().min(1).max(500),
@@ -20,6 +28,14 @@ function startOfMonthUtc(): string {
 }
 
 export async function POST(req: Request) {
+  const userId = cookies().get("cardsnap_user_id")?.value;
+  if (!isValidUuid(userId)) {
+    return NextResponse.json(
+      { error: "invalid_user_id" },
+      { status: 401 }
+    );
+  }
+
   let json: unknown;
   try {
     json = await req.json();
@@ -32,7 +48,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  const { cardName, condition, userId } = parsed.data;
+  const { cardName, condition } = parsed.data;
   const supabase = createServerSupabase();
 
   const { data: userRow } = await supabase
