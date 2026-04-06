@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 const bodySchema = z.object({
   cardName: z.string().min(1).max(500),
   condition: z.string().min(1).max(120),
-  userId: z.union([z.string().uuid(), z.null()]).optional(),
+  userId: z.string().uuid(),
 });
 
 function startOfMonthUtc(): string {
@@ -35,28 +35,26 @@ export async function POST(req: Request) {
   const { cardName, condition, userId } = parsed.data;
   const supabase = createServerSupabase();
 
-  if (userId) {
-    const { data: userRow } = await supabase
-      .from("users")
-      .select("is_pro")
-      .eq("id", userId)
-      .maybeSingle();
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("is_pro")
+    .eq("id", userId)
+    .maybeSingle();
 
-    const isPro = Boolean(userRow?.is_pro);
+  const isPro = Boolean(userRow?.is_pro);
 
-    const { count } = await supabase
-      .from("scans")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .gte("created_at", startOfMonthUtc());
+  const { count } = await supabase
+    .from("scans")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", startOfMonthUtc());
 
-    const used = count ?? 0;
-    if (!isPro && used >= 5) {
-      return NextResponse.json(
-        { error: "scan_limit_reached" },
-        { status: 402 }
-      );
-    }
+  const used = count ?? 0;
+  if (!isPro && used >= 5) {
+    return NextResponse.json(
+      { error: "scan_limit_reached" },
+      { status: 402 }
+    );
   }
 
   let ai: Awaited<ReturnType<typeof analyzeCardWithOpenAI>>;
@@ -78,7 +76,7 @@ export async function POST(req: Request) {
   const { data: inserted, error: insertError } = await supabase
     .from("scans")
     .insert({
-      user_id: userId ?? null,
+      user_id: userId,
       card_name: cardName,
       result: merged,
     })
@@ -98,19 +96,18 @@ export async function POST(req: Request) {
     );
   }
 
-  let scansUsedThisMonth = 0;
-  if (userId) {
-    const { count: afterCount } = await supabase
-      .from("scans")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .gte("created_at", startOfMonthUtc());
-    scansUsedThisMonth = afterCount ?? 0;
-  }
+  const { count: afterCount } = await supabase
+    .from("scans")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", startOfMonthUtc());
+  const scansUsedThisMonth = afterCount ?? 0;
 
-  const { data: proRow } = userId
-    ? await supabase.from("users").select("is_pro").eq("id", userId).maybeSingle()
-    : { data: null };
+  const { data: proRow } = await supabase
+    .from("users")
+    .select("is_pro")
+    .eq("id", userId)
+    .maybeSingle();
 
   return NextResponse.json({
     ...merged,
