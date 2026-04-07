@@ -17,6 +17,35 @@ export function SeoSiteNav() {
           <Link href="/cards" className="hover:text-zinc-200">
             Card values
           </Link>
+          <div className="relative group">
+            <button className="hover:text-zinc-200">Guides</button>
+            <div className="absolute hidden group-hover:block bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg py-2 min-w-max">
+              <Link
+                href="/psa-grading-calculator"
+                className="block px-4 py-2 hover:text-white hover:bg-zinc-800"
+              >
+                PSA Grading Calculator
+              </Link>
+              <Link
+                href="/grade-or-skip/baseball"
+                className="block px-4 py-2 hover:text-white hover:bg-zinc-800"
+              >
+                Baseball Cards
+              </Link>
+              <Link
+                href="/grade-or-skip/basketball"
+                className="block px-4 py-2 hover:text-white hover:bg-zinc-800"
+              >
+                Basketball Cards
+              </Link>
+              <Link
+                href="/grade-or-skip/pokemon"
+                className="block px-4 py-2 hover:text-white hover:bg-zinc-800"
+              >
+                Pokémon Cards
+              </Link>
+            </div>
+          </div>
         </nav>
       </div>
     </header>
