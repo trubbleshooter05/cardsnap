@@ -72,13 +72,6 @@ function RoiCard({
 }: {
   example: RoiExample;
 }) {
-  const verdictColor = {
-    strong: "emerald",
-    moderate: "amber",
-    skip: "rose",
-  };
-  const color = verdictColor[example.verdict];
-
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-5">
       <div className="flex items-start justify-between gap-4">
@@ -142,7 +135,7 @@ export default function PsaGradingCalculatorPage() {
           PSA Grading Calculator
         </h1>
         <p className="mt-3 text-lg text-zinc-300">
-          Estimate your card's ROI before you submit. Calculate the difference
+          Estimate your card&apos;s ROI before you submit. Calculate the difference
           between raw, PSA 9, and PSA 10 values to decide if grading is worth
           it.
         </p>
@@ -156,7 +149,7 @@ export default function PsaGradingCalculatorPage() {
           <h2 className="text-2xl font-semibold text-white">What is PSA Grading?</h2>
           <p className="mt-3 text-zinc-400">
             PSA (Professional Sports Authenticator) grades sports cards 1–10 based on condition.
-            A PSA 9 ("Mint") typically sells for 3–5× the raw value. A PSA 10 ("Gem Mint")
+            A PSA 9 (&quot;Mint&quot;) typically sells for 3–5× the raw value. A PSA 10 (&quot;Gem Mint&quot;)
             can command 5–15× more—rarity and demand determine the final premium.
           </p>
 
@@ -207,8 +200,8 @@ export default function PsaGradingCalculatorPage() {
           </h2>
           <p className="mt-3 text-zinc-400">
             The difference between a PSA 9 and a PSA 10 is subtle to the eye but
-            massive for your wallet. A PSA 10 ("Gem Mint") commands a premium
-            because it's the highest possible grade—fewer cards achieve it, and
+            massive for your wallet. A PSA 10 (&quot;Gem Mint&quot;) commands a premium
+            because it&apos;s the highest possible grade—fewer cards achieve it, and
             collectors pay accordingly.
           </p>
 
@@ -237,13 +230,13 @@ export default function PsaGradingCalculatorPage() {
             <p className="text-sm font-semibold text-zinc-300">Real-world example:</p>
             <p className="mt-2 text-sm text-zinc-400">
               A 1999 Charizard Base Set Holo card graded PSA 9 typically sells for
-              $2,200–$2,800. The same card graded PSA 10? $5,000–$7,000+. That's
+              $2,200–$2,800. The same card graded PSA 10? $5,000–$7,000+. That&apos;s
               a{" "}
               <span className="font-semibold text-amber-300">
                 100%+ premium for one grade point
               </span>
               . But only 2–3% of cards achieve a PSA 10, making it a risky target
-              if you're already borderline.
+              if you&apos;re already borderline.
             </p>
           </div>
         </section>
@@ -274,14 +267,14 @@ export default function PsaGradingCalculatorPage() {
               <h3 className="font-semibold text-emerald-300">✓ Grade Your Card If:</h3>
               <ul className="mt-2 space-y-1 text-sm text-zinc-300">
                 <li>
-                  • The card's raw value is $200+ (grading cost becomes a smaller
+                  • The card&apos;s raw value is $200+ (grading cost becomes a smaller
                   percentage)
                 </li>
                 <li>
                   • Condition is obviously PSA 9+ (minimal wear, sharp corners)
                 </li>
                 <li>
-                  • It's a key card or rookie (demand supports the graded premium)
+                  • It&apos;s a key card or rookie (demand supports the graded premium)
                 </li>
                 <li>• Net profit after grading is $100+</li>
               </ul>

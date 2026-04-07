@@ -9,12 +9,6 @@ function RoiCard({
 }: {
   example: NicheContent["roiExamples"][0];
 }) {
-  const verdictColor = {
-    strong: "emerald",
-    moderate: "amber",
-    skip: "rose",
-  };
-
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-5">
       <div className="flex items-start justify-between gap-4">
@@ -188,7 +182,7 @@ export function GradeOrSkipPage({
         {/* Tool CTA */}
         <section className="mt-12 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-600/5 p-8 text-center">
           <h2 className="text-2xl font-semibold text-white">
-            Check Your Card's Value Now
+            Check Your Card&apos;s Value Now
           </h2>
           <p className="mt-2 text-zinc-300">
             Get real-time PSA comps, population data, and a personalized Grade&nbsp;it / Skip&nbsp;it verdict
