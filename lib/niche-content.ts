@@ -326,10 +326,411 @@ export const nicheContentMap: Record<string, NicheContent> = {
 export function getNicheContent(
   category: "baseball" | "basketball" | "pokemon"
 ): NicheContent {
-  return nicheContentMap[category];
+  return nicheContentMap[category];,
+
+  "football": {
+    "slug": "football",
+    "sport": "Football",
+    "category": "football",
+    "seoTitle": "Football Card Grading ROI Guide — When to Grade | CardSnap",
+    "seoDescription": "Should grade-or-skip Football cards? See ROI by condition/era/player.",
+    "h1": "Should You Grade Your Football Card?",
+    "subtitle": "This guide helps Football collectors determine whether their cards are worth grading. We analyze ROI based on card condition, era, and player popularity.",
+    "gradingLogic": [
+      "High-value rookie cards from top quarterbacks often yield substantial returns when graded.",
+      "Limited edition or parallel cards, especially from recent seasons, can appreciate significantly with a higher grade.",
+      "Vintage cards in excellent condition are more likely to gain value through grading due to collector demand.",
+      "Autographed cards, when authenticated, can see a dramatic increase in value with a high grade.",
+      "Cards from popular sets, like Prizm or Optic, can be worth grading if they are in near-mint condition."
+    ],
+    "keyCharacteristics": [
+      {
+        "title": "Surface Quality",
+        "desc": "Surface scratches or blemishes can significantly impact a card's grade and value."
+      },
+      {
+        "title": "Centering",
+        "desc": "Proper centering is crucial for grading; poorly centered cards often receive lower grades."
+      },
+      {
+        "title": "Corners and Edges",
+        "desc": "Sharp corners and clean edges are essential for achieving higher grades."
+      },
+      {
+        "title": "Rarity",
+        "desc": "Cards that are rare or part of a limited print run can greatly benefit from grading."
+      }
+    ],
+    "roiExamples": [
+      {
+        "cardName": "2020 Justin Herbert Prizm Rookie Card",
+        "rawValue": 100,
+        "psa9Value": 400,
+        "psa10Value": 1200,
+        "gradingCost": 50,
+        "psa9Roi": 250,
+        "psa10Roi": 1050,
+        "verdict": "strong",
+        "reason": "This card is a highly sought-after rookie from a top quarterback, making it a prime candidate for grading."
+      },
+      {
+        "cardName": "2019 Kyler Murray Donruss Rated Rookie",
+        "rawValue": 30,
+        "psa9Value": 80,
+        "psa10Value": 200,
+        "gradingCost": 50,
+        "psa9Roi": 0,
+        "psa10Roi": 120,
+        "verdict": "moderate",
+        "reason": "While it has potential, the ROI is marginal and grading costs may not justify the investment."
+      },
+      {
+        "cardName": "1990 Score Barry Sanders",
+        "rawValue": 5,
+        "psa9Value": 15,
+        "psa10Value": 40,
+        "gradingCost": 50,
+        "psa9Roi": -40,
+        "psa10Roi": -15,
+        "verdict": "skip",
+        "reason": "This common card's value does not justify the grading cost, making it not worth the effort."
+      }
+    ],
+    "whenToGrade": [
+      "If you own a rare, high-demand rookie card in near-mint condition, grading can significantly boost its value.",
+      "Grading is advisable for autographed cards, especially if they are authenticated by a reputable service.",
+      "Consider grading vintage cards that are in excellent condition, as they can be worth a considerable amount.",
+      "If you have limited edition cards from popular sets, grading may enhance their marketability and value.",
+      "Grading can make sense for cards that are already popular among collectors and show signs of increasing demand."
+    ],
+    "skipGrading": [
+      "Do not grade lower-value common cards that are readily available in the market.",
+      "Skip grading cards with visible damage, as they are unlikely to gain value through grading.",
+      "If the card's potential PSA 10 value does not exceed the grading cost significantly, it's better to skip grading.",
+      "Avoid grading cards from less popular players or teams where demand is low."
+    ],
+    "marketInsight": "The current Football card market is experiencing a resurgence, driven by younger collectors and the popularity of recent drafts. Grading remains a key factor in maximizing ROI, especially for high-end rookie cards and limited editions.",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Article",
+          "headline": "Football Card Grading ROI Guide — When to Grade | CardSnap",
+          "description": "Should grade-or-skip Football cards? See ROI by condition/era/player.",
+          "url": "https://cardsnap.io/grade-or-skip/football",
+          "author": {
+            "@type": "Organization",
+            "name": "CardSnap"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "CardSnap"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://cardsnap.io"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Grade or Skip",
+              "item": "https://cardsnap.io/grade-or-skip"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Football Cards"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "generated_at": "2026-04-08T00:41:15.841Z",
+      "source": "cardsnap-generator",
+      "review_status": "pending"
+    }
+  },
+
+  "yugioh": {
+    "slug": "yugioh",
+    "sport": "Yu-Gi-Oh",
+    "category": "yugioh",
+    "seoTitle": "Yu-Gi-Oh Card Grading ROI Guide — When to Grade | CardSnap",
+    "seoDescription": "Should grade-or-skip Yu-Gi-Oh cards? See ROI by condition/era/player.",
+    "h1": "Should You Grade Your Yu-Gi-Oh Card?",
+    "subtitle": "This guide helps Yu-Gi-Oh collectors determine the value of grading their cards based on condition, rarity, and market demand. Learn when grading can maximize your investment.",
+    "gradingLogic": [
+      "High-value cards from the early sets like the 'Blue-Eyes White Dragon' should be graded to maximize potential returns.",
+      "Limited edition or promotional cards are often worth grading, especially if they are in mint condition.",
+      "Cards that are part of a competitive deck can benefit from grading, as collectors often seek pristine examples.",
+      "Rare holographic cards typically fetch higher prices when graded, making grading a worthwhile investment.",
+      "Cards with significant nostalgia or cultural impact, such as the 'Dark Magician', often see increased ROI when graded."
+    ],
+    "keyCharacteristics": [
+      {
+        "title": "Condition",
+        "desc": "The condition of a Yu-Gi-Oh card is crucial, as higher grades can significantly increase its market value."
+      },
+      {
+        "title": "Rarity",
+        "desc": "Rare cards, especially those from early sets, are more desirable and can yield higher returns when graded."
+      },
+      {
+        "title": "Cultural Impact",
+        "desc": "Cards that have a strong connection to the anime or competitive scene can attract more collectors and higher prices."
+      },
+      {
+        "title": "Holographic Finish",
+        "desc": "Holographic cards are particularly sought after, making them prime candidates for grading."
+      }
+    ],
+    "roiExamples": [
+      {
+        "cardName": "Blue-Eyes White Dragon (1st Edition)",
+        "rawValue": 500,
+        "psa9Value": 2000,
+        "psa10Value": 5000,
+        "gradingCost": 50,
+        "psa9Roi": 1450,
+        "psa10Roi": 4500,
+        "verdict": "strong",
+        "reason": "This iconic card is highly sought after, and grading can significantly increase its value."
+      },
+      {
+        "cardName": "Dark Magician Girl (1st Edition)",
+        "rawValue": 150,
+        "psa9Value": 400,
+        "psa10Value": 1200,
+        "gradingCost": 50,
+        "psa9Roi": 200,
+        "psa10Roi": 1000,
+        "verdict": "moderate",
+        "reason": "While this card has value, the ROI for grading may not be as high compared to more iconic cards."
+      },
+      {
+        "cardName": "Monster Reborn (Common)",
+        "rawValue": 10,
+        "psa9Value": 25,
+        "psa10Value": 60,
+        "gradingCost": 50,
+        "psa9Roi": -35,
+        "psa10Roi": 5,
+        "verdict": "skip",
+        "reason": "The low raw value makes grading this card not worth the investment."
+      }
+    ],
+    "whenToGrade": [
+      "You should grade Yu-Gi-Oh cards if they are part of a competitive deck and in excellent condition.",
+      "Consider grading cards from the original series if they are rare and well-preserved.",
+      "Grading is advisable for limited edition cards or promotional items that are in mint condition.",
+      "If you have a card that has cultural significance in the Yu-Gi-Oh community, grading can enhance its value.",
+      "High-grade holographic cards are often sought after, making them prime candidates for grading."
+    ],
+    "skipGrading": [
+      "Do not grade common cards with low market value, as the grading cost may exceed potential returns.",
+      "Skip grading cards that are heavily played or damaged, as they will not achieve high grades.",
+      "Avoid grading cards that are not rare or do not have a significant demand in the market.",
+      "If you have cards that are easily available in high grades, grading may not be necessary."
+    ],
+    "marketInsight": "The current Yu-Gi-Oh card market is experiencing a resurgence in demand, particularly for nostalgic cards from the early 2000s. Grading can provide significant ROI for high-demand cards, while the market remains cautious for lower-tier cards.",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Article",
+          "headline": "Yu-Gi-Oh Card Grading ROI Guide — When to Grade | CardSnap",
+          "description": "Should grade-or-skip Yu-Gi-Oh cards? See ROI by condition/era/player.",
+          "url": "https://cardsnap.io/grade-or-skip/yugioh",
+          "author": {
+            "@type": "Organization",
+            "name": "CardSnap"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "CardSnap"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://cardsnap.io"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Grade or Skip",
+              "item": "https://cardsnap.io/grade-or-skip"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Yu-Gi-Oh Cards"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "generated_at": "2026-04-08T00:41:36.026Z",
+      "source": "cardsnap-generator",
+      "review_status": "pending"
+    }
+  },
+
+  "magic-the-gathering": {
+    "slug": "magic-the-gathering",
+    "sport": "Magic: The Gathering",
+    "category": "magic-the-gathering",
+    "seoTitle": "Magic: The Gathering Card Grading ROI Guide — When to Grade | CardSnap",
+    "seoDescription": "Should grade-or-skip Magic: The Gathering cards? See ROI by condition/era/player.",
+    "h1": "Should You Grade Your Magic: The Gathering Card?",
+    "subtitle": "This guide explores the criteria for grading Magic: The Gathering cards and the potential ROI. Learn when it’s worth investing in grading for your collection.",
+    "gradingLogic": [
+      "Alpha and Beta cards can significantly increase in value when graded, especially if they are in excellent condition.",
+      "Rare mythic rares from recent sets, like 'Teferi, Time Raveler', can command high prices at PSA 10, making them ideal candidates for grading.",
+      "High-demand cards from popular formats, such as 'Snapcaster Mage', often see a substantial ROI when graded.",
+      "Older cards in near-mint condition, particularly from the original sets, can yield strong returns once graded.",
+      "Cards from competitive play formats that are in high demand may appreciate significantly when graded, reflecting their desirability."
+    ],
+    "keyCharacteristics": [
+      {
+        "title": "Rarity",
+        "desc": "The rarity of a card significantly impacts its value; higher rarity often leads to higher demand and prices."
+      },
+      {
+        "title": "Condition",
+        "desc": "The condition of a card is critical; cards in mint condition can see dramatic price increases when graded."
+      },
+      {
+        "title": "Historical Significance",
+        "desc": "Cards with historical significance, like 'Black Lotus', are more likely to appreciate in value when graded."
+      },
+      {
+        "title": "Demand in Competitive Play",
+        "desc": "Cards that are staples in competitive formats tend to have a steady demand, making them good candidates for grading."
+      }
+    ],
+    "roiExamples": [
+      {
+        "cardName": "Black Lotus",
+        "rawValue": 5000,
+        "psa9Value": 15000,
+        "psa10Value": 30000,
+        "gradingCost": 50,
+        "psa9Roi": 9995,
+        "psa10Roi": 24995,
+        "verdict": "strong",
+        "reason": "The iconic status and high demand for Black Lotus make it an exceptional candidate for grading."
+      },
+      {
+        "cardName": "Teferi, Time Raveler",
+        "rawValue": 50,
+        "psa9Value": 200,
+        "psa10Value": 600,
+        "gradingCost": 50,
+        "psa9Roi": 100,
+        "psa10Roi": 500,
+        "verdict": "moderate",
+        "reason": "While it has potential for ROI, the market is more volatile for newer cards like this one."
+      },
+      {
+        "cardName": "Counterspell (Alpha)",
+        "rawValue": 100,
+        "psa9Value": 300,
+        "psa10Value": 800,
+        "gradingCost": 50,
+        "psa9Roi": 150,
+        "psa10Roi": 650,
+        "verdict": "strong",
+        "reason": "The Alpha version of this classic card holds historical significance and is sought after by collectors."
+      },
+      {
+        "cardName": "Giant Growth",
+        "rawValue": 10,
+        "psa9Value": 20,
+        "psa10Value": 50,
+        "gradingCost": 50,
+        "psa9Roi": -40,
+        "psa10Roi": -10,
+        "verdict": "skip",
+        "reason": "The low initial value and high grading cost make this card not worth grading."
+      }
+    ],
+    "whenToGrade": [
+      "When you have cards from the Alpha or Beta sets in excellent condition.",
+      "If you possess highly sought-after mythic rares from recent sets.",
+      "When cards are critical in competitive formats and have a strong demand.",
+      "If you find older cards from classic sets that are in near-mint condition.",
+      "When you have a collection of cards that are historically significant."
+    ],
+    "skipGrading": [
+      "If the card has a low raw value and high grading costs.",
+      "When the card is a common or uncommon with little demand.",
+      "If the card is heavily played or damaged, which diminishes its grading potential.",
+      "When you own duplicates of cards that are not in high demand."
+    ],
+    "marketInsight": "The Magic: The Gathering card market is currently experiencing a resurgence in demand, particularly for iconic and competitive cards. Grading has shown to yield strong ROI, especially for rare and high-condition cards, as collectors are increasingly valuing graded items.",
+    "schema_jsonld": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Article",
+          "headline": "Magic: The Gathering Card Grading ROI Guide — When to Grade | CardSnap",
+          "description": "Should grade-or-skip Magic: The Gathering cards? See ROI by condition/era/player.",
+          "url": "https://cardsnap.io/grade-or-skip/magic-the-gathering",
+          "author": {
+            "@type": "Organization",
+            "name": "CardSnap"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "CardSnap"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://cardsnap.io"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Grade or Skip",
+              "item": "https://cardsnap.io/grade-or-skip"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Magic: The Gathering Cards"
+            }
+          ]
+        }
+      ]
+    },
+    "_meta": {
+      "generated_at": "2026-04-08T00:41:54.507Z",
+      "source": "cardsnap-generator",
+      "review_status": "pending"
+    }
+  }
 }
 
-export function getCategoryPath(category: "baseball" | "basketball" | "pokemon"): string {
+export function getCategoryPath(category: string): string {
   return `/grade-or-skip/${category}`;,
 
   "football": {
@@ -734,5 +1135,5 @@ export function getCategoryPath(category: "baseball" | "basketball" | "pokemon")
   }
 }
 
-export function getAllCategories(): Array<"baseball" | "basketball" | "pokemon"> {
-  return ["baseball", "basketball", "pokemon"];
+export function getAllCategories(): string[] {
+  return ["baseball", "basketball", "pokemon", "football", "yugioh", "magic-the-gathering"];
