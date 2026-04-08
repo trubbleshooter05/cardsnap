@@ -1,0 +1,35 @@
+{
+  "_comment": "CardSnap concept expansion list for grade-or-skip pages and card entries",
+  "_live_grade_or_skip": ["baseball", "basketball", "pokemon"],
+  "grade_or_skip_concepts": [
+    { "slug": "football", "sport": "Football", "keyword": "should i grade my football card", "monthly_searches_est": 4800, "priority": 5, "status": "pending" },
+    { "slug": "soccer", "sport": "Soccer", "keyword": "should i grade my soccer card", "monthly_searches_est": 2200, "priority": 4, "status": "pending" },
+    { "slug": "hockey", "sport": "Hockey", "keyword": "should i grade my hockey card", "monthly_searches_est": 1900, "priority": 4, "status": "pending" },
+    { "slug": "golf", "sport": "Golf", "keyword": "golf card grading worth it", "monthly_searches_est": 800, "priority": 3, "status": "pending" },
+    { "slug": "yugioh", "sport": "Yu-Gi-Oh", "keyword": "should i grade my yugioh cards", "monthly_searches_est": 5600, "priority": 5, "status": "pending" },
+    { "slug": "magic-the-gathering", "sport": "Magic: The Gathering", "keyword": "should i grade my magic cards psa", "monthly_searches_est": 4100, "priority": 5, "status": "pending" },
+    { "slug": "one-piece", "sport": "One Piece TCG", "keyword": "should i grade one piece cards", "monthly_searches_est": 2800, "priority": 5, "status": "pending" },
+    { "slug": "lorcana", "sport": "Lorcana", "keyword": "should i grade lorcana cards", "monthly_searches_est": 1600, "priority": 4, "status": "pending" },
+    { "slug": "ufc", "sport": "UFC / MMA", "keyword": "ufc card grading worth it", "monthly_searches_est": 1200, "priority": 3, "status": "pending" },
+    { "slug": "vintage", "sport": "Vintage Cards", "keyword": "should i grade vintage cards psa", "monthly_searches_est": 3400, "priority": 5, "status": "pending" },
+    { "slug": "rookie-cards", "sport": "Rookie Cards", "keyword": "should i grade rookie cards", "monthly_searches_est": 5200, "priority": 5, "status": "pending" },
+    { "slug": "wrestling", "sport": "Wrestling", "keyword": "should i grade wrestling cards psa", "monthly_searches_est": 900, "priority": 3, "status": "pending" }
+  ],
+  "card_entry_concepts": [
+    { "player": "Patrick Mahomes", "year": 2017, "brand": "National Treasures", "sport": "football", "priority": 5, "status": "pending" },
+    { "player": "Justin Jefferson", "year": 2020, "brand": "Panini Prizm", "sport": "football", "priority": 5, "status": "pending" },
+    { "player": "Josh Allen", "year": 2018, "brand": "Panini Prizm", "sport": "football", "priority": 5, "status": "pending" },
+    { "player": "Jalen Hurts", "year": 2020, "brand": "Panini Prizm", "sport": "football", "priority": 4, "status": "pending" },
+    { "player": "Charizard Base Set", "year": 1999, "brand": "Wizards of the Coast", "sport": "pokemon", "priority": 5, "status": "pending" },
+    { "player": "Pikachu Illustrator", "year": 1998, "brand": "Wizards of the Coast", "sport": "pokemon", "priority": 5, "status": "pending" },
+    { "player": "Shohei Ohtani", "year": 2018, "brand": "Topps Chrome", "sport": "baseball", "priority": 5, "status": "pending" },
+    { "player": "Wander Franco", "year": 2021, "brand": "Topps Chrome", "sport": "baseball", "priority": 4, "status": "pending" },
+    { "player": "Wayne Gretzky", "year": 1979, "brand": "Topps", "sport": "hockey", "priority": 5, "status": "pending" },
+    { "player": "Connor McDavid", "year": 2015, "brand": "Upper Deck Young Guns", "sport": "hockey", "priority": 5, "status": "pending" },
+    { "player": "Victor Wembanyama", "year": 2023, "brand": "Panini Prizm", "sport": "basketball", "priority": 5, "status": "pending" },
+    { "player": "Caitlin Clark", "year": 2024, "brand": "Panini Prizm", "sport": "basketball", "priority": 5, "status": "pending" },
+    { "player": "Saquon Barkley", "year": 2018, "brand": "Panini Prizm", "sport": "football", "priority": 4, "status": "pending" },
+    { "player": "Nikola Jokic", "year": 2015, "brand": "Panini Prizm", "sport": "basketball", "priority": 5, "status": "pending" },
+    { "player": "Giannis Antetokounmpo", "year": 2013, "brand": "Panini Prizm", "sport": "basketball", "priority": 5, "status": "pending" }
+  ]
+}

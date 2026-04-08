@@ -1,0 +1,149 @@
+{
+  "_comment": "Master SEO Engine Site Registry — edit to add new SaaS properties",
+  "engine_version": "1.0.0",
+  "hermes_base": "~/projects",
+  "sites": {
+    "snapbrand": {
+      "id": "snapbrand",
+      "name": "SnapBrand",
+      "domain": "snapbrand.io",
+      "repo_path": "~/projects/snapbrand",
+      "seo_strategy": "utility_tool",
+      "primary_url_pattern": "/logo-generator/[business-type]",
+      "secondary_url_patterns": ["/brand-kit/[business-type]"],
+      "config_files": ["app/logo-generator/[business-type]/config.ts"],
+      "data_files": [],
+      "generator_script": "generators/snapbrand-generator.ts",
+      "output_dir": "outputs/snapbrand",
+      "sitemap_path": "app/sitemap.ts",
+      "schema_types": ["SoftwareApplication", "FAQPage", "WebPage"],
+      "priority": 1,
+      "openai_model": "gpt-4o-mini",
+      "active": true
+    },
+    "cardsnap": {
+      "id": "cardsnap",
+      "name": "CardSnap",
+      "domain": "cardsnap.io",
+      "repo_path": "~/projects/cardsnap",
+      "seo_strategy": "utility_tool",
+      "primary_url_pattern": "/grade-or-skip/[category]",
+      "secondary_url_patterns": ["/cards/[slug]", "/psa-grading-calculator"],
+      "config_files": ["lib/niche-content.ts"],
+      "data_files": ["data/cards.json"],
+      "generator_script": "generators/cardsnap-generator.ts",
+      "output_dir": "outputs/cardsnap",
+      "sitemap_path": "app/sitemap.ts",
+      "schema_types": ["FAQPage", "Article", "WebPage", "BreadcrumbList"],
+      "priority": 2,
+      "openai_model": "gpt-4o-mini",
+      "active": true
+    },
+    "movieslike": {
+      "id": "movieslike",
+      "name": "WatchThis / MoviesLike",
+      "domain": "watchthis.app",
+      "repo_path": "~/projects/watchthisapp",
+      "seo_strategy": "programmatic_discovery",
+      "primary_url_pattern": "/movies-like/[slug]",
+      "secondary_url_patterns": ["/browse", "/popular"],
+      "config_files": [],
+      "data_files": ["data/recommendations/*.json"],
+      "generator_script": "scripts/forge_pagegen.py",
+      "output_dir": "data/recommendations",
+      "sitemap_path": "src/app/sitemap.ts",
+      "schema_types": ["Movie", "ItemList", "BreadcrumbList", "FAQPage"],
+      "priority": 3,
+      "openai_model": "gpt-4o",
+      "active": true,
+      "note": "WatchThis already has its own autonomous pipeline — this registry entry is for cross-site linking only"
+    },
+    "fursbliss": {
+      "id": "fursbliss",
+      "name": "FursBliss",
+      "domain": "fursbliss.com",
+      "repo_path": "~/projects/fursbliss",
+      "seo_strategy": "hub_authority_glossary",
+      "primary_url_pattern": "/breeds/[slug]",
+      "secondary_url_patterns": [
+        "/symptoms/[slug]",
+        "/supplements/[slug]",
+        "/blog/[slug]",
+        "/glossary/[slug]"
+      ],
+      "config_files": ["lib/breed-pages.ts", "lib/symptom-pages.ts"],
+      "data_files": [],
+      "generator_script": "generators/fursbliss-generator.ts",
+      "output_dir": "outputs/fursbliss",
+      "sitemap_path": "app/sitemap.ts",
+      "schema_types": ["Article", "FAQPage", "BreadcrumbList", "MedicalWebPage"],
+      "priority": 4,
+      "openai_model": "gpt-4o",
+      "medical_safety_mode": true,
+      "active": true
+    },
+    "symptom_checker": {
+      "id": "symptom_checker",
+      "name": "FursBliss Symptom Checker",
+      "domain": "symptom.fursbliss.com",
+      "repo_path": "~/projects/symptom-checker",
+      "seo_strategy": "hub_authority_glossary",
+      "primary_url_pattern": "/[symptom]",
+      "secondary_url_patterns": [],
+      "config_files": [],
+      "data_files": [],
+      "generator_script": null,
+      "output_dir": "outputs/fursbliss",
+      "sitemap_path": null,
+      "schema_types": ["MedicalWebPage", "FAQPage"],
+      "priority": 5,
+      "openai_model": "gpt-4o",
+      "medical_safety_mode": true,
+      "active": false,
+      "note": "Defer until FursBliss main is complete"
+    }
+  },
+  "cross_linking_rules": [
+    {
+      "from": "snapbrand",
+      "to": "cardsnap",
+      "condition": "never — audiences don't overlap",
+      "allowed": false
+    },
+    {
+      "from": "fursbliss",
+      "to": "fursbliss",
+      "condition": "always — breed ↔ symptom ↔ supplement internal links",
+      "allowed": true
+    },
+    {
+      "from": "movieslike",
+      "to": "movieslike",
+      "condition": "always — movies-like ↔ browse ↔ popular",
+      "allowed": true
+    },
+    {
+      "from": "cardsnap",
+      "to": "cardsnap",
+      "condition": "always — cards ↔ grade-or-skip ↔ calculator",
+      "allowed": true
+    },
+    {
+      "from": "snapbrand",
+      "to": "snapbrand",
+      "condition": "always — business-type ↔ brand-kit ↔ related types",
+      "allowed": true
+    }
+  ],
+  "reddit_module": {
+    "status": "draft_only",
+    "reason": "No Reddit API approval yet",
+    "allowed_modes": ["public_json_read", "manual_draft_export"],
+    "blocked_modes": ["post", "comment", "auth"]
+  },
+  "distribution": {
+    "social_platforms": ["tiktok", "instagram_reels", "youtube_shorts"],
+    "auto_post": false,
+    "output_format": "draft_scripts_only"
+  }
+}

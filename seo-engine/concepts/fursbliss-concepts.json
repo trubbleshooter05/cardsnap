@@ -1,0 +1,78 @@
+{
+  "_comment": "FursBliss content cluster expansion list — hub/authority/glossary strategy",
+  "_strategy": "Build topical authority through breed guides, supplement glossary, longevity education, and safe symptom reference pages. No speculative medical content.",
+  "breed_concepts": [
+    { "slug": "labrador-retriever", "title": "Labrador Retriever Longevity Guide", "keyword": "labrador retriever health longevity", "cluster": "breeds", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "german-shepherd", "title": "German Shepherd Health Guide", "keyword": "german shepherd longevity supplements", "cluster": "breeds", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "golden-retriever", "title": "Golden Retriever Longevity Guide", "keyword": "golden retriever supplements longevity", "cluster": "breeds", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "french-bulldog", "title": "French Bulldog Health & Longevity", "keyword": "french bulldog health issues longevity", "cluster": "breeds", "requires_medical_review": true, "priority": 5, "status": "pending" },
+    { "slug": "bulldog", "title": "Bulldog Health Guide", "keyword": "bulldog health problems supplements", "cluster": "breeds", "requires_medical_review": true, "priority": 4, "status": "pending" },
+    { "slug": "poodle", "title": "Poodle Longevity & Supplement Guide", "keyword": "poodle longevity tips supplements", "cluster": "breeds", "requires_medical_review": false, "priority": 4, "status": "pending" },
+    { "slug": "beagle", "title": "Beagle Health & Longevity Guide", "keyword": "beagle lifespan health guide", "cluster": "breeds", "requires_medical_review": false, "priority": 4, "status": "pending" },
+    { "slug": "chihuahua", "title": "Chihuahua Longevity Guide", "keyword": "chihuahua longevity lifespan tips", "cluster": "breeds", "requires_medical_review": false, "priority": 4, "status": "pending" },
+    { "slug": "dachshund", "title": "Dachshund Back Health & Longevity", "keyword": "dachshund back problems prevention", "cluster": "breeds", "requires_medical_review": true, "priority": 4, "status": "pending" },
+    { "slug": "yorkshire-terrier", "title": "Yorkshire Terrier Health Guide", "keyword": "yorkshire terrier longevity health", "cluster": "breeds", "requires_medical_review": false, "priority": 3, "status": "pending" },
+    { "slug": "boxer", "title": "Boxer Dog Longevity Guide", "keyword": "boxer dog lifespan health", "cluster": "breeds", "requires_medical_review": true, "priority": 4, "status": "pending" },
+    { "slug": "great-dane", "title": "Great Dane Lifespan & Longevity", "keyword": "great dane lifespan how long do great danes live", "cluster": "breeds", "requires_medical_review": false, "priority": 4, "status": "pending" }
+  ],
+  "supplement_concepts": [
+    { "slug": "omega-3-for-dogs", "title": "Omega-3 for Dogs: Complete Guide", "keyword": "omega-3 fish oil dogs benefits dosage", "cluster": "supplements", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "probiotics-for-dogs", "title": "Probiotics for Dogs: Benefits & Dosage", "keyword": "probiotics for dogs gut health", "cluster": "supplements", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "glucosamine-for-dogs", "title": "Glucosamine for Dogs: Joint Health Guide", "keyword": "glucosamine for dogs dosage benefits", "cluster": "supplements", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "nmn-for-dogs", "title": "NMN for Dogs: Longevity Research Overview", "keyword": "nmn supplement dogs aging", "cluster": "longevity", "requires_medical_review": true, "priority": 4, "status": "pending" },
+    { "slug": "rapamycin-for-dogs", "title": "Rapamycin for Dogs: What Pet Owners Need to Know", "keyword": "rapamycin dogs longevity 2025", "cluster": "longevity", "requires_medical_review": true, "priority": 5, "status": "pending" },
+    { "slug": "vitamin-d-for-dogs", "title": "Vitamin D for Dogs: Benefits & Safety", "keyword": "vitamin d for dogs benefits toxicity", "cluster": "supplements", "requires_medical_review": true, "priority": 3, "status": "pending" },
+    { "slug": "cbd-for-dogs", "title": "CBD for Dogs: What the Research Says", "keyword": "cbd oil for dogs benefits risks", "cluster": "supplements", "requires_medical_review": true, "priority": 4, "status": "pending" }
+  ],
+  "glossary_concepts": [
+    { "slug": "dog-lifespan-by-breed", "title": "Dog Lifespan by Breed: Complete Reference", "keyword": "dog lifespan by breed chart", "cluster": "longevity", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "dog-years-to-human-years", "title": "Dog Years to Human Years: The Science", "keyword": "dog years to human years calculator", "cluster": "longevity", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "senolytic-drugs-dogs", "title": "Senolytic Drugs for Dogs: Overview", "keyword": "senolytics dogs aging science", "cluster": "longevity", "requires_medical_review": true, "priority": 3, "status": "pending" },
+    { "slug": "dog-gut-health-guide", "title": "Dog Gut Health: Complete Owner Guide", "keyword": "dog gut health microbiome guide", "cluster": "health", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "senior-dog-care-guide", "title": "Senior Dog Care: Complete Guide", "keyword": "senior dog care guide 8 years old", "cluster": "life-stages", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "puppy-supplement-guide", "title": "What Supplements Do Puppies Need?", "keyword": "puppy supplements what do puppies need", "cluster": "life-stages", "requires_medical_review": false, "priority": 4, "status": "pending" },
+    { "slug": "dog-food-ingredients-to-avoid", "title": "Dog Food Ingredients to Avoid", "keyword": "dog food ingredients to avoid bad", "cluster": "nutrition", "requires_medical_review": false, "priority": 5, "status": "pending" },
+    { "slug": "best-dog-food-large-breeds", "title": "Best Dog Food for Large Breeds", "keyword": "best dog food large breeds review", "cluster": "nutrition", "requires_medical_review": false, "priority": 4, "status": "pending" }
+  ],
+  "symptom_reference_concepts": [
+    {
+      "slug": "dog-limping-front-leg",
+      "title": "Dog Limping on Front Leg: Common Causes",
+      "keyword": "dog limping front leg causes",
+      "cluster": "symptoms",
+      "requires_medical_review": true,
+      "priority": 5,
+      "status": "pending",
+      "safety_note": "Must include vet consultation disclaimer prominently. Do not diagnose. List common causes only."
+    },
+    {
+      "slug": "dog-vomiting-yellow-bile",
+      "title": "Dog Vomiting Yellow Bile: What It Means",
+      "keyword": "dog vomiting yellow bile causes",
+      "cluster": "symptoms",
+      "requires_medical_review": true,
+      "priority": 5,
+      "status": "pending",
+      "safety_note": "Non-diagnostic. Must encourage vet visit if recurring."
+    },
+    {
+      "slug": "dog-excessive-thirst",
+      "title": "Dog Drinking Excessive Water: Possible Reasons",
+      "keyword": "dog drinking too much water causes",
+      "cluster": "symptoms",
+      "requires_medical_review": true,
+      "priority": 4,
+      "status": "pending",
+      "safety_note": "High-stakes symptom (possible diabetes/Cushing's). Requires urgent vet disclaimer."
+    },
+    {
+      "slug": "dog-scratching-ears",
+      "title": "Dog Scratching Ears Constantly: Common Causes",
+      "keyword": "dog scratching ears head shaking causes",
+      "cluster": "symptoms",
+      "requires_medical_review": false,
+      "priority": 4,
+      "status": "pending"
+    }
+  ]
+}

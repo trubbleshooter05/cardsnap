@@ -1,0 +1,26 @@
+{
+  "name": "seo-engine",
+  "version": "1.0.0",
+  "description": "Autonomous SEO Engine for SnapBrand, CardSnap, WatchThis, FursBliss",
+  "type": "module",
+  "scripts": {
+    "discover": "npx tsx generators/opportunity-discovery.ts",
+    "generate:snapbrand": "npx tsx generators/snapbrand-generator.ts",
+    "generate:cardsnap:grade": "npx tsx generators/cardsnap-generator.ts --mode grade-or-skip",
+    "generate:cardsnap:cards": "npx tsx generators/cardsnap-generator.ts --mode card-entry",
+    "generate:fursbliss:breeds": "npx tsx generators/fursbliss-generator.ts --type breed",
+    "generate:fursbliss:supplements": "npx tsx generators/fursbliss-generator.ts --type supplement",
+    "generate:fursbliss:glossary": "npx tsx generators/fursbliss-generator.ts --type glossary",
+    "generate:fursbliss:symptoms": "npx tsx generators/fursbliss-generator.ts --type symptom",
+    "validate": "npx tsx reviewers/validate.ts",
+    "safety-check": "npx tsx reviewers/safety-check.ts",
+    "social": "npx tsx distro/social-draft-generator.ts",
+    "daily": "zsh hermes/seo-engine-daily.sh",
+    "weekly": "zsh hermes/seo-engine-weekly.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}
