@@ -20,7 +20,7 @@ export interface NicheContent {
     gradingCost: number;
     psa9Roi: number;
     psa10Roi: number;
-    verdict: "strong" | "moderate" | "skip";
+    verdict: string;
     reason: string;
   }[];
   whenToGrade: string[];
