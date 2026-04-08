@@ -2,7 +2,7 @@ import { GENERATED_NICHE_CONTENT } from "./generated-niche-content";
 // Niche-specific content for grade-or-skip pages
 export interface NicheContent {
   sport: string;
-  category: "baseball" | "basketball" | "pokemon";
+  category: string;
   seoTitle: string;
   seoDescription: string;
   h1: string;
