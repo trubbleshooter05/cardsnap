@@ -323,9 +323,7 @@ export const nicheContentMap: Record<string, NicheContent> = {
   },
 };
 
-export function getNicheContent(
-  category: "baseball" | "basketball" | "pokemon"
-): NicheContent {
+export function getNicheContent(category: string): NicheContent {
   return nicheContentMap[category];,
 
   "football": {
