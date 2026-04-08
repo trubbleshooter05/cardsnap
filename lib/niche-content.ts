@@ -330,12 +330,7 @@ export function getNicheContent(
 }
 
 export function getCategoryPath(category: "baseball" | "basketball" | "pokemon"): string {
-  return `/grade-or-skip/${category}`;
-}
-
-export function getAllCategories(): Array<"baseball" | "basketball" | "pokemon"> {
-  return ["baseball", "basketball", "pokemon"];
-,
+  return `/grade-or-skip/${category}`;,
 
   "football": {
     "slug": "football",
@@ -738,3 +733,6 @@ export function getAllCategories(): Array<"baseball" | "basketball" | "pokemon">
     }
   }
 }
+
+export function getAllCategories(): Array<"baseball" | "basketball" | "pokemon"> {
+  return ["baseball", "basketball", "pokemon"];
