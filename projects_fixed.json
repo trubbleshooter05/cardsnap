@@ -15,7 +15,7 @@
     },
     "merge": {
       "type": "snapbrand_generated_types",
-      "output_glob": "~/projects/cardsnap/seo-engine/outputs/snapbrand/generated.json",
+      "output_glob": "~/projects/cardsnap/seo-engine/outputs/snapbrand/*.json",
       "target_file": "~/projects/snapbrand/app/logo-generator/[business-type]/generated-types.ts"
     },
     "merge_schema": {
@@ -53,11 +53,11 @@
     },
     "merge": {
       "type": "cardsnap_generated_niche_content",
-      "output_glob": "~/projects/cardsnap/seo-engine/outputs/cardsnap/generated.json",
+      "output_glob": "~/projects/cardsnap/seo-engine/outputs/cardsnap/grade-or-skip-*.json",
       "target_file": "~/projects/cardsnap/lib/generated-niche-content.ts"
     },
     "merge_schema": {
-      "required_fields": ["slug", "niche"]
+      "required_fields": ["slug", "sport", "seoTitle", "seoDescription"]
     },
     "build": {
       "cwd": "~/projects/cardsnap",

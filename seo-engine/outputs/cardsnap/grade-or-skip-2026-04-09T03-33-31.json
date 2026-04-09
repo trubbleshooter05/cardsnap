@@ -1,14 +1,12 @@
-// AUTO-GENERATED
-
-export const GENERATED_NICHE_CONTENT = {
-  "football": {
+[
+  {
     "slug": "football",
     "sport": "Football",
     "category": "football",
-    "seoTitle": "Football Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Football Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Football cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Football Card?",
-    "subtitle": "This guide helps Football collectors determine when it makes sense to grade their cards. We\u2019ll cover grading logic, ROI examples, and market insights.",
+    "subtitle": "This guide helps Football collectors determine when it makes sense to grade their cards. We’ll cover grading logic, ROI examples, and market insights.",
     "gradingLogic": [
       "High-value rookie cards from top players are often worth grading to maximize investment.",
       "Cards from popular eras, like the 1980s and 1990s, can see significant ROI when graded.",
@@ -77,7 +75,7 @@ export const GENERATED_NICHE_CONTENT = {
       "If you are looking to sell the card in the near future and want to maximize its market appeal."
     ],
     "skipGrading": [
-      "If the card is a common or low-value card that won\u2019t significantly increase in value through grading.",
+      "If the card is a common or low-value card that won’t significantly increase in value through grading.",
       "When the card has noticeable wear or damage that will prevent it from achieving a high grade.",
       "If the cost of grading exceeds the potential increase in value of the card.",
       "When the market for that particular player or card type is stagnant with little demand."
@@ -88,7 +86,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Football Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Football Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Football cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/football",
           "author": {
@@ -130,11 +128,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "yugioh": {
+  {
     "slug": "yugioh",
     "sport": "Yu-Gi-Oh",
     "category": "yugioh",
-    "seoTitle": "Yu-Gi-Oh Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Yu-Gi-Oh Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Yu-Gi-Oh cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Yu-Gi-Oh Card?",
     "subtitle": "This guide helps Yu-Gi-Oh collectors determine whether to grade their cards based on potential ROI. We analyze different card types, conditions, and market trends.",
@@ -217,7 +215,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Yu-Gi-Oh Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Yu-Gi-Oh Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Yu-Gi-Oh cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/yugioh",
           "author": {
@@ -259,11 +257,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "magic-the-gathering": {
+  {
     "slug": "magic-the-gathering",
     "sport": "Magic: The Gathering",
     "category": "magic-the-gathering",
-    "seoTitle": "Magic: The Gathering Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Magic: The Gathering Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Magic: The Gathering cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Magic: The Gathering Card?",
     "subtitle": "This guide explores when it's beneficial to grade your Magic: The Gathering cards for maximum ROI. Understand the nuances of grading and how it impacts value.",
@@ -346,7 +344,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Magic: The Gathering Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Magic: The Gathering Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Magic: The Gathering cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/magic-the-gathering",
           "author": {
@@ -388,11 +386,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "one-piece": {
+  {
     "slug": "one-piece",
     "sport": "One Piece TCG",
     "category": "one-piece",
-    "seoTitle": "One Piece TCG Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "One Piece TCG Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip One Piece TCG cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your One Piece TCG Card?",
     "subtitle": "This guide explores the potential ROI of grading One Piece TCG cards. Learn when it's beneficial to grade and which cards to focus on.",
@@ -475,7 +473,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "One Piece TCG Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "One Piece TCG Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip One Piece TCG cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/one-piece",
           "author": {
@@ -517,11 +515,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "vintage": {
+  {
     "slug": "vintage",
     "sport": "Vintage Cards",
     "category": "vintage",
-    "seoTitle": "Vintage Cards Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Vintage Cards Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Vintage Cards cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Vintage Cards Card?",
     "subtitle": "This guide covers the key factors to consider when grading Vintage Cards and helps collectors determine the potential ROI based on condition and era.",
@@ -604,7 +602,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Vintage Cards Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Vintage Cards Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Vintage Cards cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/vintage",
           "author": {
@@ -646,14 +644,14 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "rookie-cards": {
+  {
     "slug": "rookie-cards",
     "sport": "Rookie Cards",
     "category": "rookie-cards",
-    "seoTitle": "Rookie Cards Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Rookie Cards Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Rookie Cards cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Rookie Cards Card?",
-    "subtitle": "This guide covers the nuances of grading rookie cards, helping collectors decide when it\u2019s worth the investment. Learn how to maximize your ROI based on specific scenarios.",
+    "subtitle": "This guide covers the nuances of grading rookie cards, helping collectors decide when it’s worth the investment. Learn how to maximize your ROI based on specific scenarios.",
     "gradingLogic": [
       "High-value rookie cards from star players often appreciate significantly when graded to PSA 10.",
       "Vintage rookie cards in mint condition can command premium prices after grading.",
@@ -733,7 +731,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Rookie Cards Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Rookie Cards Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Rookie Cards cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/rookie-cards",
           "author": {
@@ -775,11 +773,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "soccer": {
+  {
     "slug": "soccer",
     "sport": "Soccer",
     "category": "soccer",
-    "seoTitle": "Soccer Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Soccer Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Soccer cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Soccer Card?",
     "subtitle": "This guide explores the factors influencing the grading of soccer cards, helping collectors understand when it's worth investing in grading services.",
@@ -862,7 +860,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Soccer Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Soccer Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Soccer cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/soccer",
           "author": {
@@ -904,11 +902,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "hockey": {
+  {
     "slug": "hockey",
     "sport": "Hockey",
     "category": "hockey",
-    "seoTitle": "Hockey Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Hockey Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Hockey cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Hockey Card?",
     "subtitle": "This guide helps Hockey card collectors determine when grading is beneficial. Learn about key factors and real-world ROI examples.",
@@ -991,7 +989,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Hockey Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Hockey Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Hockey cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/hockey",
           "author": {
@@ -1033,11 +1031,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "lorcana": {
+  {
     "slug": "lorcana",
     "sport": "Lorcana",
     "category": "lorcana",
-    "seoTitle": "Lorcana Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Lorcana Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Lorcana cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Lorcana Card?",
     "subtitle": "This guide helps Lorcana collectors decide whether to grade their cards based on potential return on investment. Explore insights on card conditions, eras, and market trends.",
@@ -1120,7 +1118,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Lorcana Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Lorcana Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Lorcana cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/lorcana",
           "author": {
@@ -1162,11 +1160,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "golf": {
+  {
     "slug": "golf",
     "sport": "Golf",
     "category": "golf",
-    "seoTitle": "Golf Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Golf Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should you grade-or-skip Golf cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Golf Card?",
     "subtitle": "This guide explores the ins and outs of grading Golf cards, helping collectors decide when it's worth the investment. Learn about key characteristics, ROI examples, and market trends.",
@@ -1249,7 +1247,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Golf Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Golf Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should you grade-or-skip Golf cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/golf",
           "author": {
@@ -1291,11 +1289,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "ufc": {
+  {
     "slug": "ufc",
     "sport": "UFC / MMA",
     "category": "ufc",
-    "seoTitle": "UFC / MMA Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "UFC / MMA Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip UFC / MMA cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your UFC / MMA Card?",
     "subtitle": "This guide explores whether grading UFC / MMA cards is a worthwhile investment. Discover the potential ROI based on card condition, era, and player popularity.",
@@ -1378,7 +1376,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "UFC / MMA Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "UFC / MMA Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip UFC / MMA cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/ufc",
           "author": {
@@ -1420,11 +1418,11 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   },
-  "wrestling": {
+  {
     "slug": "wrestling",
     "sport": "Wrestling",
     "category": "wrestling",
-    "seoTitle": "Wrestling Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+    "seoTitle": "Wrestling Card Grading ROI Guide — When to Grade | CardSnap",
     "seoDescription": "Should grade-or-skip Wrestling cards? See ROI by condition/era/player.",
     "h1": "Should You Grade Your Wrestling Card?",
     "subtitle": "This guide helps Wrestling card collectors decide when to grade their cards for the best return on investment. We'll explore specific scenarios, key characteristics, and real-world examples to inform your decision.",
@@ -1507,7 +1505,7 @@ export const GENERATED_NICHE_CONTENT = {
       "@graph": [
         {
           "@type": "Article",
-          "headline": "Wrestling Card Grading ROI Guide \u2014 When to Grade | CardSnap",
+          "headline": "Wrestling Card Grading ROI Guide — When to Grade | CardSnap",
           "description": "Should grade-or-skip Wrestling cards? See ROI by condition/era/player.",
           "url": "https://cardsnap.io/grade-or-skip/wrestling",
           "author": {
@@ -1549,4 +1547,4 @@ export const GENERATED_NICHE_CONTENT = {
       "review_status": "pending"
     }
   }
-};
+]
