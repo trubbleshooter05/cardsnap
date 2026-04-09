@@ -1,0 +1,66 @@
+# Hermes SEO System - Setup & Orchestration
+# Replace ~/hermes_seo_system with your actual hermes installation path
+
+# SETUP: Copy the fixed batch system
+cd ~/hermes_seo_system
+cp ~/projects/cardsnap/seo_batch_fixed.py scripts/seo_batch.py
+cp ~/projects/cardsnap/projects_fixed.json projects.json
+cp ~/projects/cardsnap/data_validators.py scripts/
+cp ~/projects/cardsnap/deployment_health.py scripts/
+
+# INIT: Seed queue (if applicable)
+python3 scripts/seed_queue.py
+
+# RUN: Main batch processor (with all safety checks)
+python3 scripts/seo_batch.py
+
+# RUN: Verify sitemaps and pages
+python3 scripts/seo_ping_sitemaps.py
+
+# RUN: Verify URLs are accessible
+python3 scripts/seo_verify_urls.py
+
+# CRON/HERMES WRAPPER: Execute all steps atomically
+cat > ~/hermes_seo_system/run_batch.sh <<'EOF'
+#!/bin/zsh
+set -e  # Exit on first error
+
+cd ~/hermes_seo_system
+
+echo "[$(date)] SEO Batch Start"
+
+# Run main batch with safety checks
+python3 scripts/seo_batch.py || {
+    echo "[$(date)] CRITICAL: seo_batch.py failed"
+    # Email alert / Slack notification here
+    exit 1
+}
+
+# If batch succeeded, verify deployment
+echo "[$(date)] Verifying deployment..."
+python3 scripts/seo_ping_sitemaps.py
+python3 scripts/seo_verify_urls.py
+
+echo "[$(date)] SEO Batch Complete ✓"
+EOF
+
+chmod +x ~/hermes_seo_system/run_batch.sh
+
+# SCHEDULE WITH HERMES:
+# wire into Hermes with:
+#   hermes schedule --name seo_batch \
+#                   --cron "0 2 * * *" \
+#                   --cmd ~/hermes_seo_system/run_batch.sh
+
+# SCHEDULE WITH CRON (alternative):
+# 0 2 * * * ~/hermes_seo_system/run_batch.sh 2>&1 | logger -t seo_batch
+
+# MANUAL RUN:
+# ~/hermes_seo_system/run_batch.sh
+
+# MONITOR SINGLE PROJECT (testing):
+# python3 scripts/seo_batch.py --project cardsnap --skip-health-check
+
+# DEBUG: View logs
+# tail -f /var/log/syslog | grep seo_batch
+# or check Hermes/cron logs depending on orchestrator

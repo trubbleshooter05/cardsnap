@@ -1,0 +1,123 @@
+{
+  "snapbrand": {
+    "enabled": true,
+    "site_url": "https://snapbrand-snowy.vercel.app",
+    "repo_root": "~/projects/snapbrand",
+    "type": "generator_merge_build",
+    "priority_urls": [
+      "https://snapbrand-snowy.vercel.app/logo-generator/yoga-studio",
+      "https://snapbrand-snowy.vercel.app/logo-generator/law-firm"
+    ],
+    "generator": {
+      "cwd": "~/projects/cardsnap/seo-engine",
+      "command": "npm run generate:snapbrand -- --max 50 --offset 0",
+      "timeout": 600
+    },
+    "merge": {
+      "type": "snapbrand_generated_types",
+      "output_glob": "~/projects/cardsnap/seo-engine/outputs/snapbrand/generated.json",
+      "target_file": "~/projects/snapbrand/app/logo-generator/[business-type]/generated-types.ts"
+    },
+    "merge_schema": {
+      "required_fields": ["slug", "description", "icon"]
+    },
+    "build": {
+      "cwd": "~/projects/snapbrand",
+      "command": "npm run build",
+      "timeout": 600
+    },
+    "git": {
+      "cwd": "~/projects/snapbrand",
+      "add": [
+        "app/logo-generator/[business-type]/generated-types.ts",
+        "app/logo-generator/[business-type]/config.ts",
+        "app/logo-generator/[business-type]/page.tsx"
+      ],
+      "commit_message": "seo batch snapbrand"
+    },
+    "sitemap_url": "https://snapbrand-snowy.vercel.app/sitemap.xml"
+  },
+  "cardsnap": {
+    "enabled": true,
+    "site_url": "https://cardsnap-seven.vercel.app",
+    "repo_root": "~/projects/cardsnap",
+    "type": "generator_merge_build",
+    "priority_urls": [
+      "https://cardsnap-seven.vercel.app/grade-or-skip/football",
+      "https://cardsnap-seven.vercel.app/grade-or-skip/yugioh"
+    ],
+    "generator": {
+      "cwd": "~/projects/cardsnap/seo-engine",
+      "command": "npm run generate:cardsnap:grade -- --max 50 --offset 0",
+      "timeout": 600
+    },
+    "merge": {
+      "type": "cardsnap_generated_niche_content",
+      "output_glob": "~/projects/cardsnap/seo-engine/outputs/cardsnap/generated.json",
+      "target_file": "~/projects/cardsnap/lib/generated-niche-content.ts"
+    },
+    "merge_schema": {
+      "required_fields": ["slug", "niche"]
+    },
+    "build": {
+      "cwd": "~/projects/cardsnap",
+      "command": "npm run build",
+      "timeout": 600
+    },
+    "git": {
+      "cwd": "~/projects/cardsnap",
+      "add": [
+        "lib/generated-niche-content.ts",
+        "app/grade-or-skip/[slug]/page.tsx",
+        "lib/niche-content.ts"
+      ],
+      "commit_message": "seo batch cardsnap"
+    },
+    "sitemap_url": "https://cardsnap-seven.vercel.app/sitemap.xml"
+  },
+  "movieslike": {
+    "enabled": true,
+    "site_url": "https://www.movieslike.app",
+    "repo_root": "~/projects/watchthisapp",
+    "type": "command_only",
+    "priority_urls": [
+      "https://www.movieslike.app/popular"
+    ],
+    "generator": {
+      "cwd": "~/projects/watchthisapp",
+      "command": "npm run data:forge",
+      "timeout": 600
+    },
+    "build": {
+      "cwd": "~/projects/watchthisapp",
+      "command": "npm run build",
+      "timeout": 600
+    },
+    "git": {
+      "cwd": "~/projects/watchthisapp",
+      "add": [],
+      "commit_message": "seo batch movieslike"
+    },
+    "sitemap_url": "https://www.movieslike.app/sitemap.xml"
+  },
+  "symptom_fursbliss": {
+    "enabled": true,
+    "site_url": "https://symptom.fursbliss.com",
+    "repo_root": "~/projects/symptom-checker",
+    "type": "queue_only",
+    "priority_urls": [
+      "https://symptom.fursbliss.com/"
+    ],
+    "sitemap_url": "https://symptom.fursbliss.com/sitemap.xml"
+  },
+  "fursbliss": {
+    "enabled": true,
+    "site_url": "https://www.fursbliss.com",
+    "repo_root": "~/projects/fursbliss",
+    "type": "queue_only",
+    "priority_urls": [
+      "https://www.fursbliss.com/"
+    ],
+    "sitemap_url": "https://www.fursbliss.com/sitemap.xml"
+  }
+}
