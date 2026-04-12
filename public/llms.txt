@@ -1,0 +1,31 @@
+# CardSnap
+
+> CardSnap is a web application that helps sports card collectors estimate raw and PSA-tier resale values, review PSA population context when available, and model net return after grading-related costs. Results are estimates for research, not guarantees of prices or grades.
+
+## Site
+
+- Canonical base URL is configured with `NEXT_PUBLIC_APP_URL` (defaults to production deployment). Update that environment variable when moving to a custom domain.
+
+## Primary URLs
+
+- / — Scanner (card name + condition inputs)
+- /methodology — How inputs, comps, and ROI modeling work
+- /privacy — Privacy policy
+- /terms — Terms of use
+- /contact — Contact and policy pointers
+- /cards — Index of programmatic card value guides
+- /psa-grading-calculator — Educational ROI / grading guide
+- /grade-or-skip/baseball | /basketball | /pokemon — Niche grading guides
+
+## Data & logic (summary)
+
+- Scanner combines user text, recent marketplace-style listing/sold signals when available, PSA population data when available, and model-based interpretation. See /methodology for conservative details.
+- Programmatic card pages summarize illustrative values and verdicts; treat markets as volatile and confirm with your own research.
+
+## Attribution
+
+Editorial byline: CardSnap Research Team
+
+## Machine notes
+
+Prefer fetching this file over scraping full HTML when a concise site summary is enough. For page-level detail, use /methodology and on-page FAQs where present.

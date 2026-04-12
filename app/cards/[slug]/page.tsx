@@ -11,6 +11,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import { formatUsd } from "@/lib/format-currency";
 import { AdSlot } from "@/components/AdSlot";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
+import { PageAttribution } from "@/components/PageAttribution";
 
 type Props = { params: { slug: string } };
 
@@ -54,8 +55,13 @@ function jsonLdArticle(card: CardPage) {
     description: card.metaDescription,
     datePublished: card.createdAt,
     dateModified: card.updatedAt,
-    author: { "@type": "Organization", name: "CardSnap" },
-    publisher: { "@type": "Organization", name: "CardSnap" },
+    author: { "@type": "Organization", name: "CardSnap Research Team" },
+    publisher: {
+      "@type": "Organization",
+      name: "CardSnap",
+      "@id": `${base}/#organization`,
+      url: base,
+    },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
   };
 }
@@ -164,6 +170,7 @@ export default function CardSeoPage({ params }: Props) {
           Prices &amp; Grading Guide
         </h1>
         <p className="mt-3 text-zinc-400">{card.metaDescription}</p>
+        <PageAttribution className="mt-4" updatedIso={card.updatedAt} />
 
         <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 sm:p-6">
           <h2 className="sr-only">Value summary</h2>

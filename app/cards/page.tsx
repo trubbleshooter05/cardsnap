@@ -11,6 +11,7 @@ import { formatUsd } from "@/lib/format-currency";
 import { getSiteUrl } from "@/lib/site-url";
 import { AdSlot } from "@/components/AdSlot";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
+import { PageAttribution } from "@/components/PageAttribution";
 
 export async function generateMetadata(): Promise<Metadata> {
   const base = getSiteUrl();
@@ -58,6 +59,7 @@ export default function CardsIndexPage() {
           </Link>
           .
         </p>
+        <PageAttribution className="mt-4" />
 
         <div className="mt-8">
           <AdSlot />

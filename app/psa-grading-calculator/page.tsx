@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getSiteUrl } from "@/lib/site-url";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { AdSlot } from "@/components/AdSlot";
+import { PageAttribution } from "@/components/PageAttribution";
+import { JsonLd } from "@/components/JsonLd";
+import { CONTENT_LAST_REVIEWED_ISO } from "@/lib/site-constants";
 
 export async function generateMetadata(): Promise<Metadata> {
   const base = getSiteUrl();
@@ -125,8 +128,28 @@ function RoiCard({
 }
 
 export default function PsaGradingCalculatorPage() {
+  const base = getSiteUrl();
+  const pageUrl = `${base}/psa-grading-calculator`;
+  const articleLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: "PSA Grading Calculator — Estimate Card Value & ROI",
+    description:
+      "Calculate PSA grading ROI instantly. Compare raw vs PSA 9 vs PSA 10 values, estimate grading costs, and decide if your card is worth submitting.",
+    dateModified: CONTENT_LAST_REVIEWED_ISO,
+    author: { "@type": "Organization", name: "CardSnap Research Team" },
+    publisher: {
+      "@type": "Organization",
+      name: "CardSnap",
+      "@id": `${base}/#organization`,
+      url: base,
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <JsonLd data={articleLd} />
       <SeoSiteNav />
 
       <main className="mx-auto max-w-3xl px-4 pb-16 pt-8 sm:px-6">
@@ -139,6 +162,7 @@ export default function PsaGradingCalculatorPage() {
           between raw, PSA 9, and PSA 10 values to decide if grading is worth
           it.
         </p>
+        <PageAttribution className="mt-4" />
 
         <div className="mt-8">
           <AdSlot />

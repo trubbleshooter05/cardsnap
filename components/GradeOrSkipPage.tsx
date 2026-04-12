@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { AdSlot } from "@/components/AdSlot";
+import { JsonLd } from "@/components/JsonLd";
+import { PageAttribution } from "@/components/PageAttribution";
 import { getNicheContent, getCategoryPath, getAllCategories } from "@/lib/niche-content";
 import type { NicheContent } from "@/lib/niche-content";
+import { getSiteUrl } from "@/lib/site-url";
+import { CONTENT_LAST_REVIEWED_ISO } from "@/lib/site-constants";
 
 function RoiCard({
   example,
@@ -67,9 +71,27 @@ export function GradeOrSkipPage({
   const content = getNicheContent(category);
   const allCategories = getAllCategories();
   const otherCategories = allCategories.filter((c) => c !== category);
+  const base = getSiteUrl();
+  const pageUrl = `${base}${getCategoryPath(category)}`;
+  const articleLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: content.h1,
+    description: content.seoDescription,
+    dateModified: CONTENT_LAST_REVIEWED_ISO,
+    author: { "@type": "Organization", name: "CardSnap Research Team" },
+    publisher: {
+      "@type": "Organization",
+      name: "CardSnap",
+      "@id": `${base}/#organization`,
+      url: base,
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <JsonLd data={articleLd} />
       <SeoSiteNav />
 
       <main className="mx-auto max-w-3xl px-4 pb-16 pt-8 sm:px-6">
@@ -80,6 +102,7 @@ export function GradeOrSkipPage({
         <p className="mt-3 text-lg text-zinc-300">
           {content.subtitle}
         </p>
+        <PageAttribution className="mt-4" />
 
         <div className="mt-8">
           <AdSlot />
