@@ -76,6 +76,30 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
             </button>
             <div className="absolute right-0 z-20 hidden min-w-max rounded-lg border border-zinc-800 bg-zinc-900 py-2 shadow-lg group-hover:block">
               <Link
+                href="/guides"
+                className="block px-4 py-2 hover:bg-zinc-800 hover:text-white"
+              >
+                All grading guides
+              </Link>
+              <Link
+                href="/should-i-grade-zion-williamson-rookie-card"
+                className="block px-4 py-2 hover:bg-zinc-800 hover:text-white"
+              >
+                Zion rookie — grade or not?
+              </Link>
+              <Link
+                href="/psa-9-vs-psa-10-worth-it"
+                className="block px-4 py-2 hover:bg-zinc-800 hover:text-white"
+              >
+                PSA 9 vs PSA 10
+              </Link>
+              <Link
+                href="/is-grading-cards-worth-it-2026"
+                className="block px-4 py-2 hover:bg-zinc-800 hover:text-white"
+              >
+                Is grading worth it (2026)?
+              </Link>
+              <Link
                 href="/methodology"
                 className="block px-4 py-2 hover:bg-zinc-800 hover:text-white"
               >
