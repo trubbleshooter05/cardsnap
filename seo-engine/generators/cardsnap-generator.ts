@@ -187,15 +187,15 @@ function buildGradeOrSkipSchema(slug: string, sport: string, seoTitle: string, s
         "@type": "Article",
         "headline": seoTitle,
         "description": seoDescription,
-        "url": `https://cardsnap.io/grade-or-skip/${slug}`,
+        "url": `https://cardsnap-seven.vercel.app/grade-or-skip/${slug}`,
         "author": { "@type": "Organization", "name": "CardSnap" },
         "publisher": { "@type": "Organization", "name": "CardSnap" }
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://cardsnap.io" },
-          { "@type": "ListItem", "position": 2, "name": "Grade or Skip", "item": "https://cardsnap.io/grade-or-skip" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://cardsnap-seven.vercel.app" },
+          { "@type": "ListItem", "position": 2, "name": "Grade or Skip", "item": "https://cardsnap-seven.vercel.app/grade-or-skip" },
           { "@type": "ListItem", "position": 3, "name": `${sport} Cards` }
         ]
       }
