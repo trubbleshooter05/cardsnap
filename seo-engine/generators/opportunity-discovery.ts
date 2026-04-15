@@ -108,7 +108,11 @@ function discoverCardSnap(): Opportunity[] {
       site: "cardsnap",
       category: "grade-or-skip",
       keyword: c.keyword,
-      secondary_keywords: [`${c.sport} card grading worth it`, `should i grade ${c.sport} cards psa`, `${c.sport} card grading ROI`],
+      secondary_keywords: [
+        `should I grade ${c.sport} cards PSA or sell raw`,
+        `is it worth submitting ${c.sport} cards to PSA vs BGS`,
+        `raw vs PSA 10 ${c.sport} rookies worth grading fees`,
+      ],
       search_intent: "commercial_investigation",
       page_type: "grade_or_skip",
       url_path: `/grade-or-skip/${c.slug}`,

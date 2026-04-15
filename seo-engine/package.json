@@ -8,6 +8,7 @@
     "generate:snapbrand": "npx tsx generators/snapbrand-generator.ts",
     "generate:cardsnap:grade": "npx tsx generators/cardsnap-generator.ts --mode grade-or-skip",
     "generate:cardsnap:cards": "npx tsx generators/cardsnap-generator.ts --mode card-entry",
+    "generate:cardsnap:keywords": "npx tsx generators/cardsnap-keyword-generator.ts",
     "generate:fursbliss:breeds": "npx tsx generators/fursbliss-generator.ts --type breed",
     "generate:fursbliss:supplements": "npx tsx generators/fursbliss-generator.ts --type supplement",
     "generate:fursbliss:glossary": "npx tsx generators/fursbliss-generator.ts --type glossary",
