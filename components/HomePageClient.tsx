@@ -8,10 +8,12 @@ import { SiteNav } from "@/components/SiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import type { ScanResultPayload } from "@/lib/types";
+import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 
 type ScanResponse = ScanResultPayload & {
   scanId: string;
   scansUsedThisMonth: number;
+  freeScansUsed?: number;
   freeScanLimit: number;
   isPro: boolean;
 };
@@ -19,6 +21,7 @@ type ScanResponse = ScanResultPayload & {
 export function HomePageClient() {
   const [userId, setUserId] = useState<string | null>(null);
   const [usageCount, setUsageCount] = useState(0);
+  const [freeLimit, setFreeLimit] = useState(FREE_SCAN_LIMIT);
   const [isPro, setIsPro] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResponse | null>(null);
@@ -42,6 +45,7 @@ export function HomePageClient() {
       limit: number;
     };
     setUsageCount(data.count);
+    setFreeLimit(data.limit);
     setIsPro(data.isPro);
   }, []);
 
@@ -64,7 +68,7 @@ export function HomePageClient() {
     condition: string;
   }) => {
     if (!userId) return;
-    if (!isPro && usageCount >= 5) {
+    if (!isPro && usageCount >= freeLimit) {
       setGateOpen(true);
       return;
     }
@@ -101,9 +105,15 @@ export function HomePageClient() {
 
       const data = (await res.json()) as ScanResponse;
       setResult(data);
-      setUsageCount(data.scansUsedThisMonth);
+      const used = data.freeScansUsed ?? data.scansUsedThisMonth;
+      const lim = data.freeScanLimit ?? FREE_SCAN_LIMIT;
+      setUsageCount(used);
+      setFreeLimit(lim);
       setIsPro(data.isPro);
       persistAnonymousId(userId);
+      if (!data.isPro && used >= lim) {
+        setGateOpen(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -129,8 +139,7 @@ export function HomePageClient() {
     }
   };
 
-  const limit = 5;
-  const scansLeft = Math.max(0, limit - usageCount);
+  const scansLeft = Math.max(0, freeLimit - usageCount);
 
   return (
     <div className="min-h-screen bg-[#09090b]">
@@ -170,30 +179,33 @@ export function HomePageClient() {
         </div>
 
         <h1 className="mt-3 text-center text-4xl font-black tracking-tight text-white sm:text-5xl leading-[1.1]">
-          Is your card{" "}
-          <span className="gradient-text">worth grading?</span>
+          Should you grade{" "}
+          <span className="gradient-text">this card?</span>
         </h1>
 
-        <p className="mt-4 max-w-sm text-center text-base text-zinc-400 leading-relaxed">
-          Get instant raw &amp; graded values, PSA population data, and a clear
-          Grade&nbsp;it / Skip&nbsp;it verdict.
+        <p className="mt-4 max-w-md text-center text-base text-zinc-300 leading-relaxed">
+          Upload a card and instantly see whether grading looks worth it based on
+          raw vs graded value upside.
         </p>
 
-        {/* Trust pills */}
-        <div className="mt-5 flex flex-wrap justify-center gap-2">
+        <p className="mt-3 max-w-md text-center text-sm text-zinc-500 leading-relaxed">
+          Use 1 free scan. Then upgrade for unlimited grading checks.
+        </p>
+
+        <ul className="mt-6 w-full max-w-md space-y-2.5 text-left text-sm text-zinc-300">
           {[
-            "5 free scans",
-            "No signup needed",
-            "Results in seconds",
-          ].map((t) => (
-            <span
-              key={t}
-              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700/60 bg-zinc-900/80 px-3 py-1 text-xs text-zinc-400"
-            >
-              <span className="text-emerald-400">✓</span> {t}
-            </span>
+            "Spot cards worth grading faster",
+            "Avoid wasting money on bad submissions",
+            "Compare upside before you send to PSA",
+          ].map((line) => (
+            <li key={line} className="flex gap-3">
+              <span className="mt-0.5 shrink-0 text-amber-400" aria-hidden>
+                ✓
+              </span>
+              <span>{line}</span>
+            </li>
           ))}
-        </div>
+        </ul>
 
         {/* Form card */}
         <div className="mt-10 w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
@@ -203,7 +215,7 @@ export function HomePageClient() {
           {userId && !isPro && (
             <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
               <div className="flex gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
+                {Array.from({ length: freeLimit }).map((_, i) => (
                   <span
                     key={i}
                     className={`h-1.5 w-6 rounded-full transition-colors ${
@@ -213,7 +225,8 @@ export function HomePageClient() {
                 ))}
               </div>
               <span className="text-xs text-zinc-500">
-                {usageCount} of 5 free scans used
+                {usageCount} of {freeLimit} free scan
+                {freeLimit === 1 ? "" : "s"} used
               </span>
             </div>
           )}
@@ -254,41 +267,6 @@ export function HomePageClient() {
           </div>
         )}
 
-        {/* Bottom feature strip — only when no result */}
-        {!result && !loading && (
-          <div className="mt-16 grid grid-cols-3 gap-3 w-full">
-            {[
-              {
-                icon: "💰",
-                title: "Raw & Graded Values",
-                desc: "PSA 9 and PSA 10 comps from recent sales",
-              },
-              {
-                icon: "📊",
-                title: "PSA Population",
-                desc: "See how rare your card is in top grades",
-              },
-              {
-                icon: "⚡",
-                title: "Instant ROI",
-                desc: "Know your net profit before you submit",
-              },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className="flex flex-col items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/40 p-3 text-center"
-              >
-                <span className="text-2xl">{f.icon}</span>
-                <p className="text-xs font-semibold text-zinc-200 leading-tight">
-                  {f.title}
-                </p>
-                <p className="text-[11px] text-zinc-500 leading-snug">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
       </main>
 
       <ScanGate

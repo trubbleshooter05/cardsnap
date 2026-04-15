@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'node:url';
 import { readJsonFile, writeJsonFile, listApprovedFiles } from './utils';
 
 /**
@@ -197,8 +198,21 @@ async function main() {
   process.exit(result.success ? 0 : 1);
 }
 
-if (require.main === module) {
-  main();
+/** ESM equivalent of `require.main === module` (tsx runs this file as ESM). */
+function isRunAsMainScript(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return (
+      path.resolve(fileURLToPath(import.meta.url)) === path.resolve(entry)
+    );
+  } catch {
+    return false;
+  }
+}
+
+if (isRunAsMainScript()) {
+  void main();
 }
 
 export { mergeCardSnapEntries };

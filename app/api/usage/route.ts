@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
+import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 
 export const dynamic = "force-dynamic";
-
-function startOfMonthUtc(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString();
-}
 
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get("userId");
   if (!userId) {
     return NextResponse.json(
-      { count: 0, isPro: false, limit: 5 },
+      { count: 0, isPro: false, limit: FREE_SCAN_LIMIT },
       {
         headers: {
           "Cache-Control": "private, no-store, max-age=0",
@@ -34,8 +30,7 @@ export async function GET(req: NextRequest) {
   const { count, error } = await supabase
     .from("scans")
     .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .gte("created_at", startOfMonthUtc());
+    .eq("user_id", userId);
 
   if (error) {
     console.error("usage count error", error);
@@ -52,7 +47,7 @@ export async function GET(req: NextRequest) {
     {
       count: count ?? 0,
       isPro,
-      limit: 5,
+      limit: FREE_SCAN_LIMIT,
     },
     {
       headers: {

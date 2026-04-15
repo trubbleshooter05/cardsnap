@@ -94,7 +94,7 @@ export function ScanForm({ disabled, onSubmit }: Props) {
             Analyzing…
           </span>
         ) : (
-          "Scan Card →"
+          "Scan Your Card"
         )}
       </button>
     </form>

@@ -19,7 +19,8 @@ export default function HomePage() {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
-      description: "Limited free scans per month; optional paid plan for higher usage.",
+      description:
+        "One free scan for new visitors; optional paid plan for unlimited usage.",
     },
     provider: {
       "@type": "Organization",

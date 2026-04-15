@@ -6,6 +6,7 @@ import { analyzeCardWithOpenAI } from "@/lib/openai";
 import { searchEbayItemPrices } from "@/lib/ebay";
 import { fetchPsaPopulation } from "@/lib/psa";
 import { mergeScanResults } from "@/lib/merge-scan";
+import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +22,6 @@ const bodySchema = z.object({
   condition: z.string().min(1).max(120),
   userId: z.string().uuid(),
 });
-
-function startOfMonthUtc(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString();
-}
 
 export async function POST(req: Request) {
   const userId = cookies().get("cardsnap_user_id")?.value;
@@ -59,14 +55,13 @@ export async function POST(req: Request) {
 
   const isPro = Boolean(userRow?.is_pro);
 
-  const { count } = await supabase
+  const { count: usedBeforeInsert } = await supabase
     .from("scans")
     .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .gte("created_at", startOfMonthUtc());
+    .eq("user_id", userId);
 
-  const used = count ?? 0;
-  if (!isPro && used >= 5) {
+  const used = usedBeforeInsert ?? 0;
+  if (!isPro && used >= FREE_SCAN_LIMIT) {
     return NextResponse.json(
       { error: "scan_limit_reached" },
       { status: 402 }
@@ -115,9 +110,8 @@ export async function POST(req: Request) {
   const { count: afterCount } = await supabase
     .from("scans")
     .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .gte("created_at", startOfMonthUtc());
-  const scansUsedThisMonth = afterCount ?? 0;
+    .eq("user_id", userId);
+  const freeScansUsed = afterCount ?? 0;
 
   const { data: proRow } = await supabase
     .from("users")
@@ -128,8 +122,10 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ...merged,
     scanId: inserted.id,
-    scansUsedThisMonth,
-    freeScanLimit: 5,
+    /** @deprecated use freeScansUsed — kept for older clients */
+    scansUsedThisMonth: freeScansUsed,
+    freeScansUsed,
+    freeScanLimit: FREE_SCAN_LIMIT,
     isPro: Boolean(proRow?.is_pro),
   });
 }
