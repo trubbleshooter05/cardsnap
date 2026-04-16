@@ -1,0 +1,123 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                  MVP CLEANUP SUMMARY (CONCISE)                            ║
+║                        April 13, 2026                                       ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+STATUS
+──────────────────────────────────────────────────────────────────────────────
+MVP Implementation:    ✓ COMPLETE & TESTED (real Hermes data)
+Code in Git:           ❌ NO (will be lost)
+Cleanup Blocked by:    Filesystem permissions (current shell context)
+Action Required:       Open fresh shell and execute cleanup
+
+
+FILES TO COMMIT (19 items)
+──────────────────────────────────────────────────────────────────────────────
+
+CORE CODE (9 .ts files):
+  seo-engine/transforms/
+    - base-transformer.ts, cardsnap-transformer.ts, cardsnap-merger.ts
+    - run-all-transforms.ts, staging-reviewer.ts, types.ts, utils.ts
+  seo-engine/validators/
+    - base-validator.ts, cardsnap-validator.ts
+
+TEST & DATA (3 files):
+  - test-mvp.js (PROVEN WORKING with 12 entries)
+  - test-converted-entries.json
+  - test-entry-sample.json
+
+DOCUMENTATION (6 .md files):
+  - MVP_COMPLETE.md, POC-SUMMARY.md, QUICKSTART.md, QUICKREF.md
+  - MANUAL-MERGE-STEPS.md, IMPLEMENTATION_SUMMARY.txt
+
+REAL DATA (2 directories):
+  - staging/              (approved entries ready to merge)
+  - outputs/              (Hermes JSON outputs)
+
+TOTAL: 19 files + 2 directories
+
+
+FILES TO DELETE (8 items — stale)
+──────────────────────────────────────────────────────────────────────────────
+
+STALE .JS TRANSPILES (6 files):
+  seo-engine/transforms/base-transformer.js
+  seo-engine/transforms/cardsnap-transformer.js
+  seo-engine/transforms/types.js
+  seo-engine/transforms/utils.js
+  seo-engine/validators/base-validator.js
+  seo-engine/validators/cardsnap-validator.js
+
+SUPERSEDED POC SCRIPTS (2 files):
+  seo-engine/convert-hermes-to-cardsnap.cjs
+  seo-engine/cardsnap-merger-standalone.cjs
+
+
+EXECUTION (in fresh shell)
+──────────────────────────────────────────────────────────────────────────────
+
+# 1. DELETE STALE
+  rm -f seo-engine/transforms/*.js seo-engine/validators/*.js seo-engine/*.cjs
+
+# 2. ADD FILES
+  git add seo-engine/IMPLEMENTATION_SUMMARY.txt seo-engine/MANUAL-MERGE-STEPS.md \
+          seo-engine/MVP_COMPLETE.md seo-engine/POC-SUMMARY.md seo-engine/QUICKREF.md \
+          seo-engine/QUICKSTART.md seo-engine/test-mvp.js seo-engine/test-converted-entries.json \
+          seo-engine/test-entry-sample.json seo-engine/staging/ \
+          seo-engine/transforms/base-transformer.ts seo-engine/transforms/cardsnap-transformer.ts \
+          seo-engine/transforms/cardsnap-merger.ts seo-engine/transforms/run-all-transforms.ts \
+          seo-engine/transforms/staging-reviewer.ts seo-engine/transforms/types.ts \
+          seo-engine/transforms/utils.ts seo-engine/validators/base-validator.ts \
+          seo-engine/validators/cardsnap-validator.ts
+
+# 3. COMMIT
+  git commit -m "seo-engine: add hermes mvp (phase 1-2)
+
+- Phase 1: Shared foundation (transforms, validators, utils, types)
+- Phase 2: CardSnap implementation (transformer, validator, merger)
+- Real data: 12 entries validated, staged, and ready to merge
+- Test: full workflow proven with Hermes grade-or-skip output
+
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
+
+  git push
+
+
+PRODUCTION WORKFLOW (once committed)
+──────────────────────────────────────────────────────────────────────────────
+
+  Step 1:  node seo-engine/test-mvp.js
+           ↓ Validates & stages entries
+  Step 2:  cat seo-engine/staging/cardsnap/pending/*.staged.json | jq .
+           ↓ Review staged data
+  Step 3:  mv seo-engine/staging/cardsnap/pending/* seo-engine/staging/cardsnap/approved/
+           ↓ Approve for merge
+  Step 4:  npx tsx seo-engine/transforms/cardsnap-merger.ts
+           ↓ Merges to live data
+  Step 5:  npm run build
+           ↓ Generates static pages
+  Step 6:  git add lib/generated-niche-content.ts && git commit -m "..." && git push
+
+
+KEY POINTS
+──────────────────────────────────────────────────────────────────────────────
+
+✓ No architecture changes
+✓ No new features added
+✓ Only cleanup + protection of existing MVP
+✓ All .ts files are current, authoritative source
+✓ All .js files are outdated transpiles (safe to delete)
+✓ PoC .cjs scripts are superseded by .ts implementations
+✓ staging/ directory contains REAL DATA (must protect in git)
+
+
+DETAILED DOCS
+──────────────────────────────────────────────────────────────────────────────
+
+→ See CLEANUP_AND_MVP_WORKFLOW.md for step-by-step instructions
+→ See MVP_CLEANUP_REPORT.txt for comprehensive analysis
+→ See AUDIT_HERMES_MVP.md for findings and risks
+
+
+Ready to execute. Open fresh shell and run the commands above.
+

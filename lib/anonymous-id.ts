@@ -1,4 +1,6 @@
-const STORAGE_KEY = "cardsnap_user_id";
+import { CARDSNAP_USER_COOKIE } from "@/lib/cardsnap-user-id";
+
+const STORAGE_KEY = CARDSNAP_USER_COOKIE;
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

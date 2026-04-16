@@ -5,7 +5,23 @@ import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get("userId");
+  const supabase = createServerSupabase();
+
+  // Support both authenticated requests and legacy anonymous requests
+  const authHeader = req.headers.get("authorization");
+  let userId: string | null = null;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (!authError && user?.id) {
+      userId = user.id;
+    }
+  } else {
+    // Fall back to query parameter for backwards compatibility with anonymous users
+    userId = req.nextUrl.searchParams.get("userId");
+  }
+
   if (!userId) {
     return NextResponse.json(
       { count: 0, isPro: false, limit: FREE_SCAN_LIMIT },
@@ -16,8 +32,6 @@ export async function GET(req: NextRequest) {
       }
     );
   }
-
-  const supabase = createServerSupabase();
 
   const { data: userRow } = await supabase
     .from("users")

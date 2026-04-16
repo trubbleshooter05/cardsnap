@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
+import { AuthProvider } from "@/components/AuthContext";
 import { getSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getSiteUrl();
@@ -70,8 +71,10 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="antialiased bg-[#09090b] text-zinc-100 min-h-screen flex flex-col">
         <JsonLd data={organizationLd} />
-        <div className="flex-1">{children}</div>
-        <SiteFooter />
+        <AuthProvider>
+          <div className="flex-1">{children}</div>
+          <SiteFooter />
+        </AuthProvider>
       </body>
     </html>
   );

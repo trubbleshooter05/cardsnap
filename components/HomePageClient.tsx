@@ -1,14 +1,30 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
-import { ResultCard } from "@/components/ResultCard";
 import { ScanGate } from "@/components/ScanGate";
 import { SiteNav } from "@/components/SiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
+import { AuthModal } from "@/components/AuthModal";
+import { useAuth } from "@/components/useAuth";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
+import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
+
+const ResultCard = dynamic(
+  () =>
+    import("@/components/ResultCard").then((m) => ({ default: m.ResultCard })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex justify-center py-8">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-800 border-t-amber-400" />
+      </div>
+    ),
+  }
+);
 
 type ScanResponse = ScanResultPayload & {
   scanId: string;
@@ -18,7 +34,14 @@ type ScanResponse = ScanResultPayload & {
   isPro: boolean;
 };
 
+type UsagePayload = {
+  count: number;
+  isPro: boolean;
+  limit: number;
+};
+
 export function HomePageClient() {
+  const { user, loading: authLoading } = useAuth();
   const [userId, setUserId] = useState<string | null>(null);
   const [usageCount, setUsageCount] = useState(0);
   const [freeLimit, setFreeLimit] = useState(FREE_SCAN_LIMIT);
@@ -27,58 +50,128 @@ export function HomePageClient() {
   const [result, setResult] = useState<ScanResponse | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [checkoutSyncing, setCheckoutSyncing] = useState(false);
 
+  // Set up user ID - use authenticated user if available, otherwise use anonymous
   useEffect(() => {
-    const id = getOrCreateAnonymousId();
-    setUserId(id);
-    persistAnonymousId(id);
-  }, []);
+    if (!authLoading) {
+      if (user?.id) {
+        setUserId(user.id);
+      } else {
+        const anonId = getOrCreateAnonymousId();
+        setUserId(anonId);
+        persistAnonymousId(anonId);
+      }
+    }
+  }, [user, authLoading]);
 
-  const refreshUsage = useCallback(async (uid: string) => {
-    const res = await fetch(`/api/usage?userId=${encodeURIComponent(uid)}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return;
-    const data = (await res.json()) as {
-      count: number;
-      isPro: boolean;
-      limit: number;
-    };
-    setUsageCount(data.count);
-    setFreeLimit(data.limit);
-    setIsPro(data.isPro);
-  }, []);
+  const refreshUsage = useCallback(
+    async (uid: string) => {
+      const supabase = createSupabaseBrowserClient();
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
 
+      // If authenticated user, include auth token
+      if (user?.id) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.access_token) {
+          headers["Authorization"] = `Bearer ${data.session.access_token}`;
+        }
+      }
+
+      const res = await fetch(`/api/usage?userId=${encodeURIComponent(uid)}`, {
+        cache: "no-store",
+        headers,
+      });
+
+      if (!res.ok) return null;
+      const data = (await res.json()) as UsagePayload;
+      setUsageCount(data.count);
+      setFreeLimit(data.limit);
+      setIsPro(data.isPro);
+      return data;
+    },
+    [user?.id]
+  );
+
+  // Fetch initial usage
   useEffect(() => {
     if (!userId) return;
     void refreshUsage(userId);
   }, [userId, refreshUsage]);
 
+  // On checkout return: sync subscription once
   useEffect(() => {
-    if (typeof window === "undefined" || !userId) return;
+    if (typeof window === "undefined" || !userId || !user?.id) return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("upgraded") === "1") {
-      void refreshUsage(userId);
-      window.history.replaceState({}, "", "/");
-    }
-  }, [userId, refreshUsage]);
+    if (params.get("upgraded") !== "1") return;
+
+    let cancelled = false;
+
+    const syncOnce = async () => {
+      if (cancelled) return;
+      setCheckoutSyncing(true);
+
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+
+        if (token) {
+          await fetch("/api/sync-subscription", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
+      } catch (err) {
+        console.error("sync error", err);
+      } finally {
+        if (!cancelled) {
+          await refreshUsage(userId);
+          window.history.replaceState({}, "", "/");
+          setCheckoutSyncing(false);
+        }
+      }
+    };
+
+    syncOnce();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, user?.id, refreshUsage]);
 
   const handleSubmit = async (payload: {
     cardName: string;
     condition: string;
   }) => {
     if (!userId) return;
-    if (!isPro && usageCount >= freeLimit) {
+    const blockedByFree = !isPro && usageCount >= freeLimit;
+    if (blockedByFree) {
       setGateOpen(true);
       return;
     }
+
     setLoading(true);
     setResult(null);
     try {
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (user?.id) {
+        const supabase = createSupabaseBrowserClient();
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.access_token) {
+          headers["Authorization"] = `Bearer ${data.session.access_token}`;
+        }
+      }
+
       const res = await fetch("/api/scan", {
         method: "POST",
         cache: "no-store",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           cardName: payload.cardName,
           condition: payload.condition,
@@ -87,6 +180,7 @@ export function HomePageClient() {
       });
 
       if (res.status === 402) {
+        await refreshUsage(userId);
         setGateOpen(true);
         return;
       }
@@ -120,18 +214,39 @@ export function HomePageClient() {
   };
 
   const handleUpgrade = async () => {
+    // Require authentication for checkout
+    if (!user?.id) {
+      setAuthModalOpen(true);
+      return;
+    }
+
     if (!userId) return;
+    persistAnonymousId(userId);
     setUpgrading(true);
     try {
+      const supabase = createSupabaseBrowserClient();
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+
+      if (!token) {
+        alert("Authentication required. Please sign in again.");
+        return;
+      }
+
       const res = await fetch("/api/create-checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
       });
+
       if (!res.ok) {
         alert("Checkout unavailable. Check Stripe configuration.");
         return;
       }
+
       const { url } = (await res.json()) as { url: string };
       window.location.href = url;
     } finally {
@@ -140,17 +255,19 @@ export function HomePageClient() {
   };
 
   const scansLeft = Math.max(0, freeLimit - usageCount);
+  const scanDisabled = loading || checkoutSyncing;
 
   return (
     <div className="min-h-screen bg-[#09090b]">
-      {/* Ambient background glow */}
+      {/* Lighter on mobile: single glow, hidden extra blurs on small screens */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 overflow-hidden"
       >
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-amber-500/8 blur-[120px]" />
-        <div className="absolute top-1/3 -right-32 h-[400px] w-[400px] rounded-full bg-orange-600/5 blur-[100px]" />
-        <div className="absolute bottom-0 -left-32 h-[300px] w-[300px] rounded-full bg-amber-400/4 blur-[80px]" />
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-[420px] w-[420px] rounded-full bg-amber-500/10 blur-[80px] sm:hidden" />
+        <div className="absolute -top-40 left-1/2 hidden h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-amber-500/8 blur-[120px] sm:block" />
+        <div className="absolute top-1/3 -right-32 hidden h-[400px] w-[400px] rounded-full bg-orange-600/5 blur-[100px] md:block" />
+        <div className="absolute bottom-0 -left-32 hidden h-[300px] w-[300px] rounded-full bg-amber-400/4 blur-[80px] lg:block" />
       </div>
 
       <SiteNav
@@ -170,6 +287,18 @@ export function HomePageClient() {
       />
 
       <main className="relative z-10 mx-auto flex max-w-xl flex-col items-center px-4 pb-20 pt-10 sm:pt-16">
+        {checkoutSyncing && (
+          <div
+            className="mb-6 w-full max-w-md rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-100"
+            role="status"
+          >
+            <p className="font-semibold">Activating Pro…</p>
+            <p className="mt-1 text-xs text-amber-200/90">
+              Syncing your subscription. One moment.
+            </p>
+          </div>
+        )}
+
         <PageAttribution className="mb-6 w-full text-center" />
 
         {/* Hero */}
@@ -209,7 +338,12 @@ export function HomePageClient() {
 
         {/* Form card */}
         <div className="mt-10 w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
-          <ScanForm disabled={loading} onSubmit={handleSubmit} />
+          {checkoutSyncing && (
+            <p className="mb-3 text-center text-xs text-amber-200/90">
+              Syncing your Pro status…
+            </p>
+          )}
+          <ScanForm disabled={scanDisabled} onSubmit={handleSubmit} />
 
           {/* Scan counter — visible inline so mobile users see it update */}
           {userId && !isPro && (
@@ -266,7 +400,6 @@ export function HomePageClient() {
             />
           </div>
         )}
-
       </main>
 
       <ScanGate
@@ -275,6 +408,8 @@ export function HomePageClient() {
         onUpgrade={handleUpgrade}
         upgrading={upgrading}
       />
+
+      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   );
 }

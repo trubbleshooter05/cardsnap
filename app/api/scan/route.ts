@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase";
@@ -7,14 +7,18 @@ import { searchEbayItemPrices } from "@/lib/ebay";
 import { fetchPsaPopulation } from "@/lib/psa";
 import { mergeScanResults } from "@/lib/merge-scan";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
+import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
 
 export const dynamic = "force-dynamic";
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-function isValidUuid(s: string | undefined): boolean {
-  return Boolean(s && UUID_RE.test(s));
+function setUserCookieHeader(userId: string): Record<string, string> {
+  const secure =
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL === "1";
+  const cookie = `${CARDSNAP_USER_COOKIE}=${encodeURIComponent(
+    userId
+  )}; Path=/; Max-Age=31536000; SameSite=Lax${secure ? "; Secure" : ""}`;
+  return { "Set-Cookie": cookie };
 }
 
 const bodySchema = z.object({
@@ -23,15 +27,7 @@ const bodySchema = z.object({
   userId: z.string().uuid(),
 });
 
-export async function POST(req: Request) {
-  const userId = cookies().get("cardsnap_user_id")?.value;
-  if (!isValidUuid(userId)) {
-    return NextResponse.json(
-      { error: "invalid_user_id" },
-      { status: 401 }
-    );
-  }
-
+export async function POST(req: NextRequest) {
   let json: unknown;
   try {
     json = await req.json();
@@ -44,8 +40,42 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  const { cardName, condition } = parsed.data;
   const supabase = createServerSupabase();
+  let userId: string | null = null;
+  const cookieRaw = cookies().get(CARDSNAP_USER_COOKIE)?.value;
+  const bodyUserId = parsed.data.userId;
+
+  // First try to get user from auth token
+  const authHeader = req.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (!authError && user?.id) {
+      userId = user.id;
+    }
+  }
+
+  // Fall back to cookie or body userId
+  if (!userId) {
+    /** Prefer cookie; accept body id when cookie missing (e.g. first request before Set-Cookie applied). */
+    if (isValidUserId(cookieRaw)) {
+      userId = cookieRaw;
+    } else if (isValidUserId(bodyUserId)) {
+      userId = bodyUserId;
+    } else {
+      return NextResponse.json(
+        { error: "invalid_user_id" },
+        { status: 401 }
+      );
+    }
+  }
+
+  const cookieMismatch =
+    isValidUserId(cookieRaw) &&
+    isValidUserId(bodyUserId) &&
+    cookieRaw !== bodyUserId;
+
+  const { cardName, condition } = parsed.data;
 
   const { data: userRow } = await supabase
     .from("users")
@@ -107,6 +137,14 @@ export async function POST(req: Request) {
     );
   }
 
+  const extraHeaders: Record<string, string> = {};
+  if (!isValidUserId(cookieRaw) && isValidUserId(userId)) {
+    Object.assign(extraHeaders, setUserCookieHeader(userId));
+  }
+  if (cookieMismatch) {
+    console.warn("scan: cardsnap_user_id cookie differs from body userId; using cookie");
+  }
+
   const { count: afterCount } = await supabase
     .from("scans")
     .select("*", { count: "exact", head: true })
@@ -119,13 +157,16 @@ export async function POST(req: Request) {
     .eq("id", userId)
     .maybeSingle();
 
-  return NextResponse.json({
-    ...merged,
-    scanId: inserted.id,
-    /** @deprecated use freeScansUsed — kept for older clients */
-    scansUsedThisMonth: freeScansUsed,
-    freeScansUsed,
-    freeScanLimit: FREE_SCAN_LIMIT,
-    isPro: Boolean(proRow?.is_pro),
-  });
+  return NextResponse.json(
+    {
+      ...merged,
+      scanId: inserted.id,
+      /** @deprecated use freeScansUsed — kept for older clients */
+      scansUsedThisMonth: freeScansUsed,
+      freeScansUsed,
+      freeScanLimit: FREE_SCAN_LIMIT,
+      isPro: Boolean(proRow?.is_pro),
+    },
+    { headers: extraHeaders }
+  );
 }

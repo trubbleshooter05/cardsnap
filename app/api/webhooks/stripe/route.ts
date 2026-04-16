@@ -32,9 +32,13 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.metadata?.userId;
+        const userId =
+          session.metadata?.userId ??
+          (typeof session.client_reference_id === "string"
+            ? session.client_reference_id
+            : undefined);
         if (userId && session.mode === "subscription") {
-          await supabase.from("users").upsert(
+          const { error: upErr } = await supabase.from("users").upsert(
             {
               id: userId,
               is_pro: true,
@@ -45,13 +49,25 @@ export async function POST(req: Request) {
             },
             { onConflict: "id" }
           );
+          if (upErr) {
+            console.error("checkout.session.completed upsert failed", upErr);
+            throw upErr;
+          }
         }
         break;
       }
       case "customer.subscription.deleted":
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
-        const userId = sub.metadata?.userId;
+        let userId = sub.metadata?.userId as string | undefined;
+        if (!userId && typeof sub.customer === "string") {
+          const { data: linkRow } = await supabase
+            .from("users")
+            .select("id")
+            .eq("stripe_customer_id", sub.customer)
+            .maybeSingle();
+          userId = linkRow?.id;
+        }
         if (!userId) break;
         const active =
           sub.status === "active" || sub.status === "trialing";

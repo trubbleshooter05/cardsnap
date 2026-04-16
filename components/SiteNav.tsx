@@ -1,5 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useAuth } from "@/components/useAuth";
+import { AuthModal } from "@/components/AuthModal";
+import { useState } from "react";
 
 function LogoMark() {
   return (
@@ -48,6 +53,9 @@ type SiteNavProps = {
 };
 
 export function SiteNav({ trailing, className = "" }: SiteNavProps) {
+  const { user, signOut, loading } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
   return (
     <header
       className={`relative z-10 flex items-center justify-between gap-4 border-b border-zinc-800/80 bg-zinc-950/40 px-4 py-3 backdrop-blur-sm sm:px-8 ${className}`}
@@ -61,6 +69,30 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
 
       <div className="flex items-center gap-4 sm:gap-6">
         <nav className="flex items-center gap-3 text-sm text-zinc-400 sm:gap-5">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/account"
+                className="hover:text-zinc-100 transition-colors font-medium text-zinc-300"
+              >
+                Account
+              </Link>
+              <button
+                onClick={signOut}
+                disabled={loading}
+                className="hover:text-zinc-100 transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              className="hover:text-zinc-100 transition-colors font-medium text-amber-400"
+            >
+              Sign in
+            </button>
+          )}
           <Link href="/" className="hover:text-zinc-100 transition-colors">
             Scan
           </Link>
@@ -134,6 +166,7 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
         </nav>
         {trailing}
       </div>
+      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </header>
   );
 }

@@ -1,0 +1,347 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║              CARDSNAP MVP CLEANUP + PROTECTION REPORT                      ║
+║                        April 13, 2026                                       ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+EXECUTIVE SUMMARY
+──────────────────────────────────────────────────────────────────────────────
+
+MVP Status:      ✓ COMPLETE & TESTED (12 entries validated end-to-end)
+Code Status:     ❌ UNTRACKED (will be lost if deleted)
+Cleanup Status:  ⏳ READY TO EXECUTE (blocked by FS permissions)
+
+ACTION ITEMS:
+  1. Commit 19 MVP files to git (detailed instructions provided)
+  2. Delete 8 stale artifacts (.js transpiles + PoC scripts)
+  3. Final workflow: test-mvp.js → staging → approved → merger → build
+
+
+PART A: FILES TO COMMIT (19 items — DO NOT LOSE)
+──────────────────────────────────────────────────────────────────────────────
+
+DOCUMENTATION (6 files)
+  seo-engine/IMPLEMENTATION_SUMMARY.txt    — Detailed implementation docs
+  seo-engine/MANUAL-MERGE-STEPS.md         — Step-by-step merge guide
+  seo-engine/MVP_COMPLETE.md               — Full test results & summary
+  seo-engine/POC-SUMMARY.md                — Proof-of-concept documentation
+  seo-engine/QUICKREF.md                   — Quick reference card
+  seo-engine/QUICKSTART.md                 — Quick start guide
+
+TEST CODE (1 file — PROVEN WORKING)
+  seo-engine/test-mvp.js                   — Validates full pipeline ✓
+
+TEST DATA (2 files)
+  seo-engine/test-converted-entries.json   — Sample data (12 converted entries)
+  seo-engine/test-entry-sample.json        — Single entry example
+
+CORE MVP CODE (9 files)
+  seo-engine/transforms/
+    ├── base-transformer.ts                — Abstract base transformer
+    ├── cardsnap-transformer.ts            — Hermes JSON → NicheContent
+    ├── cardsnap-merger.ts                 — Merge approved → live data
+    ├── run-all-transforms.ts              — CLI orchestrator
+    ├── staging-reviewer.ts                — Interactive review tool
+    ├── types.ts                           — Shared types
+    └── utils.ts                           — File I/O & utilities
+
+  seo-engine/validators/
+    ├── base-validator.ts                  — Abstract base validator
+    └── cardsnap-validator.ts              — CardSnap schema validator
+
+REAL DATA DIRECTORIES (2 items)
+  seo-engine/staging/                      — Contains approved entries ready to merge
+  seo-engine/outputs/                      — Contains Hermes JSON outputs
+
+COMMIT COMMAND:
+──────────────────────────────────────────────────────────────────────────────
+
+In a FRESH shell, run:
+
+  git add \
+    seo-engine/IMPLEMENTATION_SUMMARY.txt \
+    seo-engine/MANUAL-MERGE-STEPS.md \
+    seo-engine/MVP_COMPLETE.md \
+    seo-engine/POC-SUMMARY.md \
+    seo-engine/QUICKREF.md \
+    seo-engine/QUICKSTART.md \
+    seo-engine/test-mvp.js \
+    seo-engine/test-converted-entries.json \
+    seo-engine/test-entry-sample.json \
+    seo-engine/staging/ \
+    seo-engine/transforms/base-transformer.ts \
+    seo-engine/transforms/cardsnap-transformer.ts \
+    seo-engine/transforms/cardsnap-merger.ts \
+    seo-engine/transforms/run-all-transforms.ts \
+    seo-engine/transforms/staging-reviewer.ts \
+    seo-engine/transforms/types.ts \
+    seo-engine/transforms/utils.ts \
+    seo-engine/validators/base-validator.ts \
+    seo-engine/validators/cardsnap-validator.ts
+
+  git commit -m "seo-engine: add hermes mvp (phase 1-2)
+
+- Phase 1: Shared foundation (transforms, validators, utils, types)
+- Phase 2: CardSnap implementation (transformer, validator, merger)
+- Real data: 12 entries validated, staged, and ready to merge
+- Test: full workflow proven with Hermes grade-or-skip output
+- Docs: comprehensive implementation and quickstart guides
+
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
+
+  git push
+
+
+PART B: FILES TO DELETE (8 items — STALE ARTIFACTS)
+──────────────────────────────────────────────────────────────────────────────
+
+REASON: These are outdated transpiles and superseded PoC scripts.
+The .ts files are the authoritative source.
+
+STALE JAVASCRIPT TRANSPILES (6 files — DELETE)
+  seo-engine/transforms/base-transformer.js        ← Old transpile (165 lines ts → 113 lines js)
+  seo-engine/transforms/cardsnap-transformer.js    ← Old transpile (210 lines ts → 181 lines js)
+  seo-engine/transforms/types.js                   ← Old transpile (6 lines only!)
+  seo-engine/transforms/utils.js                   ← Old transpile (223 lines ts → 198 lines js)
+  seo-engine/validators/base-validator.js          ← Old transpile
+  seo-engine/validators/cardsnap-validator.js      ← Old transpile
+
+SUPERSEDED POC SCRIPTS (2 files — DELETE)
+  seo-engine/convert-hermes-to-cardsnap.cjs       ← Manual PoC, replaced by cardsnap-transformer.ts
+  seo-engine/cardsnap-merger-standalone.cjs       ← Standalone PoC, replaced by cardsnap-merger.ts
+
+DELETE COMMAND:
+──────────────────────────────────────────────────────────────────────────────
+
+In a FRESH shell, run:
+
+  rm -f seo-engine/transforms/*.js seo-engine/validators/*.js seo-engine/*.cjs
+
+Verify:
+  ls seo-engine/transforms/*.js 2>&1     # Should return: No such file
+  ls seo-engine/validators/*.js 2>&1     # Should return: No such file
+  ls seo-engine/*.cjs 2>&1                # Should return: No such file
+
+
+PART C: ONE CLEAN MVP WORKFLOW
+──────────────────────────────────────────────────────────────────────────────
+
+After commit, the recommended production workflow is:
+
+STEP 1: VALIDATE & STAGE (Automatic)
+  $ node seo-engine/test-mvp.js
+
+  Output:
+    ✓ Found: grade-or-skip-2026-04-10T19-05-05.json
+    ✓ Parsed 12 entries
+    ✓ Validated all 12 entries
+    ✓ Staged to: seo-engine/staging/cardsnap/pending/grade-or-skip-*.staged.json
+
+STEP 2: REVIEW (Manual)
+  $ cat seo-engine/staging/cardsnap/pending/*.staged.json | jq '.entries[0]'
+
+  Inspect entries before approval.
+
+STEP 3: APPROVE (Manual)
+  $ mv seo-engine/staging/cardsnap/pending/*.staged.json \
+       seo-engine/staging/cardsnap/approved/
+
+  Moves from pending → approved (ready to merge).
+
+STEP 4: MERGE (Automatic)
+  $ npx tsx seo-engine/transforms/cardsnap-merger.ts
+
+  Output:
+    ✅ Merge completed successfully
+       Merged: 12 entries
+       File: lib/generated-niche-content.ts
+       Backup: lib/generated-niche-content.ts.backup-{timestamp}
+
+STEP 5: BUILD (Automatic)
+  $ npm run build
+
+  Generates static pages for new entries.
+  Verify: grep "football\|yugioh" .next/server/app/sitemap.xml
+
+STEP 6: DEPLOY (Manual)
+  $ git add lib/generated-niche-content.ts
+  $ git commit -m "seo batch: merge hermes grade-or-skip entries"
+  $ git push
+  $ npm run deploy  # Your existing deploy script
+
+
+FILES USED IN WORKFLOW:
+──────────────────────────────────────────────────────────────────────────────
+
+✓ test-mvp.js                           — Entry point (finds + validates)
+✓ transforms/cardsnap-transformer.ts    — Schema validation & conversion
+✓ validators/cardsnap-validator.ts      — CardSnap-specific validation
+✓ staging/                              — Staging buffer (pending + approved)
+✓ transforms/cardsnap-merger.ts         — Merge to live data
+✗ seo_batch.py                          — OLD system (not used in new path)
+✗ All .js files                         — NOT USED (source is .ts)
+
+
+PART D: DUPLICATION ANALYSIS
+──────────────────────────────────────────────────────────────────────────────
+
+TWO PARALLEL SYSTEMS EXIST:
+
+OLD SYSTEM (Python)
+  Files: seo_batch.py, projects.json, data_validators.py
+  Status: In git, actively referenced
+  Issue: No validation before merge, no approval gate
+
+NEW SYSTEM (TypeScript)
+  Files: transforms/*, validators/*, staging/*, test-mvp.js
+  Status: Untracked (will be lost if not committed)
+  Issue: Not committed, not in production
+
+RECOMMENDATION:
+  → Use TypeScript MVP (recommended path above)
+  → Keep Python system for reference or deprecate
+  → Do NOT run both simultaneously (would cause merge conflicts)
+
+
+PART E: ARCHITECTURE PRESERVED
+──────────────────────────────────────────────────────────────────────────────
+
+✓ Phase 1 foundation files exist (7 files)
+  - Shared types, utils, base classes
+  - Ready for Phase 3-5 rollout
+
+✓ Phase 2 CardSnap implementation complete (3 files)
+  - Transformer (Hermes JSON → NicheContent)
+  - Validator (schema validation)
+  - Merger (staging → live)
+
+✓ No architecture changes made
+✓ No new features added
+✓ Only cleanup + protection of existing MVP
+
+
+PART F: RISK MITIGATION
+──────────────────────────────────────────────────────────────────────────────
+
+RISK #1: CODE LOSS
+  Before: ❌ MVP code is untracked (deletable)
+  After:  ✓ MVP code in git (protected)
+  Action: Commit immediately
+
+RISK #2: STALE ARTIFACTS
+  Before: ❌ .js files could be accidentally imported
+  After:  ✓ .js files deleted (only .ts source exists)
+  Action: Delete in fresh shell
+
+RISK #3: MERGE CONFLICTS
+  Before: ❌ Two systems could both merge
+  After:  ✓ Single clean path documented
+  Action: Deprecate or archive old Python system
+
+RISK #4: LOST APPROVED DATA
+  Before: ❌ staging/approved/ could be deleted
+  After:  ✓ staging/ directory committed to git (protected)
+  Action: Commit immediately
+
+
+PART G: EXECUTION PLAN (STEP BY STEP)
+──────────────────────────────────────────────────────────────────────────────
+
+1. OPEN NEW SHELL
+   Close current shell, open a new terminal to avoid permission issues
+
+2. NAVIGATE TO REPO
+   cd /path/to/cardsnap
+
+3. DELETE STALE ARTIFACTS
+   rm -f seo-engine/transforms/*.js seo-engine/validators/*.js seo-engine/*.cjs
+
+4. VERIFY DELETION
+   ls seo-engine/transforms/*.js 2>&1   # Should show: No such file or directory
+
+5. STAGE MVP FILES
+   [Run git add command from PART A above]
+
+6. VERIFY STAGING
+   git status --short | grep "^A" | wc -l   # Should show: 19
+
+7. COMMIT
+   [Run git commit command from PART A above]
+
+8. VERIFY COMMIT
+   git log --oneline -1   # Should show new commit with MVP message
+   git status             # Should show: working tree clean
+
+9. TEST MVP WORKFLOW
+   node seo-engine/test-mvp.js   # Should find + validate Hermes output
+
+10. READY FOR PRODUCTION
+    Follow "PART C: ONE CLEAN MVP WORKFLOW" for manual merge
+
+
+PART H: FILES BY STATUS
+──────────────────────────────────────────────────────────────────────────────
+
+IN GIT (Before cleanup)
+  ├── generators/          ✓ Working
+  ├── concepts/            ✓ Working
+  ├── distro/              ✓ Working
+  ├── hermes/              ✓ Working
+  ├── seo_batch.py         ✓ Old system (keep or deprecate)
+  └── projects.json        ✓ Old system (keep or deprecate)
+
+UNTRACKED (To commit)
+  ├── transforms/          → To commit
+  ├── validators/          → To commit
+  ├── staging/             → To commit
+  ├── test-mvp.js          → To commit
+  └── All .md docs         → To commit
+
+UNTRACKED (To delete)
+  ├── transforms/*.js      → Delete (stale)
+  ├── validators/*.js      → Delete (stale)
+  └── seo-engine/*.cjs     → Delete (superseded)
+
+
+PART I: EXPECTED STATE AFTER CLEANUP
+──────────────────────────────────────────────────────────────────────────────
+
+AFTER GIT COMMIT:
+  ✓ seo-engine/transforms/          — 7 .ts files in git
+  ✓ seo-engine/validators/          — 2 .ts files in git
+  ✓ seo-engine/staging/             — Real data in git (protected)
+  ✓ All .md documentation           — In git (protected)
+  ✓ test-mvp.js                     — In git (protected)
+  ✗ seo-engine/transforms/*.js      — Deleted (stale)
+  ✗ seo-engine/validators/*.js      — Deleted (stale)
+  ✗ seo-engine/*.cjs                — Deleted (superseded)
+
+GIT LOG:
+  * abc1234 (HEAD -> main) seo-engine: add hermes mvp (phase 1-2)
+  * xyz9999 Previous commit
+
+
+SUMMARY
+──────────────────────────────────────────────────────────────────────────────
+
+✓ MVP is complete and tested
+✓ All code identified and categorized
+✓ Clear cleanup instructions provided
+✓ Single production workflow documented
+✓ Architecture preserved, no changes made
+
+⏳ Ready to execute:
+  1. Open fresh shell
+  2. Delete stale artifacts
+  3. Commit MVP files
+  4. Run production workflow
+
+⚠️  MUST DO IN FRESH SHELL (permission issues in current context)
+
+
+Next steps:
+  1. Read CLEANUP_AND_MVP_WORKFLOW.md for detailed instructions
+  2. Open new terminal/shell
+  3. Execute steps from PART G above
+  4. Verify with: git log -1 && git status
+
+Report prepared: 2026-04-13 21:45 UTC

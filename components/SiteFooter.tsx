@@ -17,10 +17,10 @@ export function SiteFooter() {
             Methodology
           </Link>
           <Link href="/privacy" className="hover:text-zinc-300">
-            Privacy
+            Privacy Policy
           </Link>
           <Link href="/terms" className="hover:text-zinc-300">
-            Terms
+            Terms of Service
           </Link>
           <Link href="/contact" className="hover:text-zinc-300">
             Contact

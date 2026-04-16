@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
-
-const bodySchema = z.object({
-  userId: z.string().uuid(),
-});
 
 export async function POST(req: Request) {
   const secret = process.env.STRIPE_SECRET_KEY;
@@ -21,22 +16,25 @@ export async function POST(req: Request) {
     );
   }
 
-  let json: unknown;
-  try {
-    json = await req.json();
-  } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
-  }
-
-  const parsed = bodySchema.safeParse(json);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
-  }
-
-  const { userId } = parsed.data;
-  const stripe = new Stripe(secret);
   const supabase = createServerSupabase();
 
+  // Get the authenticated user from the request
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const token = authHeader.slice(7);
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+  if (authError || !user?.id) {
+    return NextResponse.json({ error: "invalid_token" }, { status: 401 });
+  }
+
+  const userId = user.id;
+  const stripe = new Stripe(secret);
+
+  // Get or create Stripe customer
   const { data: existing } = await supabase
     .from("users")
     .select("stripe_customer_id")
@@ -46,6 +44,7 @@ export async function POST(req: Request) {
   let customerId = existing?.stripe_customer_id ?? null;
   if (!customerId) {
     const customer = await stripe.customers.create({
+      email: user.email,
       metadata: { userId },
     });
     customerId = customer.id;
@@ -59,12 +58,14 @@ export async function POST(req: Request) {
     );
   }
 
+  // Create checkout session
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${appUrl}/?upgraded=1`,
     cancel_url: `${appUrl}/?canceled=1`,
+    client_reference_id: userId,
     metadata: { userId },
     subscription_data: {
       metadata: { userId },
