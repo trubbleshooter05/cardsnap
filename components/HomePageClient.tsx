@@ -6,8 +6,8 @@ import { ScanForm } from "@/components/ScanForm";
 import { ScanGate } from "@/components/ScanGate";
 import { SiteNav } from "@/components/SiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
-import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/components/useAuth";
+import { requestOpenAuthModal } from "@/lib/auth-events";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
@@ -50,7 +50,6 @@ export function HomePageClient() {
   const [result, setResult] = useState<ScanResponse | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [checkoutSyncing, setCheckoutSyncing] = useState(false);
 
   // Set up user ID - use authenticated user if available, otherwise use anonymous
@@ -216,7 +215,7 @@ export function HomePageClient() {
   const handleUpgrade = async () => {
     // Require authentication for checkout
     if (!user?.id) {
-      setAuthModalOpen(true);
+      requestOpenAuthModal();
       return;
     }
 
@@ -409,7 +408,6 @@ export function HomePageClient() {
         upgrading={upgrading}
       />
 
-      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   );
 }
