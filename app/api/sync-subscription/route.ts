@@ -51,25 +51,20 @@ export async function POST(req: NextRequest) {
   const stripe = new Stripe(secret);
   let customerId = row?.stripe_customer_id ?? null;
 
-  // If no Stripe customer linked to this auth.uid, try looking up by email
-  // This covers users who paid under an anonymous UUID before creating an account
+  // If no Stripe customer linked to this auth.uid, look up by email.
+  // This restores subscriptions paid under an anonymous UUID before auth was added.
   if (!customerId && user.email) {
     try {
-      const customers = await stripe.customers.search({
-        query: `email:"${user.email}"`,
-        limit: 5,
-      });
+      // Use list (more reliable than search across all SDK versions)
+      const customers = await stripe.customers.list({ email: user.email, limit: 5 });
       if (customers.data.length > 0) {
-        // Use the first customer found with this email
         customerId = customers.data[0].id;
-        // Link this Stripe customer to the auth user in our database
-        await supabase.from("users").upsert(
-          { id: userId, stripe_customer_id: customerId, is_pro: false },
-          { onConflict: "id" }
-        );
+        console.log(`sync-subscription: found Stripe customer ${customerId} by email ${user.email}`);
+      } else {
+        console.log(`sync-subscription: no Stripe customer found for email ${user.email}`);
       }
     } catch (e) {
-      console.error("sync-subscription email lookup", e);
+      console.error("sync-subscription email lookup failed", e);
     }
   }
 
@@ -77,30 +72,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ synced: true, isPro: false, hasStripeCustomer: false });
   }
 
+  // Check subscription status
   let isPro = false;
   try {
-    const list = await stripe.subscriptions.list({
+    const subs = await stripe.subscriptions.list({
       customer: customerId,
       status: "all",
       limit: 20,
     });
-    isPro = list.data.some(
-      (s) => s.status === "active" || s.status === "trialing"
-    );
+    isPro = subs.data.some((s) => s.status === "active" || s.status === "trialing");
+    console.log(`sync-subscription: customer ${customerId} isPro=${isPro} (${subs.data.length} subs)`);
   } catch (e) {
-    console.error("sync-subscription stripe list", e);
+    console.error("sync-subscription stripe list failed", e);
     return NextResponse.json({ error: "stripe_list_failed" }, { status: 502 });
   }
 
-  const { error: updErr } = await supabase
+  // Single upsert with final is_pro value — avoids the two-step race
+  const { error: upsertErr } = await supabase
     .from("users")
-    .update({ is_pro: isPro, stripe_customer_id: customerId })
-    .eq("id", userId);
+    .upsert(
+      { id: userId, stripe_customer_id: customerId, is_pro: isPro },
+      { onConflict: "id" }
+    );
 
-  if (updErr) {
-    console.error("sync-subscription update user", updErr);
-    return NextResponse.json({ error: "user_update_failed" }, { status: 500 });
+  if (upsertErr) {
+    console.error("sync-subscription upsert failed", upsertErr);
+    return NextResponse.json({ error: "user_update_failed", detail: upsertErr.message }, { status: 500 });
   }
 
+  console.log(`sync-subscription: upserted userId=${userId} is_pro=${isPro}`);
   return NextResponse.json({ synced: true, isPro, hasStripeCustomer: true });
 }

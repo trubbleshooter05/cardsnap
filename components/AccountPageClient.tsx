@@ -75,16 +75,33 @@ export function AccountPageClient() {
     setSyncing(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
 
-      if (token) {
-        await fetch("/api/sync-subscription", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      if (!token) {
+        alert("Session expired. Please sign out and sign back in.");
+        return;
       }
 
+      const res = await fetch("/api/sync-subscription", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({})) as { error?: string };
+        alert(`Sync failed: ${err.error ?? res.status}. Check Vercel logs.`);
+        return;
+      }
+
+      const result = await res.json() as { synced: boolean; isPro: boolean; hasStripeCustomer: boolean };
+
+      // Update UI immediately from sync response — don't wait for a second fetch
+      if (result.isPro) {
+        setUsage((prev) => prev ? { ...prev, isPro: true } : prev);
+      }
+
+      // Also re-fetch to get accurate scan counts
       await refresh(userId);
     } finally {
       setSyncing(false);
