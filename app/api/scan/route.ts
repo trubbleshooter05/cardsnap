@@ -98,19 +98,39 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  console.log("[scan] starting analysis for card:", cardName, "condition:", condition);
+
   let ai: Awaited<ReturnType<typeof analyzeCardWithOpenAI>>;
   let ebay: Awaited<ReturnType<typeof searchEbayItemPrices>>;
   let psa: Awaited<ReturnType<typeof fetchPsaPopulation>>;
+
   try {
-    [ai, ebay, psa] = await Promise.all([
+    // Use allSettled so one slow/failed provider doesn't block the others
+    const results = await Promise.allSettled([
       analyzeCardWithOpenAI(cardName, condition),
       searchEbayItemPrices(cardName),
       fetchPsaPopulation(cardName),
     ]);
+
+    ai = results[0]?.status === "fulfilled" ? results[0].value : { confirmedName: cardName, year: "", player: "", set: "", sport: "", rawValueLow: 0, rawValueMid: 0, rawValueHigh: 0, gradedPSA9Value: 0, gradedPSA10Value: 0, worthGrading: false, verdictReason: "Analysis unavailable." };
+    ebay = results[1]?.status === "fulfilled" ? results[1].value : { avgSoldPrice: null, minSoldPrice: null, maxSoldPrice: null, recentSales: [] };
+    psa = results[2]?.status === "fulfilled" ? results[2].value : null;
+
+    if (results[0]?.status === "rejected") {
+      console.error("[scan] OpenAI failed:", results[0].reason);
+    }
+    if (results[1]?.status === "rejected") {
+      console.error("[scan] eBay failed:", results[1].reason);
+    }
+    if (results[2]?.status === "rejected") {
+      console.error("[scan] PSA failed:", results[2].reason);
+    }
   } catch (e) {
-    console.error("scan upstream error", e);
-    return NextResponse.json({ error: "openai_or_upstream_failed" }, { status: 502 });
+    console.error("[scan] unexpected error during analysis", e);
+    return NextResponse.json({ error: "analysis_failed" }, { status: 502 });
   }
+
+  console.log("[scan] analysis complete, merging results");
 
   const merged = mergeScanResults(ai, ebay, psa);
 
@@ -157,6 +177,7 @@ export async function POST(req: NextRequest) {
     .eq("id", userId)
     .maybeSingle();
 
+  console.log("[scan] returning response with merged data");
   return NextResponse.json(
     {
       ...merged,

@@ -167,49 +167,62 @@ export function HomePageClient() {
         }
       }
 
-      const res = await fetch("/api/scan", {
-        method: "POST",
-        cache: "no-store",
-        headers,
-        body: JSON.stringify({
-          cardName: payload.cardName,
-          condition: payload.condition,
-          userId,
-        }),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-      if (res.status === 402) {
-        await refreshUsage(userId);
-        setGateOpen(true);
-        return;
-      }
+      try {
+        const res = await fetch("/api/scan", {
+          method: "POST",
+          cache: "no-store",
+          headers,
+          body: JSON.stringify({
+            cardName: payload.cardName,
+            condition: payload.condition,
+            userId,
+          }),
+          signal: controller.signal,
+        });
 
-      if (!res.ok) {
-        const err = (await res.json().catch(() => ({}))) as {
-          error?: string;
-          hint?: string;
-        };
-        console.error(err);
-        const code = err.error ?? `http_${res.status}`;
-        const extra = err.hint ? `\n\n${err.hint}` : "";
-        alert(`Something went wrong (${code}). Try again.${extra}`);
-        return;
-      }
+        if (res.status === 402) {
+          await refreshUsage(userId);
+          setGateOpen(true);
+          return;
+        }
 
-      const data = (await res.json()) as ScanResponse;
-      setResult(data);
-      const used = data.freeScansUsed ?? data.scansUsedThisMonth;
-      const lim = data.freeScanLimit ?? FREE_SCAN_LIMIT;
-      setUsageCount(used);
-      setFreeLimit(lim);
-      setIsPro(data.isPro);
-      persistAnonymousId(userId);
-      if (!data.isPro && used >= lim) {
-        setGateOpen(true);
+        if (!res.ok) {
+          const err = (await res.json().catch(() => ({}))) as {
+            error?: string;
+            hint?: string;
+          };
+          console.error(err);
+          const code = err.error ?? `http_${res.status}`;
+          const extra = err.hint ? `\n\n${err.hint}` : "";
+          alert(`Something went wrong (${code}). Try again.${extra}`);
+          return;
+        }
+
+        const data = (await res.json()) as ScanResponse;
+        setResult(data);
+        const used = data.freeScansUsed ?? data.scansUsedThisMonth;
+        const lim = data.freeScanLimit ?? FREE_SCAN_LIMIT;
+        setUsageCount(used);
+        setFreeLimit(lim);
+        setIsPro(data.isPro);
+        persistAnonymousId(userId);
+        if (!data.isPro && used >= lim) {
+          setGateOpen(true);
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          alert("Request timed out. Check your connection and try again.");
+        } else {
+          alert("Failed to analyze card. Check your connection and try again.");
+          console.error(err);
+        }
+      } finally {
+        clearTimeout(timeoutId);
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleUpgrade = async () => {

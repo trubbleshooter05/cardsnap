@@ -1,4 +1,5 @@
 import type { PsaPop } from "@/lib/types";
+import { withTimeout } from "@/lib/timeout";
 
 /**
  * Best-effort parse of PSA pop search HTML. Site structure may change.
@@ -9,16 +10,31 @@ export async function fetchPsaPopulation(cardName: string): Promise<PsaPop | nul
   const url = `https://www.psacard.com/pop/search?q=${q}`;
 
   try {
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; CardSnap/1.0; +https://vercel.com)",
-        Accept: "text/html,application/xhtml+xml",
-      },
-      next: { revalidate: 0 },
-    });
+    console.log("[psa] fetching population for", cardName);
+    const res = await withTimeout(
+      fetch(url, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; CardSnap/1.0; +https://vercel.com)",
+          Accept: "text/html,application/xhtml+xml",
+        },
+        next: { revalidate: 0 },
+      }),
+      7000, // 7 second timeout for scraping
+      null,
+      "psa.fetch"
+    );
 
-    if (!res.ok) return null;
+    if (!res) {
+      console.warn("[psa] timeout or error");
+      return null;
+    }
+
+    if (!res.ok) {
+      console.warn("[psa] non-200 response", res.status);
+      return null;
+    }
+
     const html = await res.text();
 
     const psa9 = matchLabelPop(html, /PSA\s*9[^0-9]*([0-9,]+)/i);
@@ -33,15 +49,18 @@ export async function fetchPsaPopulation(cardName: string): Promise<PsaPop | nul
     }
 
     if (psa9 == null && psa10 == null && totalPop == null) {
+      console.log("[psa] no population data found");
       return null;
     }
 
+    console.log("[psa] found psa9=", psa9, "psa10=", psa10, "total=", totalPop);
     return {
       psa9Pop: psa9,
       psa10Pop: psa10,
       totalPop,
     };
-  } catch {
+  } catch (err) {
+    console.error("[psa] error", err);
     return null;
   }
 }

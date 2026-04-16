@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { CardAnalysis } from "@/lib/types";
+import { withTimeout } from "@/lib/timeout";
 
 function num(v: unknown, fallback = 0): number {
   if (typeof v === "number" && !Number.isNaN(v)) return v;
@@ -14,13 +15,31 @@ function str(v: unknown, fallback = ""): string {
   return typeof v === "string" ? v : v != null ? String(v) : fallback;
 }
 
+function defaultAnalysis(cardName: string): CardAnalysis {
+  return {
+    confirmedName: cardName,
+    year: "",
+    player: "",
+    set: "",
+    sport: "",
+    rawValueLow: 0,
+    rawValueMid: 0,
+    rawValueHigh: 0,
+    gradedPSA9Value: 0,
+    gradedPSA10Value: 0,
+    worthGrading: false,
+    verdictReason: "Unable to fetch OpenAI analysis. Check your internet connection.",
+  };
+}
+
 export async function analyzeCardWithOpenAI(
   cardName: string,
   condition: string
 ): Promise<CardAnalysis> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+    console.error("OPENAI_API_KEY is not configured");
+    return defaultAnalysis(cardName);
   }
 
   const client = new OpenAI({ apiKey });
@@ -48,39 +67,61 @@ Using your knowledge of recent eBay market comps and hobby pricing for this card
 Estimate raw value range for the stated condition. If the exact card is unknown, infer the best match and say so in verdictReason.
 Return ONLY valid JSON. No markdown, no code fences.`;
 
-  const res = await client.chat.completions.create({
-    model: "gpt-4o",
-    temperature: 0.2,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: "You output only valid JSON objects." },
-      { role: "user", content: prompt },
-    ],
-  });
+  console.log("[openai] starting analysis for", cardName);
 
-  const raw = res.choices[0]?.message?.content;
-  if (!raw) throw new Error("OpenAI returned empty content");
+  const result = await withTimeout(
+    client.chat.completions.create({
+      model: "gpt-4o",
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: "You output only valid JSON objects." },
+        { role: "user", content: prompt },
+      ],
+    }),
+    10000, // 10 second timeout
+    null,
+    "openai.chat.completions"
+  );
 
-  const parsed = JSON.parse(raw) as Record<string, unknown>;
+  if (!result) {
+    console.warn("[openai] timeout or error, returning default analysis");
+    return defaultAnalysis(cardName);
+  }
 
-  const yearVal = parsed.year;
-  const year =
-    typeof yearVal === "number" || typeof yearVal === "string"
-      ? yearVal
-      : "";
+  const raw = result.choices[0]?.message?.content;
+  if (!raw) {
+    console.warn("[openai] empty content, returning default analysis");
+    return defaultAnalysis(cardName);
+  }
 
-  return {
-    confirmedName: str(parsed.confirmedName, cardName),
-    year,
-    player: str(parsed.player),
-    set: str(parsed.set),
-    sport: str(parsed.sport),
-    rawValueLow: num(parsed.rawValueLow),
-    rawValueMid: num(parsed.rawValueMid),
-    rawValueHigh: num(parsed.rawValueHigh),
-    gradedPSA9Value: num(parsed.gradedPSA9Value),
-    gradedPSA10Value: num(parsed.gradedPSA10Value),
-    worthGrading: Boolean(parsed.worthGrading),
-    verdictReason: str(parsed.verdictReason, "Based on estimated market values."),
-  };
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+
+    const yearVal = parsed.year;
+    const year =
+      typeof yearVal === "number" || typeof yearVal === "string"
+        ? yearVal
+        : "";
+
+    const analysis = {
+      confirmedName: str(parsed.confirmedName, cardName),
+      year,
+      player: str(parsed.player),
+      set: str(parsed.set),
+      sport: str(parsed.sport),
+      rawValueLow: num(parsed.rawValueLow),
+      rawValueMid: num(parsed.rawValueMid),
+      rawValueHigh: num(parsed.rawValueHigh),
+      gradedPSA9Value: num(parsed.gradedPSA9Value),
+      gradedPSA10Value: num(parsed.gradedPSA10Value),
+      worthGrading: Boolean(parsed.worthGrading),
+      verdictReason: str(parsed.verdictReason, "Based on estimated market values."),
+    };
+    console.log("[openai] analysis complete");
+    return analysis;
+  } catch (err) {
+    console.error("[openai] parse error", err);
+    return defaultAnalysis(cardName);
+  }
 }

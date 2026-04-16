@@ -1,4 +1,5 @@
 import type { EbayComp } from "@/lib/types";
+import { withTimeout } from "@/lib/timeout";
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -15,23 +16,34 @@ async function getEbayAccessToken(): Promise<string | null> {
     return cachedToken.token;
   }
 
+  console.log("[ebay] fetching token");
   const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
   const body = new URLSearchParams({
     grant_type: "client_credentials",
     scope: "https://api.ebay.com/oauth/api_scope",
   });
 
-  const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${basic}`,
-    },
-    body,
-  });
+  const res = await withTimeout(
+    fetch("https://api.ebay.com/identity/v1/oauth2/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${basic}`,
+      },
+      body,
+    }),
+    8000, // 8 second timeout
+    null,
+    "ebay.token"
+  );
+
+  if (!res) {
+    console.warn("[ebay] token timeout");
+    return null;
+  }
 
   if (!res.ok) {
-    console.error("eBay token error", await res.text());
+    console.error("[ebay] token error", await res.text());
     return null;
   }
 
@@ -40,6 +52,7 @@ async function getEbayAccessToken(): Promise<string | null> {
     token: data.access_token,
     expiresAt: now + (data.expires_in ?? 7200) * 1000,
   };
+  console.log("[ebay] token obtained");
   return cachedToken.token;
 }
 
@@ -59,6 +72,7 @@ export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> 
   const token = await getEbayAccessToken();
   if (!token) return emptyComp();
 
+  console.log("[ebay] searching for", cardName);
   const url = new URL("https://api.ebay.com/buy/browse/v1/item_summary/search");
   url.searchParams.set("q", cardName);
   url.searchParams.set(
@@ -67,16 +81,26 @@ export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> 
   );
   url.searchParams.set("limit", "10");
 
-  const res = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
-    },
-    next: { revalidate: 0 },
-  });
+  const res = await withTimeout(
+    fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+      },
+      next: { revalidate: 0 },
+    }),
+    8000, // 8 second timeout
+    null,
+    "ebay.browse"
+  );
+
+  if (!res) {
+    console.warn("[ebay] browse timeout");
+    return emptyComp();
+  }
 
   if (!res.ok) {
-    console.error("eBay browse error", await res.text());
+    console.error("[ebay] browse error", await res.text());
     return emptyComp();
   }
 
@@ -93,9 +117,13 @@ export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> 
     if (!Number.isNaN(n)) prices.push(n);
   }
 
-  if (prices.length === 0) return emptyComp();
+  if (prices.length === 0) {
+    console.log("[ebay] no prices found for", cardName);
+    return emptyComp();
+  }
 
   const sum = prices.reduce((a, b) => a + b, 0);
+  console.log("[ebay] found", prices.length, "prices");
   return {
     avgSoldPrice: sum / prices.length,
     minSoldPrice: Math.min(...prices),
