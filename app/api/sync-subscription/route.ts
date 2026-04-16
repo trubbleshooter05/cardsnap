@@ -48,16 +48,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const customerId = row?.stripe_customer_id;
-  if (!customerId) {
-    return NextResponse.json({
-      synced: true,
-      isPro: false,
-      hasStripeCustomer: false,
-    });
+  const stripe = new Stripe(secret);
+  let customerId = row?.stripe_customer_id ?? null;
+
+  // If no Stripe customer linked to this auth.uid, try looking up by email
+  // This covers users who paid under an anonymous UUID before creating an account
+  if (!customerId && user.email) {
+    try {
+      const customers = await stripe.customers.search({
+        query: `email:"${user.email}"`,
+        limit: 5,
+      });
+      if (customers.data.length > 0) {
+        // Use the first customer found with this email
+        customerId = customers.data[0].id;
+        // Link this Stripe customer to the auth user in our database
+        await supabase.from("users").upsert(
+          { id: userId, stripe_customer_id: customerId, is_pro: false },
+          { onConflict: "id" }
+        );
+      }
+    } catch (e) {
+      console.error("sync-subscription email lookup", e);
+    }
   }
 
-  const stripe = new Stripe(secret);
+  if (!customerId) {
+    return NextResponse.json({ synced: true, isPro: false, hasStripeCustomer: false });
+  }
+
   let isPro = false;
   try {
     const list = await stripe.subscriptions.list({
@@ -70,28 +89,18 @@ export async function POST(req: NextRequest) {
     );
   } catch (e) {
     console.error("sync-subscription stripe list", e);
-    return NextResponse.json(
-      { error: "stripe_list_failed" },
-      { status: 502 }
-    );
+    return NextResponse.json({ error: "stripe_list_failed" }, { status: 502 });
   }
 
   const { error: updErr } = await supabase
     .from("users")
-    .update({ is_pro: isPro })
+    .update({ is_pro: isPro, stripe_customer_id: customerId })
     .eq("id", userId);
 
   if (updErr) {
     console.error("sync-subscription update user", updErr);
-    return NextResponse.json(
-      { error: "user_update_failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "user_update_failed" }, { status: 500 });
   }
 
-  return NextResponse.json({
-    synced: true,
-    isPro,
-    hasStripeCustomer: true,
-  });
+  return NextResponse.json({ synced: true, isPro, hasStripeCustomer: true });
 }

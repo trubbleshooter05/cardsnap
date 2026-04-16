@@ -37,20 +37,24 @@ export function AuthModal({
           return;
         }
       } else {
+        const appUrl =
+          process.env.NEXT_PUBLIC_APP_URL ??
+          (typeof window !== "undefined" ? window.location.origin : "");
+
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: `${appUrl}/auth/callback`,
+          },
         });
         if (signUpError) {
           setError(signUpError.message);
           return;
         }
-        setError(""); // Clear error on success
+        setError("success");
         setEmail("");
         setPassword("");
-        setMode("signin");
-        // Show confirmation message
-        alert("Sign up successful! Please check your email to confirm.");
         return;
       }
 
@@ -66,8 +70,8 @@ export function AuthModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900/95 p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-sm max-h-[min(90dvh,640px)] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-900/95 p-6 pt-12">
         <h2 className="text-xl font-bold text-white">
           {mode === "signin" ? "Sign In" : "Create Account"}
         </h2>
@@ -110,11 +114,15 @@ export function AuthModal({
             />
           </div>
 
-          {error && (
+          {error === "success" ? (
+            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+              ✓ Check your email and click the confirmation link, then come back to sign in.
+            </div>
+          ) : error ? (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
               {error}
             </div>
-          )}
+          ) : null}
 
           <button
             type="submit"
@@ -150,7 +158,8 @@ export function AuthModal({
           type="button"
           onClick={onClose}
           disabled={loading}
-          className="absolute right-4 top-4 text-zinc-500 hover:text-zinc-300"
+          className="absolute right-3 top-3 rounded-lg p-2 text-lg leading-none text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+          aria-label="Close"
         >
           ✕
         </button>
