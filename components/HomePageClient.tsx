@@ -154,24 +154,24 @@ export function HomePageClient() {
 
     setLoading(true);
     setResult(null);
-    try {
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
 
-      if (user?.id) {
-        const supabase = createSupabaseBrowserClient();
-        const { data } = await supabase.auth.getSession();
-        if (data.session?.access_token) {
-          headers["Authorization"] = `Bearer ${data.session.access_token}`;
-        }
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+
+    if (user?.id) {
+      const supabase = createSupabaseBrowserClient();
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) {
+        headers["Authorization"] = `Bearer ${data.session.access_token}`;
       }
+    }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-      try {
-        const res = await fetch("/api/scan", {
+    try {
+      const res = await fetch("/api/scan", {
           method: "POST",
           cache: "no-store",
           headers,
@@ -212,17 +212,17 @@ export function HomePageClient() {
         if (!data.isPro && used >= lim) {
           setGateOpen(true);
         }
-      } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") {
-          alert("Request timed out. Check your connection and try again.");
-        } else {
-          alert("Failed to analyze card. Check your connection and try again.");
-          console.error(err);
-        }
-      } finally {
-        clearTimeout(timeoutId);
-        setLoading(false);
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        alert("Request timed out. Check your connection and try again.");
+      } else {
+        alert("Failed to analyze card. Check your connection and try again.");
+        console.error(err);
       }
+    } finally {
+      clearTimeout(timeoutId);
+      setLoading(false);
+    }
   };
 
   const handleUpgrade = async () => {
