@@ -179,6 +179,9 @@ Rules:
 - relatedSlugs: similar cards/players, same sport`;
 }
 
+const GENERATOR_SITE_BASE =
+  (process.env.NEXT_PUBLIC_APP_URL ?? "https://getcardsnap.com").replace(/\/$/, "");
+
 function buildGradeOrSkipSchema(slug: string, sport: string, seoTitle: string, seoDescription: string): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
@@ -187,15 +190,15 @@ function buildGradeOrSkipSchema(slug: string, sport: string, seoTitle: string, s
         "@type": "Article",
         "headline": seoTitle,
         "description": seoDescription,
-        "url": `https://cardsnap-seven.vercel.app/grade-or-skip/${slug}`,
+        "url": `${GENERATOR_SITE_BASE}/grade-or-skip/${slug}`,
         "author": { "@type": "Organization", "name": "CardSnap" },
         "publisher": { "@type": "Organization", "name": "CardSnap" }
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://cardsnap-seven.vercel.app" },
-          { "@type": "ListItem", "position": 2, "name": "Grade or Skip", "item": "https://cardsnap-seven.vercel.app/grade-or-skip" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": GENERATOR_SITE_BASE },
+          { "@type": "ListItem", "position": 2, "name": "Grade or Skip", "item": `${GENERATOR_SITE_BASE}/grade-or-skip` },
           { "@type": "ListItem", "position": 3, "name": `${sport} Cards` }
         ]
       }

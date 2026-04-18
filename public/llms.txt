@@ -4,7 +4,7 @@
 
 ## Site
 
-- Canonical base URL is configured with `NEXT_PUBLIC_APP_URL` (defaults to production deployment). Update that environment variable when moving to a custom domain.
+- Canonical base URL: `NEXT_PUBLIC_APP_URL` (production: https://getcardsnap.com).
 
 ## Primary URLs
 

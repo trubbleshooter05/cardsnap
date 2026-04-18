@@ -90,7 +90,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Football Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Football cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/football",
+          "url": "https://getcardsnap.com/grade-or-skip/football",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -107,13 +107,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -219,7 +219,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Yu-Gi-Oh Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "155 char max \u2014 should grade-or-skip Yu-Gi-Oh cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/yugioh",
+          "url": "https://getcardsnap.com/grade-or-skip/yugioh",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -236,13 +236,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -348,7 +348,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Magic: The Gathering Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Magic: The Gathering cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/magic-the-gathering",
+          "url": "https://getcardsnap.com/grade-or-skip/magic-the-gathering",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -365,13 +365,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -477,7 +477,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "One Piece TCG Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip One Piece TCG cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/one-piece",
+          "url": "https://getcardsnap.com/grade-or-skip/one-piece",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -494,13 +494,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -606,7 +606,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Vintage Cards Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Vintage Cards cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/vintage",
+          "url": "https://getcardsnap.com/grade-or-skip/vintage",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -623,13 +623,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -735,7 +735,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Rookie Cards Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Rookie Cards cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/rookie-cards",
+          "url": "https://getcardsnap.com/grade-or-skip/rookie-cards",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -752,13 +752,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -864,7 +864,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Soccer Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Soccer cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/soccer",
+          "url": "https://getcardsnap.com/grade-or-skip/soccer",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -881,13 +881,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -993,7 +993,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Hockey Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Hockey cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/hockey",
+          "url": "https://getcardsnap.com/grade-or-skip/hockey",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -1010,13 +1010,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -1122,7 +1122,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Lorcana Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Lorcana cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/lorcana",
+          "url": "https://getcardsnap.com/grade-or-skip/lorcana",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -1139,13 +1139,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -1251,7 +1251,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Golf Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Golf cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/golf",
+          "url": "https://getcardsnap.com/grade-or-skip/golf",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -1268,13 +1268,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -1380,7 +1380,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "UFC / MMA Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should you grade or skip UFC / MMA cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/ufc",
+          "url": "https://getcardsnap.com/grade-or-skip/ufc",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -1397,13 +1397,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",
@@ -1509,7 +1509,7 @@ export const GENERATED_NICHE_CONTENT = {
           "@type": "Article",
           "headline": "Wrestling Card Grading ROI Guide \u2014 When to Grade | CardSnap",
           "description": "Should grade-or-skip Wrestling cards? See ROI by condition/era/player.",
-          "url": "https://cardsnap-seven.vercel.app/grade-or-skip/wrestling",
+          "url": "https://getcardsnap.com/grade-or-skip/wrestling",
           "author": {
             "@type": "Organization",
             "name": "CardSnap"
@@ -1526,13 +1526,13 @@ export const GENERATED_NICHE_CONTENT = {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": "https://cardsnap-seven.vercel.app"
+              "item": "https://getcardsnap.com"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Grade or Skip",
-              "item": "https://cardsnap-seven.vercel.app/grade-or-skip"
+              "item": "https://getcardsnap.com/grade-or-skip"
             },
             {
               "@type": "ListItem",

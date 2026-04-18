@@ -4,8 +4,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import { getAllSeoGuides, seoGuidePath } from "@/lib/seo-guides-data";
 
 /**
- * Served at /sitemap.xml. Base URL defaults to production
- * (https://cardsnap-seven.vercel.app) when NEXT_PUBLIC_APP_URL is unset.
+ * Served at /sitemap.xml. Uses getSiteUrl() (NEXT_PUBLIC_APP_URL or https://getcardsnap.com).
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = getSiteUrl();
