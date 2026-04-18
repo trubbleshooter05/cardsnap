@@ -21,27 +21,26 @@ export function ScanGate({ open, onClose, onUpgrade, upgrading }: Props) {
       }}
     >
       <div className="w-full max-w-md rounded-2xl border border-zinc-700 bg-zinc-900 p-6 shadow-2xl shadow-black/60 sm:p-8">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-amber-500/25 bg-amber-500/15">
-          <span className="text-2xl">⚡</span>
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-red-500/25 bg-red-500/15">
+          <span className="text-2xl">⚠️</span>
         </div>
 
         <h2
           id="scan-gate-title"
           className="text-xl font-bold tracking-tight text-white sm:text-2xl"
         >
-          Unlock unlimited grading checks
+          Don&apos;t submit blind — one bad grade costs $50+
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-          You&apos;ve used your free scan. Get unlimited scans, grading ROI analysis,
-          and smarter submit/skip decisions.
+          Your next card could be worth $500+ graded — or nothing after fees if it misses gem. CardSnap Pro pays for itself on a single correct decision.
         </p>
 
         <ul className="mt-5 space-y-2.5">
           {[
-            "Unlimited card scans",
-            "Raw vs PSA 9 vs PSA 10 value view",
-            "ROI-based grading verdicts",
-            "Cancel anytime",
+            "See exact PSA 9 vs PSA 10 ROI before you pay",
+            "Know the break-even grade before submitting",
+            "Avoid the #1 grading mistake: only works at PSA 10",
+            "Unlimited scans · Cancel anytime",
           ].map((b) => (
             <li key={b} className="flex items-start gap-2.5 text-sm text-zinc-300">
               <span className="mt-0.5 font-bold text-amber-400">✓</span>
@@ -57,10 +56,10 @@ export function ScanGate({ open, onClose, onUpgrade, upgrading }: Props) {
             onClick={onUpgrade}
             className="btn-amber flex h-12 w-full items-center justify-center rounded-xl text-sm font-bold shadow-lg shadow-amber-500/20"
           >
-            {upgrading ? "Redirecting…" : "Upgrade Now"}
+            {upgrading ? "Redirecting…" : "Unlock Pro — Stop Guessing"}
           </button>
           <p className="text-center text-xs leading-relaxed text-zinc-500">
-            One good grading decision can pay for the subscription.
+            One unlocked scan pays for a full year of CardSnap.
           </p>
           <button
             type="button"

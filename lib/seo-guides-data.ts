@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getSiteUrl } from "@/lib/site-url";
 import { SEO_GUIDE_DEFINITIONS_PHASE2 } from "@/lib/seo-guides-data-phase2";
+import { SEO_GUIDE_DEFINITIONS_POKEMON } from "@/lib/seo-guides-data-pokemon";
 import type { SeoGuideDefinition } from "@/lib/seo-guides-types";
 
 export type {
@@ -376,102 +377,228 @@ const SEO_GUIDE_DEFINITIONS: SeoGuideDefinition[] = [
   },
   {
     slug: "is-grading-cards-worth-it-2026",
-    title: "Is Grading Cards Worth It in 2026?",
+    title: "Is Grading Cards Worth It in 2026? (Honest Answer + ROI Examples)",
     description:
-      "See whether grading sports cards is still worth it in 2026, and learn how to avoid losing money on weak submissions.",
+      "Is grading cards worth it in 2026? We break down PSA fees, real ROI examples, when to grade vs sell raw, and the math most collectors get wrong.",
     h1: "Is Grading Cards Worth It in 2026?",
     articleDescription:
-      "When grading sports cards still makes sense in 2026 and how to avoid submissions that only work on a PSA 10.",
+      "A complete 2026 guide to whether card grading is worth it — covering PSA fee changes, ROI calculator examples, case studies, and the PSA 9 trap that costs most collectors money.",
     intro: [
-      "In 2026, grading is still worth it for some cards — but far fewer than most collectors think.",
-      "The easy money is gone. Fees are real, competition is high, and a PSA 9 often does not leave much room for profit.",
+      "Short answer: grading is still worth it in 2026, but for fewer cards than most collectors think — and the math has gotten harder, not easier.",
+      "PSA fees went up. Secondary market competition is higher. A PSA 9 on a modern card often does not leave enough room after fees to justify the submission. If you are grading in 2026, you need to know the exact numbers before you send anything.",
     ],
     sections: [
       {
-        title: "Why Grading Feels Harder Now",
+        title: "2026 PSA Fee Changes: What You Are Actually Paying",
         blocks: [
           {
             kind: "paragraph",
-            text: "Collectors are more selective than before.",
+            text: "PSA updated its pricing structure in recent years and the impact on ROI is significant. Understanding the fee tiers is step one before any grading decision.",
           },
           {
             kind: "paragraph",
-            text: "Many modern cards only make sense if they grade a PSA 10.",
+            text: "As of 2026, PSA's Value tier (for cards declared under $499) runs approximately $25–$30 per card including basic service. Economy tier for cards declared $499+ is $75+ per card. Express and above starts at $150+ per submission. Shipping, insurance, and return fees add $15–$30 depending on your location and submission size.",
           },
           {
             kind: "paragraph",
-            text: "That means one grade point can completely change the outcome.",
+            text: "That means for a typical modern card submission, your all-in cost is $40–$60 per card at minimum. That number must come out of your profit margin before you see a dollar.",
+          },
+          {
+            kind: "callout",
+            text: "Rule of thumb: your PSA 9 outcome must clear $50–$60 above raw value just to break even. If it does not, the submission only makes money at PSA 10.",
           },
         ],
       },
       {
-        title: "When Grading Still Makes Sense",
+        title: "The ROI Math Most Collectors Get Wrong",
         blocks: [
           {
             kind: "paragraph",
-            text: "Grading can still be worth it if:",
+            text: "Here is the mistake: collectors compare raw value to PSA 10 value and declare the submission profitable. That is not the right comparison. You need to run the PSA 9 scenario first, because that is the most common outcome.",
+          },
+          {
+            kind: "subhead",
+            text: "Example 1: Modern Prizm Rookie (the most common grading scenario)",
+          },
+          {
+            kind: "exampleRows",
+            rows: [
+              { label: "Raw card value:", value: "$80", valueTone: "amber" },
+              { label: "All-in grading cost (PSA Value + shipping):", value: "$55", valueTone: "zinc" },
+              { label: "PSA 9 resale:", value: "$105 → profit: $105 − $80 − $55 = −$30 loss", valueTone: "zinc" },
+              { label: "PSA 10 resale:", value: "$290 → profit: $290 − $80 − $55 = +$155 profit", valueTone: "emerald" },
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "On a PSA 9, you lose $30. On a PSA 10, you make $155. The submission is only worth it if your card has a genuine shot at gem — not just a hope.",
+          },
+          {
+            kind: "subhead",
+            text: "Example 2: Vintage key (when grading math works better)",
+          },
+          {
+            kind: "exampleRows",
+            rows: [
+              { label: "Raw card value:", value: "$400", valueTone: "amber" },
+              { label: "All-in grading cost (PSA Economy + shipping):", value: "$100", valueTone: "zinc" },
+              { label: "PSA 8 resale:", value: "$550 → profit: $550 − $400 − $100 = +$50", valueTone: "amber" },
+              { label: "PSA 9 resale:", value: "$900 → profit: $900 − $400 − $100 = +$400", valueTone: "emerald" },
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "On vintage keys, even a lower grade can still clear costs because the authentication and slab premium is real. This is why vintage cards often justify grading when modern cards do not.",
+          },
+          {
+            kind: "subhead",
+            text: "Example 3: Common base card (when grading is almost never worth it)",
+          },
+          {
+            kind: "exampleRows",
+            rows: [
+              { label: "Raw card value:", value: "$12", valueTone: "amber" },
+              { label: "All-in grading cost:", value: "$50", valueTone: "zinc" },
+              { label: "PSA 10 resale:", value: "$55 → profit: $55 − $12 − $50 = −$7 loss", valueTone: "zinc" },
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "Even a perfect PSA 10 does not cover costs on a cheap base card. This is the most common way collectors lose money: sending high volumes of low-value cards hoping the graded premium will appear.",
+          },
+        ],
+      },
+      {
+        title: "When Grading Is Worth It in 2026",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "There are still cards that justify grading. The pattern is consistent across sports cards and Pokémon alike.",
           },
           {
             kind: "bullet",
             items: [
-              "The raw card was bought cheap",
-              "The card has strong demand",
-              "The PSA 10 premium is large",
-              "The card has a real chance to gem",
+              "The raw card was purchased significantly below the current market ceiling — you have cost basis room to absorb a PSA 9.",
+              "The PSA 10 premium is at least 3× the raw value, giving meaningful upside that survives the PSA 9 downside.",
+              "The card has a realistic gem rate — centering, corners, edges, and surface hold up under magnification, not just a quick sleeve check.",
+              "Demand for graded copies is deep: there are multiple PSA 9 and PSA 10 recent sales, not just one outlier comp.",
+              "Even a PSA 9 outcome clears all costs and leaves some profit — the submission does not bet everything on gem.",
             ],
           },
         ],
       },
       {
-        title: "When Grading Usually Does Not Make Sense",
+        title: "When Grading Is Not Worth It in 2026",
         blocks: [
           {
             kind: "paragraph",
-            text: "Grading often does not make sense if:",
+            text: "These are the red flags that experienced collectors have learned to recognize — usually after losing money first.",
           },
           {
             kind: "bullet",
             items: [
-              "The raw card is already expensive",
-              "A PSA 9 barely beats the raw price",
-              "Fees and shipping eat most of the upside",
-              "You are sending cards just to hope for a 10",
+              "The raw card is already priced near the PSA 9 comp. You are paying fees to add authentication to a card the market is already treating as near-mint.",
+              "Only the PSA 10 outcome makes money. This is the most common grading trap. If the PSA 9 path is a loss, you are placing a bet, not making an investment.",
+              "You are sending a bulk of modern base cards hoping for PSA 10s. Print runs are enormous, gem rates are low, and the math almost never works.",
+              "You need the money back soon. Turnaround times even on Value tier can be 30–90 days. Tying up $400 in a slow market while waiting on grades is a real cost.",
+              "The market for this card is thinly traded. If there are only 2–3 graded sales in the last 90 days, your comp data is unreliable and resale is uncertain.",
             ],
+          },
+        ],
+      },
+      {
+        title: "Real Case Studies: Grade or Skip?",
+        blocks: [
+          {
+            kind: "subhead",
+            text: "Case Study 1: 2023 Panini Prizm Wembanyama Base — Skip",
+          },
+          {
+            kind: "paragraph",
+            text: "Raw market: $30–$45. PSA 9 market: $60–$75. PSA 10 market: $200–$300. All-in grading cost: $55. PSA 9 profit: break-even at best. PSA 10 profit: strong. Verdict: only submit if the card is genuinely pristine. Send it raw otherwise — the raw market is liquid and you lose nothing.",
+          },
+          {
+            kind: "subhead",
+            text: "Case Study 2: 1999 Pokémon Charizard Base Set Unlimited — Grade",
+          },
+          {
+            kind: "paragraph",
+            text: "Raw market (HP/good): $400–$800. PSA 6: $1,200+. PSA 8: $3,000+. PSA 9: $8,000+. All-in grading cost: $100–$150. Even a PSA 6 generates significant profit. Authentication and grade clarity add enormous value that raw buyers discount. This is the category where grading still works clearly: vintage keys with deep graded markets.",
+          },
+          {
+            kind: "subhead",
+            text: "Case Study 3: 2021 Topps Chrome Shohei Ohtani Base Auto — Grade carefully",
+          },
+          {
+            kind: "paragraph",
+            text: "Raw market: $150–$200. PSA 9: $250–$300. PSA 10: $700–$900. All-in grading cost: $100 (Economy tier on a high-value auto). PSA 9 profit: $0–$50 after fees. PSA 10 profit: $400–$600. Verdict: only if the auto placement and card condition are both exceptional. A borderline copy should be sold raw.",
+          },
+        ],
+      },
+      {
+        title: "Pokémon vs Sports Cards: Different Markets, Same Math",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Pokémon grading follows the same ROI logic as sports cards but the market dynamics differ in a few important ways.",
+          },
+          {
+            kind: "paragraph",
+            text: "Pokémon cards — especially vintage Base Set and Sword & Shield alt arts — have seen explosive PSA 10 premiums. A Moonbreon (Umbreon VMAX Alt Art) raw sells for $300–$400. A PSA 10 regularly sells for $800–$1,200+. That is the kind of spread that can justify grading even with a risk of missing gem.",
+          },
+          {
+            kind: "paragraph",
+            text: "However, the Pokémon market is also more volatile. PSA 10 prices can swing 30–40% in a few months based on trends and tournament play. Always use recent comps — not the record sale from 18 months ago.",
+          },
+        ],
+      },
+      {
+        title: "The Grading Decision Checklist for 2026",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Before submitting any card in 2026, run through this checklist:",
+          },
+          {
+            kind: "bullet",
+            items: [
+              "What is today's raw value? (Not asking price — recent sold comps.)",
+              "What is the PSA 9 resale in the last 60 days? (Not the best sale — the average.)",
+              "What is the PSA 10 resale in the last 60 days?",
+              "What is my all-in grading cost including shipping and insurance?",
+              "Does the PSA 9 outcome clear my cost basis plus fees and leave profit?",
+              "Have I inspected this card under magnification and strong light — not just in a sleeve?",
+              "Is the graded market for this card deep enough to resell without a 30–60 day wait?",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "If the PSA 9 answer is no — the submission only works at PSA 10 — treat it as a high-variance bet and size the risk accordingly. It may still be worth it, but you should know what you are doing.",
           },
         ],
       },
     ],
     cta: {
-      title: "The Smarter Way to Decide",
+      title: "Run the Numbers Before You Submit",
       blocks: [
         {
           kind: "paragraph",
-          text: "Instead of guessing, compare:",
+          text: "CardSnap is built specifically for this decision. Enter your card and instantly see raw vs PSA 9 vs PSA 10 estimates, grading ROI, and a grade-or-skip verdict based on the actual math.",
         },
-        {
-          kind: "bullet",
-          items: [
-            "Raw comps",
-            "PSA 9 comps",
-            "PSA 10 comps",
-            "Your grading costs",
-            "Your downside if the card misses gem",
-          ],
-        },
-        { kind: "toolLink", lead: "Use this free tool:" },
         {
           kind: "paragraph",
-          text: "It is built to help you decide before you submit.",
+          text: "We don't grade your card. We tell you if it's worth grading.",
         },
+        { kind: "toolLink", lead: "Try it free:" },
       ],
-      buttonText: "See If Grading Is Worth It",
+      buttonText: "Check If Grading Is Worth It",
     },
     finalSection: {
       title: "Final Takeaway",
       paragraphs: [
-        "Yes, grading cards can still be worth it in 2026.",
-        "But only when the numbers make sense.",
-        "If the card needs a PSA 10 just to work, the risk is much higher than most people realize.",
+        "Yes, grading cards is still worth it in 2026 — for the right cards.",
+        "The cards that justify grading share a common trait: the PSA 9 outcome is still profitable, not just the PSA 10. If you need gem to make money, you are betting on variance, not managing risk.",
+        "Know your fees, run the PSA 9 scenario first, and only submit cards where the math holds up without the perfect grade.",
       ],
     },
   },
@@ -586,4 +713,5 @@ const SEO_GUIDE_DEFINITIONS: SeoGuideDefinition[] = [
     },
   },
   ...SEO_GUIDE_DEFINITIONS_PHASE2,
+  ...SEO_GUIDE_DEFINITIONS_POKEMON,
 ];

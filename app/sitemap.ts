@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { cardPages } from "@/lib/cards";
 import { getSiteUrl } from "@/lib/site-url";
 import { getAllSeoGuides, seoGuidePath } from "@/lib/seo-guides-data";
+import { SEO_GUIDE_DEFINITIONS_POKEMON } from "@/lib/seo-guides-data-pokemon";
 
 /**
  * Served at /sitemap.xml. Uses getSiteUrl() (NEXT_PUBLIC_APP_URL or https://getcardsnap.com).
@@ -24,11 +25,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/contact`, lastModified, changeFrequency: "yearly", priority: 0.4 },
   ];
 
-  const seoGuideRoutes: MetadataRoute.Sitemap = getAllSeoGuides().map((g) => ({
-    url: `${base}${seoGuidePath(g.slug)}`,
+  const pokemonSlugs = new Set(SEO_GUIDE_DEFINITIONS_POKEMON.map((g) => g.slug));
+
+  const seoGuideRoutes: MetadataRoute.Sitemap = getAllSeoGuides()
+    .filter((g) => !pokemonSlugs.has(g.slug))
+    .map((g) => ({
+      url: `${base}${seoGuidePath(g.slug)}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    }));
+
+  const pokemonGuideRoutes: MetadataRoute.Sitemap = SEO_GUIDE_DEFINITIONS_POKEMON.map((g) => ({
+    url: `${base}/should-i-grade-pokemon/${g.slug}`,
     lastModified,
     changeFrequency: "monthly" as const,
-    priority: 0.75,
+    priority: 0.8,
   }));
 
   const cardRoutes: MetadataRoute.Sitemap = cardPages.map((c) => ({
@@ -38,5 +50,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...seoGuideRoutes, ...cardRoutes];
+  return [...staticRoutes, ...seoGuideRoutes, ...pokemonGuideRoutes, ...cardRoutes];
 }

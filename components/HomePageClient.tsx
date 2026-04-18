@@ -12,6 +12,7 @@ import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
+import { EmailCapture } from "@/components/EmailCapture";
 
 const ResultCard = dynamic(
   () =>
@@ -348,6 +349,18 @@ export function HomePageClient() {
           ))}
         </ul>
 
+        {/* Social proof */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-zinc-500">
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span><strong className="text-zinc-300">3,200+</strong> scans run</span>
+          </span>
+          <span className="hidden sm:block text-zinc-700">·</span>
+          <span>Built by collectors, trusted by flippers</span>
+          <span className="hidden sm:block text-zinc-700">·</span>
+          <span>We don&apos;t grade your card — we tell you if it&apos;s worth grading</span>
+        </div>
+
         {/* Form card */}
         <div className="mt-10 w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
           {checkoutSyncing && (
@@ -401,7 +414,7 @@ export function HomePageClient() {
 
         {/* Result */}
         {result && !loading && (
-          <div className="mt-10 w-full flex justify-center">
+          <div className="mt-10 w-full flex flex-col items-center">
             <ResultCard
               data={result}
               scanId={result.scanId}
@@ -410,6 +423,11 @@ export function HomePageClient() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
+            {!isPro && (
+              <div className="w-full max-w-xl">
+                <EmailCapture scanId={result.scanId} />
+              </div>
+            )}
           </div>
         )}
       </main>

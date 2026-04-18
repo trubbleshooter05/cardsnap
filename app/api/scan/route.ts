@@ -77,20 +77,29 @@ export async function POST(req: NextRequest) {
 
   const { cardName, condition } = parsed.data;
 
-  const { data: userRow } = await supabase
-    .from("users")
-    .select("is_pro")
-    .eq("id", userId)
-    .maybeSingle();
-
+  const userResult = await withTimeout(
+    supabase
+      .from("users")
+      .select("is_pro")
+      .eq("id", userId)
+      .maybeSingle(),
+    3000,
+    { data: null, error: null },
+    "scan.db.user"
+  );
+  const { data: userRow } = userResult;
   const isPro = Boolean(userRow?.is_pro);
 
-  const { count: usedBeforeInsert } = await supabase
-    .from("scans")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);
-
-  const used = usedBeforeInsert ?? 0;
+  const usedResult = await withTimeout(
+    supabase
+      .from("scans")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId),
+    3000,
+    { count: null },
+    "scan.db.usedcount"
+  );
+  const used = usedResult.count ?? 0;
   if (!isPro && used >= FREE_SCAN_LIMIT) {
     return NextResponse.json(
       { error: "scan_limit_reached" },
@@ -134,15 +143,30 @@ export async function POST(req: NextRequest) {
 
   const merged = mergeScanResults(ai, ebay, psa);
 
-  const { data: inserted, error: insertError } = await supabase
-    .from("scans")
-    .insert({
-      user_id: userId,
-      card_name: cardName,
-      result: merged,
-    })
-    .select("id")
-    .single();
+  const insertResult = await withTimeout(
+    supabase
+      .from("scans")
+      .insert({
+        user_id: userId,
+        card_name: cardName,
+        result: merged,
+      })
+      .select("id")
+      .single(),
+    5000,
+    null,
+    "scan.db.insert"
+  );
+
+  if (!insertResult) {
+    console.error("scan insert timeout");
+    return NextResponse.json(
+      { error: "save_failed" },
+      { status: 500 }
+    );
+  }
+
+  const { data: inserted, error: insertError } = insertResult;
 
   if (insertError) {
     console.error("scan insert error", insertError);
@@ -165,17 +189,28 @@ export async function POST(req: NextRequest) {
     console.warn("scan: cardsnap_user_id cookie differs from body userId; using cookie");
   }
 
-  const { count: afterCount } = await supabase
-    .from("scans")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);
-  const freeScansUsed = afterCount ?? 0;
+  const countResult = await withTimeout(
+    supabase
+      .from("scans")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId),
+    3000,
+    { count: null },
+    "scan.db.count"
+  );
+  const freeScansUsed = countResult.count ?? 0;
 
-  const { data: proRow } = await supabase
-    .from("users")
-    .select("is_pro")
-    .eq("id", userId)
-    .maybeSingle();
+  const proResult = await withTimeout(
+    supabase
+      .from("users")
+      .select("is_pro")
+      .eq("id", userId)
+      .maybeSingle(),
+    3000,
+    { data: null, error: null },
+    "scan.db.pro"
+  );
+  const { data: proRow } = proResult;
 
   console.log("[scan] returning response with merged data");
   return NextResponse.json(
