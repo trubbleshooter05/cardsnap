@@ -3,7 +3,7 @@
  * If the promise doesn't resolve/reject within `ms`, returns the fallback value.
  */
 export async function withTimeout<T>(
-  promise: Promise<T>,
+  promise: PromiseLike<T>,
   ms: number,
   fallback: T,
   label?: string

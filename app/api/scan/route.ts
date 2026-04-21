@@ -8,6 +8,29 @@ import { fetchPsaPopulation } from "@/lib/psa";
 import { mergeScanResults } from "@/lib/merge-scan";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
+import { withTimeout } from "@/lib/timeout";
+import type {
+  PostgrestMaybeSingleResponse,
+  PostgrestSingleResponse,
+} from "@supabase/supabase-js";
+
+/** Fallback when DB read times out (shape matches Supabase success + null row). */
+const EMPTY_USER_ROW: PostgrestMaybeSingleResponse<{ is_pro: boolean }> = {
+  data: null,
+  error: null,
+  count: null,
+  status: 200,
+  statusText: "",
+};
+
+/** Head+count queries: union is strict; assertion matches timeout “unknown” result. */
+const EMPTY_HEAD_COUNT = {
+  data: null,
+  error: null,
+  count: null,
+  status: 200,
+  statusText: "",
+} as unknown as PostgrestSingleResponse<unknown[]>;
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +107,7 @@ export async function POST(req: NextRequest) {
       .eq("id", userId)
       .maybeSingle(),
     3000,
-    { data: null, error: null },
+    EMPTY_USER_ROW,
     "scan.db.user"
   );
   const { data: userRow } = userResult;
@@ -96,7 +119,7 @@ export async function POST(req: NextRequest) {
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId),
     3000,
-    { count: null },
+    EMPTY_HEAD_COUNT,
     "scan.db.usedcount"
   );
   const used = usedResult.count ?? 0;
@@ -195,7 +218,7 @@ export async function POST(req: NextRequest) {
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId),
     3000,
-    { count: null },
+    EMPTY_HEAD_COUNT,
     "scan.db.count"
   );
   const freeScansUsed = countResult.count ?? 0;
@@ -207,7 +230,7 @@ export async function POST(req: NextRequest) {
       .eq("id", userId)
       .maybeSingle(),
     3000,
-    { data: null, error: null },
+    EMPTY_USER_ROW,
     "scan.db.pro"
   );
   const { data: proRow } = proResult;
