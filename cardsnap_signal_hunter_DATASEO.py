@@ -117,10 +117,9 @@ class CardSnapSignalHunter:
         return list(unique_posts.values())
 
     def send_telegram(self):
-        """Send posts with links and copy."""
+        """Format output for Hermes gateway delivery."""
         if not self.posts:
-            msg = "🎯 CardSnap Signal Hunter — No new posts found"
-            self._post_telegram(msg)
+            print("🎯 CardSnap Signal Hunter — No new posts found")
             return
 
         timestamp = datetime.now().strftime("%H:%M")
@@ -139,8 +138,7 @@ class CardSnapSignalHunter:
             msg += f"    {url}\n\n"
 
         msg += f"📊 Total: {len(self.posts)} posts | Click links to reply\n"
-
-        self._post_telegram(msg)
+        print(msg)
 
     def run(self):
         """Main execution."""
@@ -163,23 +161,6 @@ class CardSnapSignalHunter:
                     f.write(f"**Link:** {post.get('url', '')}\n\n")
 
         self.send_telegram()
-
-    def _post_telegram(self, message):
-        """Post to Telegram."""
-        try:
-            url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
-            data = {
-                "chat_id": self.chat_id,
-                "text": message,
-                "parse_mode": "Markdown"
-            }
-            print(f"Sending to Telegram... (chat_id={self.chat_id}, msg length={len(message)})")
-            response = requests.post(url, data=data, timeout=10)
-            print(f"Telegram response: {response.status_code}")
-            if response.status_code != 200:
-                print(f"Telegram error: {response.text}")
-        except Exception as e:
-            print(f"Telegram send failed: {e}")
 
 
 if __name__ == "__main__":
