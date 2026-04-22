@@ -10,7 +10,8 @@ export type CardSport =
   | "basketball"
   | "football"
   | "hockey"
-  | "golf";
+  | "golf"
+  | "pokemon";
 
 export type GradingVerdict = "worth_grading" | "skip_grading";
 
@@ -22,6 +23,8 @@ export interface CardPage {
   setName: string;
   cardNumber: string;
   title: string;
+  /** When set, used as the page H1 (e.g. “[Name] Value, Price & Grading Guide”). */
+  h1Title?: string;
   metaTitle: string;
   metaDescription: string;
   /** HTML article body; fill via `npx tsx scripts/generate-card-content.ts` */
@@ -68,6 +71,7 @@ export function getCardsBySport(): Record<CardSport, CardPage[]> {
     football: [],
     hockey: [],
     golf: [],
+    pokemon: [],
   };
   for (const c of cardPages) {
     out[c.sport].push(c);
@@ -84,6 +88,7 @@ export const SPORT_ORDER: CardSport[] = [
   "football",
   "hockey",
   "golf",
+  "pokemon",
 ];
 
 export function sportLabel(s: CardSport): string {
@@ -93,6 +98,7 @@ export function sportLabel(s: CardSport): string {
     football: "Football",
     hockey: "Hockey",
     golf: "Golf",
+    pokemon: "Pokémon TCG",
   };
   return labels[s];
 }

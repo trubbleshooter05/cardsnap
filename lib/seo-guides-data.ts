@@ -11,7 +11,10 @@ export type {
   SeoGuideSection,
 } from "@/lib/seo-guides-types";
 
+const POKEMON_SLUGS = new Set(SEO_GUIDE_DEFINITIONS_POKEMON.map((g) => g.slug));
+
 export function seoGuidePath(slug: string): string {
+  if (POKEMON_SLUGS.has(slug)) return `/should-i-grade-pokemon/${slug}`;
   return `/${slug}`;
 }
 
@@ -21,6 +24,16 @@ export function getSeoGuideBySlug(slug: string): SeoGuideDefinition | undefined 
 
 export function getAllSeoGuides(): SeoGuideDefinition[] {
   return SEO_GUIDE_DEFINITIONS;
+}
+
+/** Non-Pokémon guides only — used by the /guides index page */
+export function getMainSeoGuides(): SeoGuideDefinition[] {
+  return SEO_GUIDE_DEFINITIONS.filter((g) => !POKEMON_SLUGS.has(g.slug));
+}
+
+/** Pokémon guides only */
+export function getPokemonSeoGuides(): SeoGuideDefinition[] {
+  return SEO_GUIDE_DEFINITIONS_POKEMON;
 }
 
 export function buildSeoGuideMetadata(guide: SeoGuideDefinition): Metadata {

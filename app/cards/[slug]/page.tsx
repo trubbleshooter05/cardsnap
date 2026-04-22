@@ -9,7 +9,6 @@ import {
 } from "@/lib/cards";
 import { getSiteUrl } from "@/lib/site-url";
 import { formatUsd } from "@/lib/format-currency";
-import { AdSlot } from "@/components/AdSlot";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
 
@@ -163,11 +162,9 @@ export default function CardSeoPage({ params }: Props) {
           </ol>
         </nav>
 
-        <AdSlot />
-
         <h1 className="mt-8 text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          {card.playerName} {card.year} {card.brand} #{card.cardNumber} — Value,
-          Prices &amp; Grading Guide
+          {card.h1Title ??
+            `${card.playerName} ${card.year} ${card.brand} #${card.cardNumber} — Value, Prices &amp; Grading Guide`}
         </h1>
         <p className="mt-3 text-zinc-400">{card.metaDescription}</p>
         <PageAttribution className="mt-4" updatedIso={card.updatedAt} />
@@ -215,10 +212,6 @@ export default function CardSeoPage({ params }: Props) {
             </div>
           </div>
         </section>
-
-        <div className="mt-8">
-          <AdSlot label="Sponsored" />
-        </div>
 
         <section className="mt-10">
           <h2 className="text-lg font-semibold text-white">Full guide</h2>
@@ -308,10 +301,6 @@ export default function CardSeoPage({ params }: Props) {
             ))}
           </ul>
         </section>
-
-        <div className="mt-10">
-          <AdSlot />
-        </div>
       </main>
     </div>
   );

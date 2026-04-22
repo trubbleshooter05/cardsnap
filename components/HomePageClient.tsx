@@ -156,22 +156,37 @@ export function HomePageClient() {
     setLoading(true);
     setResult(null);
 
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-
-    if (user?.id) {
-      const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.access_token) {
-        headers["Authorization"] = `Bearer ${data.session.access_token}`;
-      }
-    }
-
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    // Scan can exceed 15s (OpenAI + eBay + PSA); keep client in sync with serverless limits.
+    const timeoutId = setTimeout(() => controller.abort(), 120_000);
 
     try {
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (user?.id) {
+        // getSession() can hang; if it ran before try/finally, loading never cleared. Race + fallback.
+        try {
+          const supabase = createSupabaseBrowserClient();
+          const outcome = await Promise.race([
+            supabase.auth.getSession().then((r) => ({ kind: "ok" as const, r })),
+            new Promise<"timeout">((resolve) =>
+              setTimeout(() => resolve("timeout"), 5_000)
+            ),
+          ]);
+          const token =
+            outcome === "timeout"
+              ? undefined
+              : outcome.r.data.session?.access_token;
+          if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+          }
+        } catch {
+          /* proceed without Authorization */
+        }
+      }
+
       const res = await fetch("/api/scan", {
           method: "POST",
           cache: "no-store",
@@ -325,20 +340,20 @@ export function HomePageClient() {
           <span className="gradient-text">this card?</span>
         </h1>
 
-        <p className="mt-4 max-w-md text-center text-base text-zinc-300 leading-relaxed">
-          Upload a card and instantly see whether grading looks worth it based on
-          raw vs graded value upside.
+        {/* Competitive positioning — the moat */}
+        <p className="mt-4 max-w-md text-center text-base font-semibold text-amber-400 leading-snug">
+          We don&apos;t grade your card. We tell you if it&apos;s worth grading.
         </p>
 
-        <p className="mt-3 max-w-md text-center text-sm text-zinc-500 leading-relaxed">
-          Use 1 free scan. Then upgrade for unlimited grading checks.
+        <p className="mt-3 max-w-md text-center text-sm text-zinc-400 leading-relaxed">
+          See raw vs PSA 9 vs PSA 10 ROI before you pay $50 in grading fees. One scan pays for itself.
         </p>
 
         <ul className="mt-6 w-full max-w-md space-y-2.5 text-left text-sm text-zinc-300">
           {[
-            "Spot cards worth grading faster",
-            "Avoid wasting money on bad submissions",
-            "Compare upside before you send to PSA",
+            "Avoid wasting $50 on a card that misses gem",
+            "See exact PSA 9 vs PSA 10 break-even before submitting",
+            "Know the verdict before you send to PSA",
           ].map((line) => (
             <li key={line} className="flex gap-3">
               <span className="mt-0.5 shrink-0 text-amber-400" aria-hidden>
@@ -350,19 +365,19 @@ export function HomePageClient() {
         </ul>
 
         {/* Social proof */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-zinc-500">
+        <div className="mt-5 w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-zinc-400">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            <span><strong className="text-zinc-300">3,200+</strong> scans run</span>
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span><strong className="text-white">3,200+</strong> scans run</span>
           </span>
-          <span className="hidden sm:block text-zinc-700">·</span>
+          <span className="text-zinc-700">·</span>
           <span>Built by collectors, trusted by flippers</span>
-          <span className="hidden sm:block text-zinc-700">·</span>
-          <span>We don&apos;t grade your card — we tell you if it&apos;s worth grading</span>
+          <span className="text-zinc-700">·</span>
+          <span>Use 1 free scan — no signup required</span>
         </div>
 
         {/* Form card */}
-        <div className="mt-10 w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
+        <div className="mt-8 w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
           {checkoutSyncing && (
             <p className="mb-3 text-center text-xs text-amber-200/90">
               Syncing your Pro status…
@@ -395,6 +410,16 @@ export function HomePageClient() {
             </div>
           )}
         </div>
+
+        {/* Sample scan link */}
+        {!result && !loading && (
+          <p className="mt-3 text-center text-xs text-zinc-600">
+            Not sure what you get?{" "}
+            <a href="/sample-scan" className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300">
+              See a sample scan result →
+            </a>
+          </p>
+        )}
 
         {/* Loading */}
         {loading && (

@@ -9,7 +9,6 @@ import {
 } from "@/lib/cards";
 import { formatUsd } from "@/lib/format-currency";
 import { getSiteUrl } from "@/lib/site-url";
-import { AdSlot } from "@/components/AdSlot";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
 
@@ -60,10 +59,6 @@ export default function CardsIndexPage() {
           .
         </p>
         <PageAttribution className="mt-4" />
-
-        <div className="mt-8">
-          <AdSlot />
-        </div>
 
         <p className="mt-6 text-sm text-zinc-500">
           {cardPages.length} cards indexed
@@ -122,10 +117,6 @@ export default function CardsIndexPage() {
             Go to scan →
           </Link>
         </aside>
-
-        <div className="mt-10">
-          <AdSlot />
-        </div>
       </main>
     </div>
   );
