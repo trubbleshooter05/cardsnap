@@ -75,6 +75,7 @@ export function AuthModal({
       }
 
       // Sign-in was successful
+      console.log("[cardsnap:auth]", "auth: sign in success, closing modal");
       setEmail("");
       setPassword("");
       onClose();

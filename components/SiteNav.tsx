@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/components/useAuth";
 import { AuthModal } from "@/components/AuthModal";
 import { useEffect, useRef, useState } from "react";
-import { OPEN_AUTH_EVENT } from "@/lib/auth-events";
+import { notifyAuthModalDismissed, OPEN_AUTH_EVENT } from "@/lib/auth-events";
 
 const GUIDE_LINKS: { href: string; label: string }[] = [
   { href: "/guides", label: "All grading guides" },
@@ -190,7 +190,13 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
         )}
       </header>
 
-      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => {
+          setAuthModalOpen(false);
+          notifyAuthModalDismissed();
+        }}
+      />
     </>
   );
 }

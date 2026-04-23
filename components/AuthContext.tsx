@@ -24,6 +24,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        console.log("[cardsnap:auth]", "init: getSession", {
+          hasSession: Boolean(session),
+        });
         setUser(session?.user ?? null);
       } catch (err) {
         console.error("Auth init error", err);
@@ -35,7 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("[cardsnap:auth]", "onAuthStateChange", {
+        event,
+        hasSession: Boolean(session),
+        userId: session?.user?.id,
+      });
       setUser(session?.user ?? null);
       setLoading(false);
     });

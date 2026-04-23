@@ -104,8 +104,10 @@ Return ONLY valid JSON. No markdown, no code fences.`;
         ? yearVal
         : "";
 
+    const rawName = str(parsed.confirmedName, cardName).trim();
     const analysis = {
-      confirmedName: str(parsed.confirmedName, cardName),
+      // Models sometimes return "" for confirmedName; always fall back to the search text.
+      confirmedName: rawName || cardName.trim() || "Unknown card",
       year,
       player: str(parsed.player),
       set: str(parsed.set),

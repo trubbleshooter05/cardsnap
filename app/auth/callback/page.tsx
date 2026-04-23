@@ -18,6 +18,7 @@ export default function AuthCallbackPage() {
 
     const handle = async () => {
       try {
+        console.log("[cardsnap:auth]", "callback page: resolving session from URL");
         // getSession picks up the tokens from the URL hash automatically
         const { data, error } = await supabase.auth.getSession();
         if (error || !data.session) {

@@ -7,6 +7,7 @@ import { SiteNav } from "@/components/SiteNav";
 import { useAuth } from "@/components/useAuth";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
+import { waitForAccessToken } from "@/lib/wait-for-access-token";
 
 type Usage = {
   count: number;
@@ -130,9 +131,7 @@ export function AccountPageClient() {
     setCheckoutLoading(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-
+      const token = await waitForAccessToken(supabase, { context: "account-checkout" });
       if (!token) {
         alert("Authentication required. Please sign in again.");
         return;

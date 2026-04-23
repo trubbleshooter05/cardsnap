@@ -1,13 +1,17 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
 import { ScanGate } from "@/components/ScanGate";
 import { SiteNav } from "@/components/SiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
 import { useAuth } from "@/components/useAuth";
-import { requestOpenAuthModal } from "@/lib/auth-events";
+import {
+  requestOpenAuthModal,
+  AUTH_MODAL_DISMISSED_EVENT,
+} from "@/lib/auth-events";
+import { waitForAccessToken } from "@/lib/wait-for-access-token";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
@@ -41,6 +45,102 @@ type UsagePayload = {
   limit: number;
 };
 
+const LOG = "[cardsnap]";
+const AUTH_LOG = "[cardsnap:auth]";
+
+const PENDING_PAYWALL_CHECKOUT = "cardsnap:pendingPaywallCheckoutTs";
+
+function readPaywallPendingTs(): number | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const s = window.sessionStorage.getItem(PENDING_PAYWALL_CHECKOUT);
+    if (!s) return null;
+    const t = Number(s);
+    if (!Number.isFinite(t) || Date.now() - t > 15 * 60 * 1000) {
+      window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
+      return null;
+    }
+    return t;
+  } catch {
+    return null;
+  }
+}
+
+function setPaywallPendingFromCta() {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(
+      PENDING_PAYWALL_CHECKOUT,
+      String(Date.now())
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearPaywallPending() {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
+  } catch {
+    /* ignore */
+  }
+}
+
+/*
+ * Where `result` / `loading` / paywall can change (HomePageClient only):
+ * - setResult(null): start of handleSubmit; "New scan" in ResultCard onNewScan.
+ * - setLoading(true|false): handleSubmit start | handleSubmit finally (always false after scan attempt).
+ * - setGateOpen(true): pre-scan free limit; HTTP 402.
+ * - setGateOpen(false): successful 200 with scanId; ScanGate onClose.
+ */
+
+/**
+ * Heuristic that the JSON matches POST /api/scan success shape: flat merged payload
+ * (see mergeScanResults + route spread) plus scanId, usage, isPro.
+ *
+ * Server always sends: ...merged, scanId, freeScansUsed, isPro — with worthGrading set in merge
+ * from ROI (boolean). A previous bug required non-empty confirmedName; models can return "" which
+ * made validation fail and (worse) skipped setGateOpen(false) after a good 200.
+ */
+function hasValidMergedScanData(data: ScanResponse): boolean {
+  if (data?.scanId == null || String(data.scanId).length === 0) return false;
+
+  const hasLabel =
+    (typeof data.confirmedName === "string" && data.confirmedName.trim().length > 0) ||
+    (typeof data.player === "string" && data.player.trim().length > 0) ||
+    (typeof data.verdictReason === "string" && data.verdictReason.length > 0);
+
+  if (!hasLabel) return false;
+
+  if (typeof data.worthGrading === "boolean") return true;
+
+  return Boolean(
+    data.roi &&
+      (data.roi.headlineVerdict === "grade" || data.roi.headlineVerdict === "skip")
+  );
+}
+
+const SESSION_RACE_MS = 5_000;
+
+/** Avoid hanging forever if Supabase getSession() never settles. */
+async function getAccessTokenRaced(
+  supabase: ReturnType<typeof createSupabaseBrowserClient>
+): Promise<string | undefined> {
+  try {
+    const outcome = await Promise.race([
+      supabase.auth.getSession().then((r) => ({ kind: "ok" as const, r })),
+      new Promise<"timeout">((resolve) =>
+        setTimeout(() => resolve("timeout"), SESSION_RACE_MS)
+      ),
+    ]);
+    if (outcome === "timeout") return undefined;
+    return outcome.r.data.session?.access_token;
+  } catch {
+    return undefined;
+  }
+}
+
 export function HomePageClient() {
   const { user, loading: authLoading } = useAuth();
   const [userId, setUserId] = useState<string | null>(null);
@@ -52,6 +152,12 @@ export function HomePageClient() {
   const [gateOpen, setGateOpen] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
   const [checkoutSyncing, setCheckoutSyncing] = useState(false);
+
+  const usageAbortRef = useRef<AbortController | null>(null);
+  /** If a recent successful scan said `isPro: true`, do not let a stale /api/usage response clear Pro. */
+  const lastProFromScanRef = useRef<{ pro: boolean; t: number } | null>(null);
+  const pendingPaywallCheckoutRef = useRef(false);
+  const checkoutInFlightRef = useRef(false);
 
   // Set up user ID - use authenticated user if available, otherwise use anonymous
   useEffect(() => {
@@ -66,34 +172,128 @@ export function HomePageClient() {
     }
   }, [user, authLoading]);
 
+  useEffect(() => {
+    lastProFromScanRef.current = null;
+  }, [userId]);
+
   const refreshUsage = useCallback(
     async (uid: string) => {
+      usageAbortRef.current?.abort();
+      const ac = new AbortController();
+      usageAbortRef.current = ac;
+      const { signal } = ac;
+
       const supabase = createSupabaseBrowserClient();
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
 
-      // If authenticated user, include auth token
       if (user?.id) {
-        const { data } = await supabase.auth.getSession();
-        if (data.session?.access_token) {
-          headers["Authorization"] = `Bearer ${data.session.access_token}`;
+        const token = await getAccessTokenRaced(supabase);
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
         }
       }
 
-      const res = await fetch(`/api/usage?userId=${encodeURIComponent(uid)}`, {
-        cache: "no-store",
-        headers,
-      });
+      let res: Response;
+      try {
+        res = await fetch(
+          `/api/usage?userId=${encodeURIComponent(uid)}`,
+          { cache: "no-store", headers, signal }
+        );
+      } catch (e) {
+        if (e instanceof Error && e.name === "AbortError") {
+          console.log(
+            LOG,
+            "usage fetch aborted (newer request or scan started)"
+          );
+          return null;
+        }
+        console.error(LOG, "usage fetch failed", e);
+        return null;
+      }
 
       if (!res.ok) return null;
       const data = (await res.json()) as UsagePayload;
+      if (signal.aborted) return null;
+
+      let isPro = data.isPro;
+      const recent = lastProFromScanRef.current;
+      if (
+        recent &&
+        recent.pro === true &&
+        isPro === false &&
+        Date.now() - recent.t < 10_000
+      ) {
+        console.log(
+          LOG,
+          "pro/usage: recent successful scan was Pro; ignoring stale usage isPro=false"
+        );
+        isPro = true;
+      }
+
       setUsageCount(data.count);
       setFreeLimit(data.limit);
-      setIsPro(data.isPro);
-      return data;
+      setIsPro(isPro);
+      console.log(LOG, "subscription/pro resolved (usage API)", {
+        isPro,
+        count: data.count,
+        limit: data.limit,
+      });
+      return { ...data, isPro };
     },
     [user?.id]
+  );
+
+  const runStripeCheckout = useCallback(
+    async (source: "cta" | "post_login") => {
+      const uid = user?.id ?? userId;
+      if (!uid) {
+        console.warn(AUTH_LOG, "upgrade: no user id — abort", { source });
+        return;
+      }
+      if (checkoutInFlightRef.current) {
+        console.log(AUTH_LOG, "upgrade: already in progress — skip", { source });
+        return;
+      }
+      checkoutInFlightRef.current = true;
+      setUpgrading(true);
+      try {
+        persistAnonymousId(uid);
+        const supabase = createSupabaseBrowserClient();
+        console.log(AUTH_LOG, "upgrade: wait for access token", { source, uid: uid.slice(0, 8) });
+        const token = await waitForAccessToken(supabase, {
+          context: "create-checkout",
+          maxMs: 25_000,
+        });
+        if (!token) {
+          console.warn(AUTH_LOG, "upgrade: no token after wait", { source });
+          alert("Authentication required. Please sign in again.");
+          return;
+        }
+        console.log(AUTH_LOG, "upgrade: POST /api/create-checkout", { source });
+        const res = await fetch("/api/create-checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({}),
+        });
+        if (!res.ok) {
+          console.warn(AUTH_LOG, "upgrade: checkout HTTP", res.status);
+          alert("Checkout unavailable. Check Stripe configuration.");
+          return;
+        }
+        const { url } = (await res.json()) as { url: string };
+        console.log(AUTH_LOG, "upgrade: redirecting to Stripe", { source });
+        window.location.href = url;
+      } finally {
+        setUpgrading(false);
+        checkoutInFlightRef.current = false;
+      }
+    },
+    [userId, user?.id]
   );
 
   // Fetch initial usage
@@ -116,8 +316,7 @@ export function HomePageClient() {
 
       try {
         const supabase = createSupabaseBrowserClient();
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
+        const token = await getAccessTokenRaced(supabase);
 
         if (token) {
           await fetch("/api/sync-subscription", {
@@ -142,22 +341,117 @@ export function HomePageClient() {
     };
   }, [userId, user?.id, refreshUsage]);
 
+  useEffect(() => {
+    console.log(LOG, "state: loading →", loading);
+  }, [loading]);
+
+  useEffect(() => {
+    console.log(
+      LOG,
+      "state: result →",
+      result
+        ? { scanId: result.scanId, isPro: result.isPro, hasMerged: hasValidMergedScanData(result) }
+        : null
+    );
+  }, [result]);
+
+  useEffect(() => {
+    console.log(LOG, "state: paywall / gate open →", gateOpen);
+  }, [gateOpen]);
+
+  useEffect(() => {
+    console.log(LOG, "state: isPro (ui) →", isPro, {
+      usageCount,
+      freeLimit,
+    });
+  }, [isPro, usageCount, freeLimit]);
+
+  useEffect(() => {
+    const onAuthModalDismissed = () => {
+      window.setTimeout(() => {
+        void (async () => {
+          const supabase = createSupabaseBrowserClient();
+          const { data } = await supabase.auth.getSession();
+          if (data.session) {
+            console.log(
+              AUTH_LOG,
+              "auth modal closed, session found — keep paywall checkout intent (handoff will run)"
+            );
+            return;
+          }
+          console.log(
+            AUTH_LOG,
+            "auth modal dismissed, no session after delay — clear paywall checkout intent"
+          );
+          pendingPaywallCheckoutRef.current = false;
+          clearPaywallPending();
+        })();
+      }, 450);
+    };
+    window.addEventListener(AUTH_MODAL_DISMISSED_EVENT, onAuthModalDismissed);
+    return () => {
+      window.removeEventListener(AUTH_MODAL_DISMISSED_EVENT, onAuthModalDismissed);
+    };
+  }, []);
+
+  // After sign-in from paywall CTA, continue to Stripe (desktop parity; no second click).
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user?.id) return;
+    const fromRef = pendingPaywallCheckoutRef.current;
+    const fromStore = readPaywallPendingTs() != null;
+    if (!fromRef && !fromStore) return;
+    if (checkoutInFlightRef.current) {
+      console.log(
+        AUTH_LOG,
+        "post-login: checkout already in flight — skip duplicate"
+      );
+      return;
+    }
+    console.log(AUTH_LOG, "auth: session ready — handoff to checkout", {
+      fromRef,
+      fromStore,
+      userId: user.id,
+    });
+    pendingPaywallCheckoutRef.current = false;
+    clearPaywallPending();
+    setGateOpen(false);
+    void runStripeCheckout("post_login");
+  }, [user?.id, authLoading, runStripeCheckout]);
+
   const handleSubmit = async (payload: {
     cardName: string;
     condition: string;
   }) => {
     if (!userId) return;
-    const blockedByFree = !isPro && usageCount >= freeLimit;
-    if (blockedByFree) {
-      setGateOpen(true);
-      return;
+
+    // Fresh entitlement before gating; uses return value (React state is async).
+    const preUsage = await refreshUsage(userId);
+    if (preUsage !== null) {
+      if (!preUsage.isPro && preUsage.count >= preUsage.limit) {
+        console.log(LOG, "paywall: pre-scan (free limit)", {
+          isPro: preUsage.isPro,
+          used: preUsage.count,
+          limit: preUsage.limit,
+        });
+        setGateOpen(true);
+        return;
+      }
+    } else {
+      console.log(
+        LOG,
+        "pre-scan: usage fetch failed or aborted — not blocking; server will enforce"
+      );
     }
+
+    // Drop any in-flight /api/usage from before the scan so a late response cannot clobber the result.
+    usageAbortRef.current?.abort();
 
     setLoading(true);
     setResult(null);
+    console.log(LOG, "scan: start POST /api/scan (loading on)");
 
     const controller = new AbortController();
-    // Scan can exceed 15s (OpenAI + eBay + PSA); keep client in sync with serverless limits.
     const timeoutId = setTimeout(() => controller.abort(), 120_000);
 
     try {
@@ -166,68 +460,100 @@ export function HomePageClient() {
       };
 
       if (user?.id) {
-        // getSession() can hang; if it ran before try/finally, loading never cleared. Race + fallback.
-        try {
-          const supabase = createSupabaseBrowserClient();
-          const outcome = await Promise.race([
-            supabase.auth.getSession().then((r) => ({ kind: "ok" as const, r })),
-            new Promise<"timeout">((resolve) =>
-              setTimeout(() => resolve("timeout"), 5_000)
-            ),
-          ]);
-          const token =
-            outcome === "timeout"
-              ? undefined
-              : outcome.r.data.session?.access_token;
-          if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-          }
-        } catch {
-          /* proceed without Authorization */
+        const supabase = createSupabaseBrowserClient();
+        const token = await getAccessTokenRaced(supabase);
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
         }
       }
 
       const res = await fetch("/api/scan", {
-          method: "POST",
-          cache: "no-store",
-          headers,
-          body: JSON.stringify({
-            cardName: payload.cardName,
-            condition: payload.condition,
-            userId,
-          }),
-          signal: controller.signal,
+        method: "POST",
+        cache: "no-store",
+        headers,
+        body: JSON.stringify({
+          cardName: payload.cardName,
+          condition: payload.condition,
+          userId,
+        }),
+        signal: controller.signal,
+      });
+
+      if (res.status === 402) {
+        await refreshUsage(userId);
+        console.log(LOG, "paywall: HTTP 402 from /api/scan (payment required)");
+        setGateOpen(true);
+        return;
+      }
+
+      if (!res.ok) {
+        console.log(LOG, "scan: !res.ok — early return (no setResult)", res.status);
+        const err = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          hint?: string;
+        };
+        console.error(err);
+        const code = err.error ?? `http_${res.status}`;
+        const extra = err.hint ? `\n\n${err.hint}` : "";
+        alert(`Something went wrong (${code}). Try again.${extra}`);
+        return;
+      }
+
+      const data = (await res.json()) as ScanResponse;
+      console.log(LOG, "scan: parsed /api/scan JSON (full object)", data);
+      const mergedOk = hasValidMergedScanData(data);
+      console.log(LOG, "scan: hasValidMergedScanData(data) =", mergedOk, {
+        topLevelKeys: data && typeof data === "object" ? Object.keys(data) : [],
+        scanId: data?.scanId,
+        scanIdType: typeof data?.scanId,
+        confirmedName: data?.confirmedName,
+        worthGrading: data?.worthGrading,
+        worthGradingType: typeof data?.worthGrading,
+        hasRoi: Boolean(data?.roi),
+      });
+      if (!mergedOk) {
+        console.error(
+          LOG,
+          "HARD_FAIL: 200 from /api/scan but hasValidMergedScanData is false (full response follows)",
+          data
+        );
+      }
+
+      lastProFromScanRef.current = { pro: data.isPro, t: Date.now() };
+      console.log(LOG, "scan: setResult(data) — calling", { scanId: data?.scanId });
+      setResult(data);
+      console.log(LOG, "scan: setResult dispatched");
+      const used = data.freeScansUsed ?? data.scansUsedThisMonth;
+      const lim = data.freeScanLimit ?? FREE_SCAN_LIMIT;
+      setUsageCount(used);
+      setFreeLimit(lim);
+      setIsPro(data.isPro);
+      persistAnonymousId(userId);
+
+      // Any successful persisted scan (200 + scanId) must dismiss the paywall. Do not gate this on
+      // heuristics — stale gate + failed hasValidMergedScanData left the modal open on success.
+      if (data?.scanId != null && String(data.scanId).length > 0) {
+        console.log(LOG, "scan: setGateOpen(false) — server saved scan (scanId present)");
+        setGateOpen(false);
+      } else {
+        console.warn(LOG, "scan: setGateOpen not cleared — missing scanId on 200");
+      }
+
+      if (mergedOk) {
+        console.log(LOG, "scan: success (merged payload matches validator)", {
+          isPro: data.isPro,
+          used,
+          limit: lim,
         });
+      } else {
+        console.warn(
+          LOG,
+          "scan: 200 and UI updated but merge heuristic false — check HARD_FAIL log above"
+        );
+      }
 
-        if (res.status === 402) {
-          await refreshUsage(userId);
-          setGateOpen(true);
-          return;
-        }
-
-        if (!res.ok) {
-          const err = (await res.json().catch(() => ({}))) as {
-            error?: string;
-            hint?: string;
-          };
-          console.error(err);
-          const code = err.error ?? `http_${res.status}`;
-          const extra = err.hint ? `\n\n${err.hint}` : "";
-          alert(`Something went wrong (${code}). Try again.${extra}`);
-          return;
-        }
-
-        const data = (await res.json()) as ScanResponse;
-        setResult(data);
-        const used = data.freeScansUsed ?? data.scansUsedThisMonth;
-        const lim = data.freeScanLimit ?? FREE_SCAN_LIMIT;
-        setUsageCount(used);
-        setFreeLimit(lim);
-        setIsPro(data.isPro);
-        persistAnonymousId(userId);
-        if (!data.isPro && used >= lim) {
-          setGateOpen(true);
-        }
+      // Re-sync usage in background; stale responses are handled via abort + lastProFromScan.
+      void refreshUsage(userId);
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         alert("Request timed out. Check your connection and try again.");
@@ -238,48 +564,24 @@ export function HomePageClient() {
     } finally {
       clearTimeout(timeoutId);
       setLoading(false);
+      console.log(LOG, "scan: finally — loading off");
     }
   };
 
-  const handleUpgrade = async () => {
-    // Require authentication for checkout
+  const handleUpgrade = () => {
+    console.log(AUTH_LOG, "paywall CTA: Unlock Pro clicked", {
+      hasUser: Boolean(user?.id),
+    });
     if (!user?.id) {
+      pendingPaywallCheckoutRef.current = true;
+      setPaywallPendingFromCta();
+      console.log(AUTH_LOG, "auth: opening sign-in (pending checkout after login)");
       requestOpenAuthModal();
       return;
     }
-
-    if (!userId) return;
-    persistAnonymousId(userId);
-    setUpgrading(true);
-    try {
-      const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-
-      if (!token) {
-        alert("Authentication required. Please sign in again.");
-        return;
-      }
-
-      const res = await fetch("/api/create-checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({}),
-      });
-
-      if (!res.ok) {
-        alert("Checkout unavailable. Check Stripe configuration.");
-        return;
-      }
-
-      const { url } = (await res.json()) as { url: string };
-      window.location.href = url;
-    } finally {
-      setUpgrading(false);
-    }
+    if (!userId && !user?.id) return;
+    setGateOpen(false);
+    void runStripeCheckout("cta");
   };
 
   const scansLeft = Math.max(0, freeLimit - usageCount);
@@ -459,7 +761,12 @@ export function HomePageClient() {
 
       <ScanGate
         open={gateOpen}
-        onClose={() => setGateOpen(false)}
+        onClose={() => {
+          console.log(AUTH_LOG, "paywall: closed (backdrop or Maybe later)");
+          pendingPaywallCheckoutRef.current = false;
+          clearPaywallPending();
+          setGateOpen(false);
+        }}
         onUpgrade={handleUpgrade}
         upgrading={upgrading}
       />
