@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
 import { ScanGate } from "@/components/ScanGate";
 import { SiteNav } from "@/components/SiteNav";
@@ -159,18 +159,18 @@ export function HomePageClient() {
   const pendingPaywallCheckoutRef = useRef(false);
   const checkoutInFlightRef = useRef(false);
 
-  // Set up user ID - use authenticated user if available, otherwise use anonymous
-  useEffect(() => {
-    if (!authLoading) {
-      if (user?.id) {
-        setUserId(user.id);
-      } else {
-        const anonId = getOrCreateAnonymousId();
-        setUserId(anonId);
-        persistAnonymousId(anonId);
-      }
+  // IDs for /api/usage and /api/scan. Never wait for auth init: anonymous ID must be ready
+  // before getSession() finishes so the first free scan works with no login (FREE_SCAN_LIMIT=1
+  // is enforced on the server, not with a login wall).
+  useLayoutEffect(() => {
+    if (user?.id) {
+      setUserId(user.id);
+      return;
     }
-  }, [user, authLoading]);
+    const anonId = getOrCreateAnonymousId();
+    setUserId(anonId);
+    persistAnonymousId(anonId);
+  }, [user?.id]);
 
   useEffect(() => {
     lastProFromScanRef.current = null;
@@ -423,10 +423,12 @@ export function HomePageClient() {
     cardName: string;
     condition: string;
   }) => {
-    if (!userId) return;
+    // Defensive: allow submit the instant layout has run (or sync fallback for edge races).
+    const scanUserId = userId ?? getOrCreateAnonymousId();
+    if (!scanUserId) return;
 
     // Fresh entitlement before gating; uses return value (React state is async).
-    const preUsage = await refreshUsage(userId);
+    const preUsage = await refreshUsage(scanUserId);
     if (preUsage !== null) {
       if (!preUsage.isPro && preUsage.count >= preUsage.limit) {
         console.log(LOG, "paywall: pre-scan (free limit)", {
@@ -449,7 +451,9 @@ export function HomePageClient() {
 
     setLoading(true);
     setResult(null);
-    console.log(LOG, "scan: start POST /api/scan (loading on)");
+    console.log(LOG, "scan: start POST /api/scan (loading on)", {
+      guest: !user?.id,
+    });
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120_000);
@@ -474,13 +478,13 @@ export function HomePageClient() {
         body: JSON.stringify({
           cardName: payload.cardName,
           condition: payload.condition,
-          userId,
+          userId: scanUserId,
         }),
         signal: controller.signal,
       });
 
       if (res.status === 402) {
-        await refreshUsage(userId);
+        await refreshUsage(scanUserId);
         console.log(LOG, "paywall: HTTP 402 from /api/scan (payment required)");
         setGateOpen(true);
         return;
@@ -528,7 +532,7 @@ export function HomePageClient() {
       setUsageCount(used);
       setFreeLimit(lim);
       setIsPro(data.isPro);
-      persistAnonymousId(userId);
+      persistAnonymousId(scanUserId);
 
       // Any successful persisted scan (200 + scanId) must dismiss the paywall. Do not gate this on
       // heuristics — stale gate + failed hasValidMergedScanData left the modal open on success.
@@ -553,7 +557,7 @@ export function HomePageClient() {
       }
 
       // Re-sync usage in background; stale responses are handled via abort + lastProFromScan.
-      void refreshUsage(userId);
+      void refreshUsage(scanUserId);
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
         alert("Request timed out. Check your connection and try again.");
@@ -579,7 +583,6 @@ export function HomePageClient() {
       requestOpenAuthModal();
       return;
     }
-    if (!userId && !user?.id) return;
     setGateOpen(false);
     void runStripeCheckout("cta");
   };
@@ -629,57 +632,8 @@ export function HomePageClient() {
           </div>
         )}
 
-        <PageAttribution className="mb-6 w-full text-center" />
-
-        {/* Hero */}
-        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1 text-xs font-semibold text-amber-400 uppercase tracking-wider">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-          Sports Card Grading Tool
-        </div>
-
-        <h1 className="mt-3 text-center text-4xl font-black tracking-tight text-white sm:text-5xl leading-[1.1]">
-          Should you grade{" "}
-          <span className="gradient-text">this card?</span>
-        </h1>
-
-        {/* Competitive positioning — the moat */}
-        <p className="mt-4 max-w-md text-center text-base font-semibold text-amber-400 leading-snug">
-          We don&apos;t grade your card. We tell you if it&apos;s worth grading.
-        </p>
-
-        <p className="mt-3 max-w-md text-center text-sm text-zinc-400 leading-relaxed">
-          See raw vs PSA 9 vs PSA 10 ROI before you pay $50 in grading fees. One scan pays for itself.
-        </p>
-
-        <ul className="mt-6 w-full max-w-md space-y-2.5 text-left text-sm text-zinc-300">
-          {[
-            "Avoid wasting $50 on a card that misses gem",
-            "See exact PSA 9 vs PSA 10 break-even before submitting",
-            "Know the verdict before you send to PSA",
-          ].map((line) => (
-            <li key={line} className="flex gap-3">
-              <span className="mt-0.5 shrink-0 text-amber-400" aria-hidden>
-                ✓
-              </span>
-              <span>{line}</span>
-            </li>
-          ))}
-        </ul>
-
-        {/* Social proof */}
-        <div className="mt-5 w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-zinc-400">
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span><strong className="text-white">3,200+</strong> scans run</span>
-          </span>
-          <span className="text-zinc-700">·</span>
-          <span>Built by collectors, trusted by flippers</span>
-          <span className="text-zinc-700">·</span>
-          <span>Use 1 free scan — no signup required</span>
-        </div>
-
-        {/* Form card */}
-        <div className="mt-8 w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
+        {/* Form first: works logged-out, no auth wait; first free scan (server-enforced) */}
+        <div className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
           {checkoutSyncing && (
             <p className="mb-3 text-center text-xs text-amber-200/90">
               Syncing your Pro status…
@@ -687,7 +641,6 @@ export function HomePageClient() {
           )}
           <ScanForm disabled={scanDisabled} onSubmit={handleSubmit} />
 
-          {/* Scan counter — visible inline so mobile users see it update */}
           {userId && !isPro && (
             <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
               <div className="flex gap-1">
@@ -711,6 +664,53 @@ export function HomePageClient() {
               ⚡ Pro — unlimited scans
             </div>
           )}
+        </div>
+
+        <PageAttribution className="mt-8 mb-4 w-full text-center" />
+
+        {/* Hero (below tool so inputs paint first) */}
+        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1 text-xs font-semibold text-amber-400 uppercase tracking-wider">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+          Sports Card Grading Tool
+        </div>
+
+        <h1 className="mt-3 text-center text-4xl font-black tracking-tight text-white sm:text-5xl leading-[1.1]">
+          Should you grade{" "}
+          <span className="gradient-text">this card?</span>
+        </h1>
+
+        <p className="mt-4 max-w-md text-center text-base font-semibold text-amber-400 leading-snug">
+          We don&apos;t grade your card. We tell you if it&apos;s worth grading.
+        </p>
+
+        <p className="mt-3 max-w-md text-center text-sm text-zinc-400 leading-relaxed">
+          See raw vs PSA 9 vs PSA 10 ROI before you pay $50 in grading fees. One scan pays for itself.
+        </p>
+
+        <ul className="mt-6 w-full max-w-md space-y-2.5 text-left text-sm text-zinc-300">
+          {[
+            "Avoid wasting $50 on a card that misses gem",
+            "See exact PSA 9 vs PSA 10 break-even before submitting",
+            "Know the verdict before you send to PSA",
+          ].map((line) => (
+            <li key={line} className="flex gap-3">
+              <span className="mt-0.5 shrink-0 text-amber-400" aria-hidden>
+                ✓
+              </span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-5 w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-zinc-400">
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span><strong className="text-white">3,200+</strong> scans run</span>
+          </span>
+          <span className="text-zinc-700">·</span>
+          <span>Built by collectors, trusted by flippers</span>
+          <span className="text-zinc-700">·</span>
+          <span>Use 1 free scan — no signup required</span>
         </div>
 
         {/* Sample scan link */}
