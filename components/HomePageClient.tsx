@@ -17,6 +17,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { EmailCapture } from "@/components/EmailCapture";
+import { CardCompsTest } from "@/components/CardCompsTest";
 
 const ResultCard = dynamic(
   () =>
@@ -47,6 +48,7 @@ type UsagePayload = {
 
 const LOG = "[cardsnap]";
 const AUTH_LOG = "[cardsnap:auth]";
+const SHOW_CARD_COMPS = process.env.NODE_ENV !== "production";
 
 const PENDING_PAYWALL_CHECKOUT = "cardsnap:pendingPaywallCheckoutTs";
 
@@ -156,6 +158,7 @@ export function HomePageClient() {
   const usageAbortRef = useRef<AbortController | null>(null);
   /** If a recent successful scan said `isPro: true`, do not let a stale /api/usage response clear Pro. */
   const lastProFromScanRef = useRef<{ pro: boolean; t: number } | null>(null);
+  const scanInFlightRef = useRef(false);
   const pendingPaywallCheckoutRef = useRef(false);
   const checkoutInFlightRef = useRef(false);
 
@@ -423,52 +426,61 @@ export function HomePageClient() {
     cardName: string;
     condition: string;
   }) => {
-    // Defensive: allow submit the instant layout has run (or sync fallback for edge races).
-    const scanUserId = userId ?? getOrCreateAnonymousId();
-    if (!scanUserId) return;
-
-    // Fresh entitlement before gating; uses return value (React state is async).
-    const preUsage = await refreshUsage(scanUserId);
-    if (preUsage !== null) {
-      if (!preUsage.isPro && preUsage.count >= preUsage.limit) {
-        console.log(LOG, "paywall: pre-scan (free limit)", {
-          isPro: preUsage.isPro,
-          used: preUsage.count,
-          limit: preUsage.limit,
-        });
-        setGateOpen(true);
-        return;
-      }
-    } else {
-      console.log(
-        LOG,
-        "pre-scan: usage fetch failed or aborted — not blocking; server will enforce"
-      );
-    }
-
-    // Drop any in-flight /api/usage from before the scan so a late response cannot clobber the result.
-    usageAbortRef.current?.abort();
-
+    if (scanInFlightRef.current) return;
+    scanInFlightRef.current = true;
     setLoading(true);
     setResult(null);
-    console.log(LOG, "scan: start POST /api/scan (loading on)", {
-      guest: !user?.id,
-    });
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120_000);
-
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     try {
+      // Defensive: allow submit the instant layout has run (or sync fallback for edge races).
+      const scanUserId = userId ?? getOrCreateAnonymousId();
+      if (!scanUserId) return;
+
+      // Fresh entitlement before gating; uses return value (React state is async).
+      const preUsage = await refreshUsage(scanUserId);
+      if (preUsage !== null) {
+        if (!preUsage.isPro && preUsage.count >= preUsage.limit) {
+          console.log(LOG, "paywall: pre-scan (free limit)", {
+            isPro: preUsage.isPro,
+            used: preUsage.count,
+            limit: preUsage.limit,
+          });
+          setGateOpen(true);
+          return;
+        }
+      } else {
+        console.log(
+          LOG,
+          "pre-scan: usage fetch failed or aborted — not blocking; server will enforce"
+        );
+      }
+
+      // Drop any in-flight /api/usage from before the scan so a late response cannot clobber the result.
+      usageAbortRef.current?.abort();
+
+      console.log(LOG, "scan: start POST /api/scan (loading on)", {
+        guest: !user?.id,
+      });
+
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 120_000);
+
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
 
       if (user?.id) {
         const supabase = createSupabaseBrowserClient();
-        const token = await getAccessTokenRaced(supabase);
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
+        const token = await waitForAccessToken(supabase, {
+          context: "scan",
+          maxMs: 15_000,
+        });
+        if (!token) {
+          alert("Your session is still loading. Please try again in a moment.");
+          return;
         }
+        headers["Authorization"] = `Bearer ${token}`;
       }
 
       const res = await fetch("/api/scan", {
@@ -566,7 +578,8 @@ export function HomePageClient() {
         console.error(err);
       }
     } finally {
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
+      scanInFlightRef.current = false;
       setLoading(false);
       console.log(LOG, "scan: finally — loading off");
     }
@@ -665,6 +678,8 @@ export function HomePageClient() {
             </div>
           )}
         </div>
+
+        {SHOW_CARD_COMPS && <CardCompsTest />}
 
         <PageAttribution className="mt-8 mb-4 w-full text-center" />
 
