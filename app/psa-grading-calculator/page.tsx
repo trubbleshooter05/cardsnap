@@ -346,7 +346,7 @@ export default function PsaGradingCalculatorPage() {
         {/* Tool CTA */}
         <section className="mt-12 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-600/5 p-8 text-center">
           <h2 className="text-2xl font-semibold text-white">
-            Ready to Scan Your Card?
+            Ready to Analyze Your Card?
           </h2>
           <p className="mt-2 text-zinc-300">
             Enter any card name to see instant ROI comps, PSA population data, and
@@ -356,10 +356,10 @@ export default function PsaGradingCalculatorPage() {
             href="/"
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 font-semibold text-black hover:from-amber-300 hover:to-orange-400 transition-colors"
           >
-            Scan Your Card Now →
+            Analyze Your Card Now →
           </Link>
           <p className="mt-3 text-xs text-zinc-500">
-            1 free scan. No signup required.
+            1 free analysis. No signup required.
           </p>
         </section>
 

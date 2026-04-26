@@ -2,6 +2,7 @@
 
 type Props = {
   disabled?: boolean;
+  progressMessage?: string;
   onSubmit: (payload: { cardName: string; condition: string }) => void;
 };
 
@@ -12,7 +13,7 @@ const CONDITIONS = [
   { value: "Mint", label: "Mint" },
 ] as const;
 
-export function ScanForm({ disabled, onSubmit }: Props) {
+export function ScanForm({ disabled, progressMessage, onSubmit }: Props) {
   return (
     <form
       className="flex w-full flex-col gap-4"
@@ -91,10 +92,10 @@ export function ScanForm({ disabled, onSubmit }: Props) {
                 d="M4 12a8 8 0 018-8v8H4z"
               />
             </svg>
-            Analyzing…
+            {progressMessage ?? "Analyzing card"}
           </span>
         ) : (
-          "Scan Your Card"
+          "Analyze Card"
         )}
       </button>
     </form>

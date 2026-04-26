@@ -56,7 +56,7 @@ export default async function SharedResultPage({
             href="/"
             className="font-medium text-zinc-800 underline dark:text-zinc-200"
           >
-            ← New scan
+            ← New analysis
           </Link>
         </p>
         <ResultCard data={row.result} scanId={row.id} />

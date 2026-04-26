@@ -16,11 +16,15 @@ function hasEbayPrice(avg: number | null | undefined): boolean {
   return avg != null && !Number.isNaN(avg);
 }
 
+const ESTIMATE_UPDATED_LABEL = "April 11, 2026";
+
 export function ResultCard({ data, scanId, onNewScan }: Props) {
   const roi = data.roi ?? computeGradingRoi(data);
   const worth = roi.headlineVerdict === "grade";
   const psa = data.psa;
   const ebayOk = hasEbayPrice(data.ebay.avgSoldPrice);
+  const confidenceLevel =
+    ebayOk && psa ? "High" : ebayOk || psa ? "Medium" : "Directional";
 
   return (
     <div className="w-full max-w-md">
@@ -151,7 +155,7 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               <StatCell
                 label="eBay comps"
                 value={ebayOk ? formatUsd(data.ebay.avgSoldPrice) : "—"}
-                sub={ebayOk ? "Recent listings avg" : "Configure eBay for live comps"}
+                sub={ebayOk ? "Recent listings avg" : "Live comps not configured"}
                 muted={!ebayOk}
               />
               <StatCell
@@ -168,6 +172,37 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
           <p className="mt-4 text-[11px] leading-relaxed text-zinc-600">
             Estimates only; PSA prices and fees change. Not financial advice.
           </p>
+
+          <div className="mt-5 rounded-xl border border-zinc-700/80 bg-zinc-900/50 px-3.5 py-3 text-xs leading-relaxed text-zinc-400">
+            <p className="font-semibold text-zinc-300">
+              How this estimate was calculated
+            </p>
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between gap-3">
+                <span className="text-zinc-500">Source type</span>
+                <span className="text-right text-zinc-300">
+                  {ebayOk ? "Live comps" : "Estimated comps"}
+                </span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-zinc-500">Last updated</span>
+                <span className="text-right text-zinc-300">
+                  {ESTIMATE_UPDATED_LABEL}
+                </span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-zinc-500">Confidence level</span>
+                <span className="text-right text-zinc-300">
+                  {confidenceLevel}
+                </span>
+              </div>
+            </div>
+            {!ebayOk ? (
+              <p className="mt-2 text-zinc-500">
+                eBay live comps are not configured for this estimate.
+              </p>
+            ) : null}
+          </div>
 
           <div className="mt-5 rounded-xl border border-zinc-700/80 bg-zinc-900/50 px-3.5 py-3 text-sm leading-snug text-zinc-400">
             {psa && (psa.psa9Pop != null || psa.psa10Pop != null) ? (
@@ -201,14 +236,14 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
                 onClick={onNewScan}
                 className="flex h-12 flex-1 items-center justify-center rounded-xl border border-zinc-600 bg-transparent text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900"
               >
-                New scan
+                New analysis
               </button>
             ) : (
               <Link
                 href="/"
                 className="flex h-12 flex-1 items-center justify-center rounded-xl border border-zinc-600 bg-transparent text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900"
               >
-                New scan
+                New analysis
               </Link>
             )}
           </div>

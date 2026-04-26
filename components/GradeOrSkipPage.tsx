@@ -215,10 +215,10 @@ export function GradeOrSkipPage({
             href="/"
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 font-semibold text-black hover:from-amber-300 hover:to-orange-400 transition-colors"
           >
-            Scan Your Card Now →
+            Analyze Your Card Now →
           </Link>
           <p className="mt-3 text-xs text-zinc-500">
-            1 free scan. No signup required.
+            1 free analysis. No signup required.
           </p>
         </section>
 

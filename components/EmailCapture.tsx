@@ -8,7 +8,7 @@ type Props = {
 
 export function EmailCapture({ scanId }: Props) {
   const [email, setEmail] = useState("");
-  const [picks, setPicks] = useState(true);
+  const [picks, setPicks] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   if (status === "done") {
@@ -75,7 +75,7 @@ export function EmailCapture({ scanId }: Props) {
           className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 accent-amber-400"
         />
         <span className="text-xs text-zinc-400">
-          Also email me monthly high-ROI grading picks
+          Optionally send me monthly high-ROI grading picks
         </span>
       </label>
       {status === "error" && (

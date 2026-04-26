@@ -253,7 +253,7 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
         </section>
 
         <section className="mt-10 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-600/5 p-8 text-center">
-          <h2 className="text-xl font-semibold text-white">Scan your card now</h2>
+          <h2 className="text-xl font-semibold text-white">Analyze your card now</h2>
           <p className="mt-2 text-sm text-zinc-400">
             Comps, pop context, and a Grade it / Skip it read on your copy.
           </p>
@@ -261,7 +261,7 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
             href="/"
             className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 font-semibold text-black transition-colors hover:from-amber-300 hover:to-orange-400"
           >
-            Scan your card now →
+            Analyze your card now →
           </Link>
         </section>
 

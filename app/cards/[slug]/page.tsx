@@ -234,14 +234,14 @@ export default function CardSeoPage({ params }: Props) {
             Have this card? Get a personalized verdict
           </p>
           <p className="mt-2 text-sm text-zinc-400">
-            Scan yours with our tool — instant comps, PSA context, and a clear
+            Analyze yours with our tool — instant comps, PSA context, and a clear
             grade-or-skip recommendation.
           </p>
           <Link
             href="/"
             className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-white px-5 text-sm font-semibold text-zinc-900 hover:bg-zinc-200"
           >
-            Scan your card →
+            Analyze your card →
           </Link>
         </aside>
 

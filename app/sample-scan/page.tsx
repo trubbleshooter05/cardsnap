@@ -4,9 +4,9 @@ import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Sample Scan — See What CardSnap Gives You | CardSnap",
+  title: "Sample Analysis — See What CardSnap Gives You | CardSnap",
   description:
-    "See exactly what a CardSnap grading analysis looks like before you use your free scan. Raw value, PSA 9, PSA 10, pop data, and a grade-or-skip verdict.",
+    "See exactly what a CardSnap grading analysis looks like before you use your free analysis. Raw value, PSA 9, PSA 10, pop data, and a grade-or-skip verdict.",
   alternates: { canonical: `${getSiteUrl()}/sample-scan` },
 };
 
@@ -51,10 +51,10 @@ export default function SampleScanPage() {
         {/* Sample banner */}
         <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center">
           <p className="text-sm font-semibold text-amber-400">
-            👀 This is a real sample scan result
+            This is a real sample analysis result
           </p>
           <p className="mt-1 text-xs text-amber-200/70">
-            This is exactly what you get when you scan a card. Run your own card free — no signup required.
+            This is exactly what you get when you analyze a card. Run your own card free — no signup required.
           </p>
         </div>
 
@@ -170,7 +170,7 @@ export default function SampleScanPage() {
                   href="/"
                   className="flex h-12 flex-1 items-center justify-center rounded-xl bg-amber-400 text-sm font-bold text-zinc-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
                 >
-                  Scan your own card — free
+                  Analyze your own card — free
                 </Link>
               </div>
             </div>
@@ -203,13 +203,13 @@ export default function SampleScanPage() {
         <div className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-6 py-6 text-center">
           <p className="text-lg font-bold text-white">Ready to check your card?</p>
           <p className="mt-2 text-sm text-zinc-400">
-            1 free scan. No signup. See your result in seconds.
+            1 free analysis. No signup. See your result in seconds.
           </p>
           <Link
             href="/"
             className="mt-4 inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-8 text-sm font-bold text-zinc-950 shadow-lg shadow-amber-500/20 transition hover:from-amber-300 hover:to-orange-400"
           >
-            Scan your card free →
+            Analyze your card free →
           </Link>
         </div>
       </main>

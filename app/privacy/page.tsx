@@ -79,7 +79,7 @@ export default function PrivacyPage() {
               email; clearing cookies may reset your identifier.
             </li>
             <li>
-              <strong className="text-zinc-200">Scan and usage records.</strong> We
+              <strong className="text-zinc-200">Analysis and usage records.</strong> We
               store scan outputs and related metadata needed to show results and
               operate the product.
             </li>

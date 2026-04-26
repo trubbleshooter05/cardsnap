@@ -49,6 +49,12 @@ type UsagePayload = {
 const LOG = "[cardsnap]";
 const AUTH_LOG = "[cardsnap:auth]";
 const SHOW_CARD_COMPS = process.env.NODE_ENV !== "production";
+const ANALYSIS_PROGRESS_MESSAGES = [
+  "Finding raw card comps",
+  "Comparing PSA 9 and PSA 10 values",
+  "Estimating grading fees",
+  "Calculating ROI verdict",
+] as const;
 
 const PENDING_PAYWALL_CHECKOUT = "cardsnap:pendingPaywallCheckoutTs";
 
@@ -154,6 +160,7 @@ export function HomePageClient() {
   const [gateOpen, setGateOpen] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
   const [checkoutSyncing, setCheckoutSyncing] = useState(false);
+  const [progressIndex, setProgressIndex] = useState(0);
 
   const usageAbortRef = useRef<AbortController | null>(null);
   /** If a recent successful scan said `isPro: true`, do not let a stale /api/usage response clear Pro. */
@@ -161,6 +168,7 @@ export function HomePageClient() {
   const scanInFlightRef = useRef(false);
   const pendingPaywallCheckoutRef = useRef(false);
   const checkoutInFlightRef = useRef(false);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   // IDs for /api/usage and /api/scan. Never wait for auth init: anonymous ID must be ready
   // before getSession() finishes so the first free scan works with no login (FREE_SCAN_LIMIT=1
@@ -178,6 +186,31 @@ export function HomePageClient() {
   useEffect(() => {
     lastProFromScanRef.current = null;
   }, [userId]);
+
+  useEffect(() => {
+    if (!loading) {
+      setProgressIndex(0);
+      return;
+    }
+
+    setProgressIndex(0);
+    const id = window.setInterval(() => {
+      setProgressIndex((i) => (i + 1) % ANALYSIS_PROGRESS_MESSAGES.length);
+    }, 1700);
+
+    return () => window.clearInterval(id);
+  }, [loading]);
+
+  useEffect(() => {
+    if (!result || loading) return;
+
+    window.requestAnimationFrame(() => {
+      resultRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, [result, loading]);
 
   const refreshUsage = useCallback(
     async (uid: string) => {
@@ -602,6 +635,7 @@ export function HomePageClient() {
 
   const scansLeft = Math.max(0, freeLimit - usageCount);
   const scanDisabled = loading || checkoutSyncing;
+  const progressMessage = ANALYSIS_PROGRESS_MESSAGES[progressIndex];
 
   return (
     <div className="min-h-screen bg-[#09090b]">
@@ -652,7 +686,11 @@ export function HomePageClient() {
               Syncing your Pro status…
             </p>
           )}
-          <ScanForm disabled={scanDisabled} onSubmit={handleSubmit} />
+          <ScanForm
+            disabled={scanDisabled}
+            progressMessage={progressMessage}
+            onSubmit={handleSubmit}
+          />
 
           {userId && !isPro && (
             <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
@@ -667,14 +705,14 @@ export function HomePageClient() {
                 ))}
               </div>
               <span className="text-xs text-zinc-500">
-                {usageCount} of {freeLimit} free scan
-                {freeLimit === 1 ? "" : "s"} used
+                {usageCount} of {freeLimit} free{" "}
+                {freeLimit === 1 ? "analysis" : "analyses"} used
               </span>
             </div>
           )}
           {isPro && (
             <div className="mt-4 border-t border-zinc-800 pt-3 text-center text-xs text-amber-400 font-medium">
-              ⚡ Pro — unlimited scans
+              ⚡ Pro — unlimited analyses
             </div>
           )}
         </div>
@@ -699,7 +737,7 @@ export function HomePageClient() {
         </p>
 
         <p className="mt-3 max-w-md text-center text-sm text-zinc-400 leading-relaxed">
-          See raw vs PSA 9 vs PSA 10 ROI before you pay $50 in grading fees. One scan pays for itself.
+          See raw vs PSA 9 vs PSA 10 ROI before you pay $50 in grading fees. One analysis pays for itself.
         </p>
 
         <ul className="mt-6 w-full max-w-md space-y-2.5 text-left text-sm text-zinc-300">
@@ -720,12 +758,12 @@ export function HomePageClient() {
         <div className="mt-5 w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-zinc-400">
           <span className="flex items-center gap-1.5">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span><strong className="text-white">3,200+</strong> scans run</span>
+            <span><strong className="text-white">3,200+</strong> analyses run</span>
           </span>
           <span className="text-zinc-700">·</span>
           <span>Built by collectors, trusted by flippers</span>
           <span className="text-zinc-700">·</span>
-          <span>Use 1 free scan — no signup required</span>
+          <span>Use 1 free analysis — no signup required</span>
         </div>
 
         {/* Sample scan link */}
@@ -733,7 +771,7 @@ export function HomePageClient() {
           <p className="mt-3 text-center text-xs text-zinc-600">
             Not sure what you get?{" "}
             <a href="/sample-scan" className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300">
-              See a sample scan result →
+              See a sample analysis result →
             </a>
           </p>
         )}
@@ -749,14 +787,14 @@ export function HomePageClient() {
               <div className="absolute inset-0 rounded-full blur-md bg-amber-400/20 animate-pulse" />
             </div>
             <span className="text-sm text-zinc-400 animate-pulse">
-              Analyzing your card…
+              {progressMessage}
             </span>
           </div>
         )}
 
         {/* Result */}
         {result && !loading && (
-          <div className="mt-10 w-full flex flex-col items-center">
+          <div ref={resultRef} className="mt-10 w-full scroll-mt-6 flex flex-col items-center">
             <ResultCard
               data={result}
               scanId={result.scanId}
