@@ -25,6 +25,11 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
   const ebayOk = hasEbayPrice(data.ebay.avgSoldPrice);
   const confidenceLevel =
     ebayOk && psa ? "High" : ebayOk || psa ? "Medium" : "Directional";
+  const headlineCardValue = Math.max(
+    data.rawValueHigh,
+    data.gradedPSA9Value,
+    data.gradedPSA10Value
+  );
 
   return (
     <div className="w-full max-w-md">
@@ -48,6 +53,26 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             {[data.year, data.player, data.set].filter(Boolean).join(" · ")}
           </p>
 
+          <div className="mt-5 rounded-2xl border border-amber-500/25 bg-amber-500/[0.08] px-4 py-3 text-center">
+            <p className="text-sm font-semibold leading-snug text-amber-200">
+              You could be sitting on a{" "}
+              <span className="text-lg font-black tabular-nums text-white">
+                {formatUsd(headlineCardValue)}
+              </span>{" "}
+              card
+            </p>
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 items-stretch gap-2 rounded-xl bg-zinc-900/70 p-2 ring-1 ring-zinc-800">
+            <ValueStep label="Raw value" value={formatUsd(roi.rawLiquidationUsd)} />
+            <ValueStep label="PSA 9" value={formatUsd(data.gradedPSA9Value)} />
+            <ValueStep
+              label="PSA 10"
+              value={formatUsd(data.gradedPSA10Value)}
+              highlight
+            />
+          </div>
+
           {/* ROI headline — screenshot-focused */}
           <div
             className={`mt-6 rounded-2xl border p-4 sm:p-5 ${
@@ -70,7 +95,14 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               Expected net if PSA 10 vs selling raw, after PSA fee &amp; est.
               shipping
             </p>
+            <p className="mt-2 text-center text-xs leading-snug text-zinc-400">
+              Based on recent market comps and grading outcomes
+            </p>
           </div>
+
+          <p className="mt-3 text-center text-xs text-amber-300/80">
+            Card values fluctuate — this estimate may change
+          </p>
 
           <div
             className={`mt-4 flex items-start gap-3 rounded-xl border p-3 ${
@@ -249,6 +281,41 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ValueStep({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-lg px-2.5 py-2 text-center ${
+        highlight
+          ? "bg-emerald-500/15 ring-1 ring-emerald-500/35"
+          : "bg-zinc-950/60 ring-1 ring-zinc-800/80"
+      }`}
+    >
+      <p
+        className={`text-[10px] font-semibold uppercase tracking-wider ${
+          highlight ? "text-emerald-300" : "text-zinc-500"
+        }`}
+      >
+        {label}
+      </p>
+      <p
+        className={`mt-1 text-sm font-bold tabular-nums ${
+          highlight ? "text-white" : "text-zinc-200"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }

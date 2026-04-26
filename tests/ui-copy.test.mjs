@@ -34,3 +34,14 @@ test("result card explains estimate source and safer email opt-in is default", (
   assert.match(result, /eBay live comps are not configured/);
   assert.match(email, /useState\(false\)/);
 });
+
+test("result card emphasizes upside and market movement", () => {
+  const result = read("components/ResultCard.tsx");
+
+  assert.match(result, /You could be sitting on a/);
+  assert.match(result, /Raw value/);
+  assert.match(result, /PSA 9/);
+  assert.match(result, /PSA 10/);
+  assert.match(result, /Based on recent market comps and grading outcomes/);
+  assert.match(result, /Card values fluctuate/);
+});

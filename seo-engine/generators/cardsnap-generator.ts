@@ -35,12 +35,16 @@ const MAX = args.includes("--max") ? parseInt(args[args.indexOf("--max") + 1], 1
 function loadEnvKey(): string | null {
   const envKey = process.env.OPENAI_API_KEY?.trim();
   if (envKey) return envKey;
-  // Try cardsnap .env.local
-  const envPath = path.join(path.dirname(ROOT), "cardsnap", ".env.local");
-  if (fs.existsSync(envPath)) {
-    const raw = fs.readFileSync(envPath, "utf8");
-    const m = raw.match(/^OPENAI_API_KEY=(.+)$/m);
-    if (m) return m[1].trim().replace(/^["']|["']$/g, "");
+  const envPaths = [
+    path.join(ROOT, "..", ".env.local"),
+    path.join(process.env.HOME ?? "", ".hermes", ".env"),
+  ];
+  for (const envPath of envPaths) {
+    if (fs.existsSync(envPath)) {
+      const raw = fs.readFileSync(envPath, "utf8");
+      const m = raw.match(/^OPENAI_API_KEY=(.+)$/m);
+      if (m) return m[1].trim().replace(/^["']|["']$/g, "");
+    }
   }
   return null;
 }
