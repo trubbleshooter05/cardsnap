@@ -203,7 +203,7 @@ export default function SampleScanPage() {
         <div className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-6 py-6 text-center">
           <p className="text-lg font-bold text-white">Ready to check your card?</p>
           <p className="mt-2 text-sm text-zinc-400">
-            1 free analysis. No signup. See your result in seconds.
+            3 free analyses. No signup. See your result in seconds.
           </p>
           <Link
             href="/"

@@ -3,22 +3,29 @@ import { createServerSupabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   try {
-    const { email, picks, scanId } = (await req.json()) as {
+    const { email, picks, scanId, source } = (await req.json()) as {
       email?: string;
       picks?: boolean;
       scanId?: string;
+      source?: string;
     };
 
     if (!email || typeof email !== "string") {
       return NextResponse.json({ error: "invalid_email" }, { status: 400 });
     }
 
+    const allowedSources = new Set([
+      "scan_result",
+      "pre_paywall",
+      "pricing",
+    ]);
+
     const supabase = createServerSupabase();
     const { error } = await supabase.from("email_leads").insert({
       email: email.toLowerCase().trim(),
       monthly_picks: picks ?? false,
       scan_id: scanId ?? null,
-      source: "scan_result",
+      source: source && allowedSources.has(source) ? source : "scan_result",
     });
 
     if (error) {

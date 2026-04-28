@@ -4,9 +4,21 @@ import { useState } from "react";
 
 type Props = {
   scanId?: string;
+  source?: "scan_result" | "pre_paywall" | "pricing";
+  title?: string;
+  description?: string;
+  ctaLabel?: string;
+  successMessage?: string;
 };
 
-export function EmailCapture({ scanId }: Props) {
+export function EmailCapture({
+  scanId,
+  source = "scan_result",
+  title = "Get your full grading analysis emailed to you — free",
+  description = "We'll send this result plus a breakdown of why. No spam.",
+  ctaLabel = "Send",
+  successMessage = "Sent! Check your inbox for your full grading analysis.",
+}: Props) {
   const [email, setEmail] = useState("");
   const [picks, setPicks] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -14,7 +26,7 @@ export function EmailCapture({ scanId }: Props) {
   if (status === "done") {
     return (
       <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-4 py-3 text-center text-sm text-emerald-400">
-        ✓ Sent! Check your inbox for your full grading analysis.
+        ✓ {successMessage}
       </div>
     );
   }
@@ -27,7 +39,7 @@ export function EmailCapture({ scanId }: Props) {
       const res = await fetch("/api/capture-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, picks, scanId }),
+        body: JSON.stringify({ email, picks, scanId, source }),
       });
       if (res.ok) {
         setStatus("done");
@@ -45,10 +57,10 @@ export function EmailCapture({ scanId }: Props) {
       className="mt-6 w-full rounded-xl border border-zinc-700 bg-zinc-900/80 px-5 py-4 space-y-3"
     >
       <p className="text-sm font-semibold text-white">
-        Get your full grading analysis emailed to you — free
+        {title}
       </p>
       <p className="text-xs text-zinc-400 leading-relaxed">
-        We&apos;ll send this result plus a breakdown of why. No spam.
+        {description}
       </p>
       <div className="flex gap-2">
         <input
@@ -64,7 +76,7 @@ export function EmailCapture({ scanId }: Props) {
           disabled={status === "loading"}
           className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-60"
         >
-          {status === "loading" ? "…" : "Send"}
+          {status === "loading" ? "…" : ctaLabel}
         </button>
       </div>
       <label className="flex items-center gap-2 cursor-pointer select-none">

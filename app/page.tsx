@@ -20,7 +20,7 @@ export default function HomePage() {
       price: "0",
       priceCurrency: "USD",
       description:
-        "One free analysis for new visitors; optional paid plan for unlimited usage.",
+        "Three free analyses for new visitors; optional paid plan for unlimited usage.",
     },
     provider: {
       "@type": "Organization",

@@ -13,6 +13,9 @@ export function SiteFooter() {
           <Link href="/cards" className="hover:text-zinc-300">
             Card values
           </Link>
+          <Link href="/pricing" className="hover:text-zinc-300">
+            Pricing
+          </Link>
           <Link href="/guides" className="hover:text-zinc-300">
             Guides
           </Link>

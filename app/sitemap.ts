@@ -66,6 +66,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified, changeFrequency: "weekly", priority: 1 },
     { url: `${base}/cards`, lastModified, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/pricing`, lastModified, changeFrequency: "monthly", priority: 0.85 },
     { url: `${base}/guides`, lastModified, changeFrequency: "weekly", priority: 0.85 },
     { url: `${base}/watchlist`, lastModified, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/psa-grading-calculator`, lastModified, changeFrequency: "monthly", priority: 0.8 },

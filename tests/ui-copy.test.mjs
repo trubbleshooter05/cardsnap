@@ -45,3 +45,22 @@ test("result card emphasizes upside and market movement", () => {
   assert.match(result, /Based on recent market comps and grading outcomes/);
   assert.match(result, /Card values fluctuate/);
 });
+
+test("monetization funnel shows pricing and gives three free analyses", () => {
+  const usage = read("lib/usage-limits.ts");
+  const gate = read("components/ScanGate.tsx");
+  const pricing = read("app/pricing/page.tsx");
+  const nav = read("components/SiteNav.tsx");
+  const footer = read("components/SiteFooter.tsx");
+  const sitemap = read("app/sitemap.ts");
+
+  assert.match(usage, /FREE_SCAN_LIMIT = 3/);
+  assert.match(gate, /\$9\/mo/);
+  assert.match(gate, /\$29\/yr founding/);
+  assert.match(pricing, /CardSnap Pro/);
+  assert.match(pricing, /\$9/);
+  assert.match(pricing, /\$29/);
+  assert.match(nav, /Pricing/);
+  assert.match(footer, /Pricing/);
+  assert.match(sitemap, /\/pricing/);
+});

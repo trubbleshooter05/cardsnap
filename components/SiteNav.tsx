@@ -93,6 +93,7 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
             )}
             <Link href="/" className="hover:text-white transition-colors">Analyze</Link>
             <Link href="/cards" className="hover:text-white transition-colors">Card values</Link>
+            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
 
             {/* Desktop Guides dropdown */}
             <div className="group relative">
@@ -169,6 +170,7 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
 
             <Link href="/" className={linkCls} onClick={close}>Analyze</Link>
             <Link href="/cards" className={linkCls} onClick={close}>Card values</Link>
+            <Link href="/pricing" className={linkCls} onClick={close}>Pricing</Link>
 
             <div className="my-1 h-px bg-zinc-800" />
 

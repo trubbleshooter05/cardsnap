@@ -159,6 +159,7 @@ export function HomePageClient() {
   const [result, setResult] = useState<ScanResponse | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
+  const [reportCheckouting, setReportCheckouting] = useState(false);
   const [checkoutSyncing, setCheckoutSyncing] = useState(false);
   const [progressIndex, setProgressIndex] = useState(0);
 
@@ -633,6 +634,26 @@ export function HomePageClient() {
     void runStripeCheckout("cta");
   };
 
+  const handleReportCheckout = async () => {
+    if (reportCheckouting) return;
+    setReportCheckouting(true);
+    try {
+      const res = await fetch("/api/create-report-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scanId: result?.scanId }),
+      });
+      if (!res.ok) {
+        alert("Single report checkout is unavailable right now.");
+        return;
+      }
+      const { url } = (await res.json()) as { url: string };
+      window.location.href = url;
+    } finally {
+      setReportCheckouting(false);
+    }
+  };
+
   const scansLeft = Math.max(0, freeLimit - usageCount);
   const scanDisabled = loading || checkoutSyncing;
   const progressMessage = ANALYSIS_PROGRESS_MESSAGES[progressIndex];
@@ -717,6 +738,18 @@ export function HomePageClient() {
           )}
         </div>
 
+        {!isPro && !result && (
+          <div className="w-full max-w-md">
+            <EmailCapture
+              source="pre_paywall"
+              title="Get monthly high-ROI grading picks"
+              description="Leave your email before you scan and we’ll send collector-friendly cards worth checking."
+              ctaLabel="Join"
+              successMessage="You're on the CardSnap list."
+            />
+          </div>
+        )}
+
         {SHOW_CARD_COMPS && <CardCompsTest />}
 
         <PageAttribution className="mt-8 mb-4 w-full text-center" />
@@ -763,7 +796,7 @@ export function HomePageClient() {
           <span className="text-zinc-700">·</span>
           <span>Built by collectors, trusted by flippers</span>
           <span className="text-zinc-700">·</span>
-          <span>Use 1 free analysis — no signup required</span>
+          <span>Use 3 free analyses — no signup required</span>
         </div>
 
         {/* Sample scan link */}
@@ -821,7 +854,9 @@ export function HomePageClient() {
           setGateOpen(false);
         }}
         onUpgrade={handleUpgrade}
+        onReportCheckout={handleReportCheckout}
         upgrading={upgrading}
+        reportCheckouting={reportCheckouting}
       />
 
     </div>

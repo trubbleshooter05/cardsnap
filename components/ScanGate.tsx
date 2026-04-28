@@ -4,10 +4,19 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onUpgrade: () => void;
+  onReportCheckout?: () => void;
   upgrading: boolean;
+  reportCheckouting?: boolean;
 };
 
-export function ScanGate({ open, onClose, onUpgrade, upgrading }: Props) {
+export function ScanGate({
+  open,
+  onClose,
+  onUpgrade,
+  onReportCheckout,
+  upgrading,
+  reportCheckouting = false,
+}: Props) {
   if (!open) return null;
 
   return (
@@ -35,6 +44,21 @@ export function ScanGate({ open, onClose, onUpgrade, upgrading }: Props) {
           Your next card could be worth $500+ graded — or nothing after fees if it misses gem. CardSnap Pro pays for itself on a single correct decision.
         </p>
 
+        <div className="mt-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-300">
+            Founding price
+          </p>
+          <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
+            <span className="text-3xl font-black tracking-tight text-white">$9/mo</span>
+            <span className="pb-1 text-sm font-semibold text-amber-200">
+              or $29/yr founding
+            </span>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+            Unlimited grading decisions, cancel anytime. The annual founding price is for early users.
+          </p>
+        </div>
+
         <ul className="mt-5 space-y-2.5">
           {[
             "See exact PSA 9 vs PSA 10 ROI before you pay",
@@ -56,11 +80,21 @@ export function ScanGate({ open, onClose, onUpgrade, upgrading }: Props) {
             onClick={onUpgrade}
             className="btn-amber flex h-12 w-full items-center justify-center rounded-xl text-sm font-bold shadow-lg shadow-amber-500/20"
           >
-            {upgrading ? "Redirecting…" : "Unlock Pro — Stop Guessing"}
+            {upgrading ? "Redirecting…" : "Unlock Pro — $9/mo"}
           </button>
           <p className="text-center text-xs leading-relaxed text-zinc-500">
             One unlocked scan pays for a full year of CardSnap.
           </p>
+          {onReportCheckout ? (
+            <button
+              type="button"
+              disabled={reportCheckouting}
+              onClick={onReportCheckout}
+              className="flex h-11 w-full items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900 text-sm font-semibold text-zinc-200 transition-colors hover:border-amber-500/50 hover:text-amber-300 disabled:opacity-60"
+            >
+              {reportCheckouting ? "Redirecting…" : "Buy one report — $4.99"}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onClose}
