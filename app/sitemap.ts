@@ -22,6 +22,7 @@ function lastModifiedForCard(c: CardPage): Date {
 function buildCardRoutes(base: string): MetadataRoute.Sitemap {
   const bySlug = new Map<string, CardPage>();
   for (const c of cardPages) {
+    if (!/^[a-z0-9-]+$/.test(c.slug)) continue;
     const prev = bySlug.get(c.slug);
     if (!prev || lastModifiedForCard(c) > lastModifiedForCard(prev)) {
       bySlug.set(c.slug, c);
@@ -35,6 +36,23 @@ function buildCardRoutes(base: string): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     }));
+}
+
+function canonicalOnly(routes: MetadataRoute.Sitemap): MetadataRoute.Sitemap {
+  const out = new Map<string, MetadataRoute.Sitemap[number]>();
+
+  for (const route of routes) {
+    if (route.url.includes("?") || route.url.includes("#")) continue;
+
+    const cleanUrl =
+      route.url.endsWith("/") && route.url !== `${getSiteUrl()}/`
+        ? route.url.slice(0, -1)
+        : route.url;
+
+    out.set(cleanUrl, { ...route, url: cleanUrl });
+  }
+
+  return Array.from(out.values()).sort((a, b) => a.url.localeCompare(b.url));
 }
 
 /**
@@ -96,12 +114,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.65,
   }));
 
-  return [
+  return canonicalOnly([
     ...staticRoutes,
     ...seoGuideRoutes,
     ...pokemonGuideRoutes,
     ...cardRoutes,
     ...tier1ProgrammaticRoutes,
     ...acquisitionRoutes,
-  ];
+  ]);
 }

@@ -16,6 +16,8 @@ import { PageAttribution } from "@/components/PageAttribution";
 
 type Props = { params: { slug: string } };
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return getAllCardSlugs();
 }
@@ -30,6 +32,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: card.metaTitle,
     description: card.metaDescription,
     alternates: { canonical: url },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+      },
+    },
     openGraph: {
       title: card.metaTitle,
       description: card.metaDescription,
@@ -37,11 +47,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: "CardSnap",
       type: "article",
       locale: "en_US",
+      images: [
+        {
+          url: "/opengraph-image",
+          width: 1200,
+          height: 630,
+          alt: `${card.title} grading value guide`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: card.metaTitle,
       description: card.metaDescription,
+      images: ["/opengraph-image"],
     },
   };
 }

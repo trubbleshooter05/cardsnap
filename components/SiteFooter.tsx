@@ -10,6 +10,9 @@ export function SiteFooter() {
           © {new Date().getUTCFullYear()} CardSnap
         </p>
         <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Legal and policies">
+          <Link href="/cards" className="hover:text-zinc-300">
+            Card values
+          </Link>
           <Link href="/guides" className="hover:text-zinc-300">
             Guides
           </Link>

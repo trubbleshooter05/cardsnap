@@ -11,15 +11,47 @@ import { formatUsd } from "@/lib/format-currency";
 import { getSiteUrl } from "@/lib/site-url";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
+import { JsonLd } from "@/components/JsonLd";
 
 export async function generateMetadata(): Promise<Metadata> {
   const base = getSiteUrl();
   return {
     title: "Sports Card Values & Grading Guide | CardSnap",
     description:
-      "PSA 10 and raw value guides for iconic rookies and key cards — with grading verdicts and links to scan your own copy.",
+      "Browse CardSnap's crawlable card value hub: raw prices, PSA 9 values, PSA 10 values, population context, and grading verdicts for important sports and Pokemon cards.",
     alternates: {
       canonical: `${base}/cards`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+      },
+    },
+    openGraph: {
+      title: "Sports Card Values & Grading Guide | CardSnap",
+      description:
+        "Raw, PSA 9, and PSA 10 value guides with grading verdicts for important sports and Pokemon cards.",
+      url: `${base}/cards`,
+      siteName: "CardSnap",
+      type: "website",
+      images: [
+        {
+          url: "/opengraph-image",
+          width: 1200,
+          height: 630,
+          alt: "CardSnap sports card value guides",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Sports Card Values & Grading Guide | CardSnap",
+      description:
+        "Raw, PSA 9, and PSA 10 value guides with grading verdicts for important cards.",
+      images: ["/opengraph-image"],
     },
   };
 }
@@ -41,9 +73,25 @@ function VerdictBadge({ verdict }: { verdict: "worth_grading" | "skip_grading" }
 
 export default function CardsIndexPage() {
   const bySport = getCardsBySport();
+  const base = getSiteUrl();
+  const itemListLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "CardSnap sports card value guides",
+    url: `${base}/cards`,
+    numberOfItems: cardPages.length,
+    itemListElement: cardPages.map((card, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${base}/cards/${card.slug}`,
+      name: card.title,
+      description: card.metaDescription,
+    })),
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <JsonLd data={itemListLd} />
       <SeoSiteNav />
 
       <main className="mx-auto max-w-3xl px-4 pb-16 pt-8 sm:px-6">
@@ -51,8 +99,10 @@ export default function CardsIndexPage() {
           Sports card values &amp; grading guide
         </h1>
         <p className="mt-3 text-zinc-400">
-          High-intent guides for rookies and grails. Open any card for values,
-          population context, and a grading verdict — then{" "}
+          A crawlable index of every CardSnap card value guide. Each page includes
+          raw prices, PSA 9 and PSA 10 estimates, population context, grading
+          math, related cards, and a clear grade-or-sell verdict. Open any card
+          below, then{" "}
           <Link href="/" className="text-zinc-200 underline hover:text-white">
             scan your own copy
           </Link>
@@ -61,8 +111,35 @@ export default function CardsIndexPage() {
         <PageAttribution className="mt-4" />
 
         <p className="mt-6 text-sm text-zinc-500">
-          {cardPages.length} cards indexed
+          {cardPages.length} canonical card guides indexed at getcardsnap.com/cards.
         </p>
+
+        <section className="mt-8 border-y border-zinc-800 py-5">
+          <h2 className="text-base font-semibold text-white">
+            Popular card value guides
+          </h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {cardPages
+              .slice()
+              .sort((a, b) => b.psa10Value - a.psa10Value)
+              .slice(0, 6)
+              .map((card) => (
+                <Link
+                  key={card.slug}
+                  href={`/cards/${card.slug}`}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3 hover:border-zinc-600"
+                >
+                  <span className="block text-sm font-medium text-zinc-100">
+                    {card.title}
+                  </span>
+                  <span className="mt-1 block text-xs text-zinc-500">
+                    Raw {formatUsd(card.rawValueLow)}-{formatUsd(card.rawValueHigh)} · PSA 10{" "}
+                    {formatUsd(card.psa10Value)}
+                  </span>
+                </Link>
+              ))}
+          </div>
+        </section>
 
         <div className="mt-10 space-y-12">
           {SPORT_ORDER.map((sport: CardSport) => {
