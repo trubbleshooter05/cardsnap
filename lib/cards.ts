@@ -102,3 +102,15 @@ export function sportLabel(s: CardSport): string {
   };
   return labels[s];
 }
+
+export function estimateGradingNet(card: CardPage, gradingCost = 75): number {
+  const rawMidpoint = (card.rawValueLow + card.rawValueHigh) / 2;
+  return Math.round(card.psa9Value - rawMidpoint - gradingCost);
+}
+
+export function gradeOrSellLabel(card: CardPage): string {
+  const net = estimateGradingNet(card);
+  if (card.gradingVerdict === "worth_grading" && net > 0) return "Grade strong copies";
+  if (net > -25) return "Inspect closely before grading";
+  return "Sell raw unless condition is exceptional";
+}

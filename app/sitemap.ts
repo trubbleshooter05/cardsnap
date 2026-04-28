@@ -4,6 +4,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import { getAllSeoGuides, seoGuidePath } from "@/lib/seo-guides-data";
 import { SEO_GUIDE_DEFINITIONS_POKEMON } from "@/lib/seo-guides-data-pokemon";
 import { TIER1_SEO_PAGES, tier1Path } from "@/lib/tier1-seo";
+import { getAllAcquisitionAssetSlugs } from "@/lib/acquisition-assets";
 
 /** ISO lastmod for each card; prefers updatedAt, then createdAt. */
 function lastModifiedForCard(c: CardPage): Date {
@@ -48,6 +49,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/`, lastModified, changeFrequency: "weekly", priority: 1 },
     { url: `${base}/cards`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${base}/guides`, lastModified, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${base}/watchlist`, lastModified, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/psa-grading-calculator`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/grade-or-skip/baseball`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/grade-or-skip/basketball`, lastModified, changeFrequency: "monthly", priority: 0.8 },
@@ -87,11 +89,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   );
 
+  const acquisitionRoutes: MetadataRoute.Sitemap = getAllAcquisitionAssetSlugs().map((slug) => ({
+    url: `${base}/video-scripts/${slug}`,
+    lastModified,
+    changeFrequency: "monthly" as const,
+    priority: 0.65,
+  }));
+
   return [
     ...staticRoutes,
     ...seoGuideRoutes,
     ...pokemonGuideRoutes,
     ...cardRoutes,
     ...tier1ProgrammaticRoutes,
+    ...acquisitionRoutes,
   ];
 }

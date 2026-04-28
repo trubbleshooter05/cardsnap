@@ -5,10 +5,12 @@ import {
   getAllCardSlugs,
   getCardPageBySlug,
   getRelatedCards,
+  estimateGradingNet,
+  gradeOrSellLabel,
   type CardPage,
 } from "@/lib/cards";
 import { getSiteUrl } from "@/lib/site-url";
-import { formatUsd } from "@/lib/format-currency";
+import { formatUsd, formatUsdSigned } from "@/lib/format-currency";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
 
@@ -126,6 +128,8 @@ export default function CardSeoPage({ params }: Props) {
 
   const related = getRelatedCards(card.slug, 6);
   const verdictWorth = card.gradingVerdict === "worth_grading";
+  const estimatedNet = estimateGradingNet(card);
+  const gradeOrSell = gradeOrSellLabel(card);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -213,6 +217,38 @@ export default function CardSeoPage({ params }: Props) {
           </div>
         </section>
 
+        <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 sm:p-6">
+          <h2 className="text-lg font-semibold text-white">Grade, sell, or watch?</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                Estimated PSA 9 net
+              </div>
+              <div className={`mt-1 text-lg font-semibold ${estimatedNet >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+                {formatUsdSigned(estimatedNet)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                Action
+              </div>
+              <div className="mt-1 text-lg font-semibold text-white">{gradeOrSell}</div>
+            </div>
+            <div>
+              <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                Alert idea
+              </div>
+              <div className="mt-1 text-sm font-medium text-zinc-300">
+                Watch raw vs PSA spread
+              </div>
+            </div>
+          </div>
+          <p className="mt-4 text-sm leading-relaxed text-zinc-400">
+            Net estimate uses PSA 9 value minus the midpoint raw value and a typical grading/shipping cost.
+            For borderline cards, condition risk matters more than headline PSA 10 upside.
+          </p>
+        </section>
+
         <section className="mt-10">
           <h2 className="text-lg font-semibold text-white">Full guide</h2>
           {card.content.trim() ? (
@@ -242,6 +278,12 @@ export default function CardSeoPage({ params }: Props) {
             className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-white px-5 text-sm font-semibold text-zinc-900 hover:bg-zinc-200"
           >
             Analyze your card →
+          </Link>
+          <Link
+            href="/watchlist"
+            className="ml-0 mt-3 inline-flex h-11 items-center justify-center rounded-lg border border-zinc-700 px-5 text-sm font-semibold text-zinc-200 hover:border-zinc-500 sm:ml-3"
+          >
+            Track value alerts →
           </Link>
         </aside>
 
