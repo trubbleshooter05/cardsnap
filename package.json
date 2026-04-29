@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "video:preview": "remotion preview remotion/index.ts",
+    "video:render": "remotion render remotion/index.ts CardSnapUGCAd out/cardsnap-ugc-ad.mp4",
     "generate-card-content": "tsx scripts/generate-card-content.ts",
     "add-cards": "tsx scripts/add-cards.ts"
   },
@@ -27,7 +29,9 @@
     "dotenv": "^17.4.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
+    "@remotion/cli": "^4.0.367",
     "postcss": "^8",
+    "remotion": "^4.0.367",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.21.0",
     "typescript": "^5"
