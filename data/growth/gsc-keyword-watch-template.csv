@@ -1,0 +1,6 @@
+date,query,page,clicks,impressions,ctr,position,cluster,status,next_action,notes
+2026-04-29,should i grade my card,https://getcardsnap.com/,0,0,0,0,grading_decision,seed,Track exact query in GSC export,Core homepage/product phrase
+2026-04-29,psa 9 vs psa 10 worth it,https://getcardsnap.com/psa-9-vs-psa-10-worth-it,0,0,0,0,grading_roi,seed,Watch CTR and position,Refresh page if impressions grow
+2026-04-29,raw vs graded card value,https://getcardsnap.com/raw-vs-graded/[slug],0,0,0,0,raw_vs_graded,seed,Expand winning card examples,Needs card-level pages
+2026-04-29,psa grading roi calculator,https://getcardsnap.com/psa-grading-calculator,0,0,0,0,calculator,seed,Track homepage and guide referrals,Conversion hub
+2026-04-29,cards worth grading,https://getcardsnap.com/what-cards-are-worth-grading,0,0,0,0,education,seed,Monitor CTR and title fit,List-style intent

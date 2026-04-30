@@ -281,15 +281,15 @@ const SEO_GUIDE_DEFINITIONS: SeoGuideDefinition[] = [
   },
   {
     slug: "psa-9-vs-psa-10-worth-it",
-    title: "PSA 9 vs PSA 10: Is Grading Still Worth It?",
+    title: "PSA 9 vs PSA 10: The Grading Mistake That Can Cost You Money",
     description:
-      "See why the difference between a PSA 9 and PSA 10 can decide whether grading a card makes money or loses money.",
-    h1: "PSA 9 vs PSA 10: Is the Difference Really That Big?",
+      "PSA 10 comps can make a card look profitable, but PSA 9 math decides whether grading makes money or loses money.",
+    h1: "PSA 10 Comps Can Fool You If You Ignore PSA 9",
     articleDescription:
-      "Why the PSA 9 vs PSA 10 spread drives grading profit and how to model downside before you submit.",
+      "Why the PSA 9 vs PSA 10 spread drives grading profit, how fees change the math, and how to model downside before you submit.",
     intro: [
-      "For most collectors, the biggest grading mistake is assuming a card will gem.",
-      "In reality, the difference between a PSA 9 and PSA 10 often decides whether grading is profitable or not.",
+      "The fastest way to lose money grading cards is to look at PSA 10 comps and assume your card will land there.",
+      "Before you submit, ask the uncomfortable question: if this comes back PSA 9, do I still make money after grading fees and shipping?",
     ],
     sections: [
       {
@@ -297,42 +297,42 @@ const SEO_GUIDE_DEFINITIONS: SeoGuideDefinition[] = [
         blocks: [
           {
             kind: "paragraph",
-            text: "A raw card might look like a great submission because the PSA 10 price is high.",
+            text: "A raw card can look like an easy win when PSA 10 sales are big. That is the best-case outcome, not the base case.",
           },
           {
             kind: "paragraph",
-            text: "But if the same card sells for much less as a PSA 9, the whole grading decision changes.",
+            text: "The safer comparison is raw value vs PSA 9 vs PSA 10. Raw value is what you can sell for today. PSA 9 is the realistic downside. PSA 10 is the upside you only get if the card gems.",
           },
           {
             kind: "paragraph",
-            text: "That is why grading is not just about upside. It is about risk.",
+            text: "If PSA 9 barely beats raw after fees, grading is not a clean flip. It is a bet that your copy is good enough to reach PSA 10.",
           },
         ],
       },
       {
         title: "Simple Example",
         blocks: [
-          { kind: "subhead", text: "Example:" },
+          { kind: "subhead", text: "Example 1: the PSA 10 trap" },
           {
             kind: "exampleRows",
             rows: [
-              { label: "Raw value:", value: "$50", valueTone: "amber" },
-              { label: "PSA 9 value:", value: "$65", valueTone: "zinc" },
+              { label: "Raw value:", value: "$60", valueTone: "amber" },
+              { label: "PSA 9 value:", value: "$75", valueTone: "zinc" },
               { label: "PSA 10 value:", value: "$180", valueTone: "emerald" },
               {
                 label: "Grading + shipping costs:",
-                value: "$30 to $40+",
+                value: "$35 to $45+",
                 valueTone: "zinc",
               },
             ],
           },
           {
             kind: "paragraph",
-            text: "If the card gets a 10, the math looks great.",
+            text: "If the card gets a 10, the upside looks great. If it gets a 9, the fee can erase the entire spread over raw.",
           },
           {
             kind: "paragraph",
-            text: "If it gets a 9, the profit may disappear.",
+            text: "Example 2: a healthier setup is a $100 raw card, a $170 PSA 9, a $300 PSA 10, and roughly $40 in fees. PSA 9 still leaves room. PSA 10 is extra upside instead of the only way to win.",
           },
         ],
       },
@@ -341,50 +341,49 @@ const SEO_GUIDE_DEFINITIONS: SeoGuideDefinition[] = [
         blocks: [
           {
             kind: "paragraph",
-            text: "Many collectors compare only raw value to PSA 10 value.",
+            text: "Many collectors compare only raw value to PSA 10 value, then submit cards that only work if they gem.",
           },
           {
             kind: "paragraph",
-            text: "That is the wrong comparison.",
+            text: "That is how grading fees turn a decent raw card into a bad submission.",
           },
           {
             kind: "callout",
-            text: 'The better question is: What happens if this gets a 9 instead of a 10?',
+            text: "The better question is: what happens if this gets a 9 instead of a 10?",
           },
         ],
       },
     ],
     cta: {
-      title: "How to Make Better Grading Decisions",
+      title: "When Grading Is Actually Worth It",
       blocks: [
         {
           kind: "paragraph",
-          text: "Before you submit, compare:",
+          text: "Before you submit, check the card against this simple filter:",
         },
         {
           kind: "bullet",
           items: [
-            "Raw value",
-            "PSA 9 value",
-            "PSA 10 value",
-            "Fees",
-            "Shipping",
-            "Real downside risk",
+            "PSA 9 value still beats raw after grading and shipping costs",
+            "PSA 10 upside is meaningful, but not the only profitable outcome",
+            "The card is clean enough that PSA 9 is realistic and PSA 10 is possible",
+            "Fees, shipping, and selling costs do not erase the spread",
+            "You have checked similar raw-vs-graded examples before submitting",
           ],
         },
-        { kind: "toolLink", lead: "Use this free tool:" },
+        { kind: "toolLink", lead: "Use CardSnap to analyze the math:" },
         {
           kind: "paragraph",
-          text: "It helps you see the difference before you spend money.",
+          text: "CardSnap helps compare raw value, PSA 9 value, PSA 10 upside, estimated grading fees, and the ROI verdict before you spend money. For more examples, review the card value pages and raw-vs-graded guides like /cards/anthony-edwards-2020-panini-prizm-258-value and /raw-vs-graded/justin-herbert-2020-panini-prizm-325-value.",
         },
       ],
-      buttonText: "Check PSA 9 vs PSA 10",
+      buttonText: "Analyze Your Card",
     },
     finalSection: {
       title: "Final Takeaway",
       paragraphs: [
-        "The gap between PSA 9 and PSA 10 is often the entire grading decision.",
-        "If a PSA 9 barely works, you are gambling on a gem.",
+        "PSA 10 comps are useful, but they can fool you if you ignore the PSA 9 downside.",
+        "If a PSA 9 loses money or barely breaks even, grading is not a clear decision. It is a bet that your card gems.",
       ],
     },
   },

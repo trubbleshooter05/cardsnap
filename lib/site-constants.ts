@@ -8,8 +8,13 @@ export const EDITORIAL_BYLINE = "CardSnap Research Team";
 export const CONTENT_LAST_REVIEWED_ISO = "2026-04-11";
 
 export function formatContentUpdatedLong(isoDate: string = CONTENT_LAST_REVIEWED_ISO): string {
-  const d = new Date(`${isoDate}T12:00:00Z`);
-  return d.toLocaleDateString("en-US", {
+  const normalized = isoDate.includes("T") ? isoDate : `${isoDate}T12:00:00Z`;
+  const d = new Date(normalized);
+  const safeDate = Number.isNaN(d.getTime())
+    ? new Date(`${CONTENT_LAST_REVIEWED_ISO}T12:00:00Z`)
+    : d;
+
+  return safeDate.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
