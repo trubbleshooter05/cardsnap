@@ -1,15 +1,36 @@
 import {Composition} from 'remotion';
-import {CardSnapUgcAd} from './CardSnapUgcAd';
+import {CARD_SNAP_UGC_DURATIONS, CardSnapUgcAd, UGC_FPS} from './CardSnapUgcAd';
 
 export const RemotionRoot = () => {
   return (
-    <Composition
-      id="CardSnapUGCAd"
-      component={CardSnapUgcAd}
-      durationInFrames={990}
-      fps={30}
-      width={1080}
-      height={1920}
-    />
+    <>
+      <Composition
+        id="CardSnapUGCAdFunny"
+        component={CardSnapUgcAd}
+        durationInFrames={CARD_SNAP_UGC_DURATIONS.funny}
+        fps={UGC_FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{tone: 'funny'}}
+      />
+      <Composition
+        id="CardSnapUGCAdAngry"
+        component={CardSnapUgcAd}
+        durationInFrames={CARD_SNAP_UGC_DURATIONS.angry}
+        fps={UGC_FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{tone: 'angry'}}
+      />
+      <Composition
+        id="CardSnapUGCAdUrgent"
+        component={CardSnapUgcAd}
+        durationInFrames={CARD_SNAP_UGC_DURATIONS.urgent}
+        fps={UGC_FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{tone: 'urgent'}}
+      />
+    </>
   );
 };
