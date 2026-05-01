@@ -177,6 +177,12 @@ export default function PokemonCardValueCheckerPage() {
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
+              href="/pokemon-card-grading-calculator"
+              className="text-sm font-semibold text-zinc-200 hover:text-white hover:underline"
+            >
+              Pokemon card grading calculator
+            </Link>
+            <Link
               href="/charizard-card-value-checker"
               className="text-sm font-semibold text-zinc-200 hover:text-white hover:underline"
             >

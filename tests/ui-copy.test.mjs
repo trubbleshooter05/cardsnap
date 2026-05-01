@@ -5,6 +5,7 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("primary flow uses analyze language and progress messages", () => {
+  const page = read("app/page.tsx");
   const home = read("components/HomePageClient.tsx");
   const form = read("components/ScanForm.tsx");
   const nav = read("components/SiteNav.tsx");
@@ -20,6 +21,10 @@ test("primary flow uses analyze language and progress messages", () => {
 
   assert.match(form, /Analyze Card/);
   assert.match(nav, /Analyze/);
+  assert.match(page, /raw value, PSA 9 downside, PSA 10 upside/);
+  assert.match(home, /Know if your card is worth grading/);
+  assert.match(home, /CardSnap compares raw value, PSA 9 downside, PSA 10 upside/);
+  assert.match(home, /cardsnap-homepage-visual\.svg/);
   assert.doesNotMatch(form, /Scan Your Card/);
   assert.doesNotMatch(home, /Analyzing your card/);
 });
@@ -122,9 +127,18 @@ test("pokemon card value checker route captures crypto-to-collectibles intent", 
 
 test("pokemon support pages target charizard and price tracker wedges", () => {
   const charizard = read("app/charizard-card-value-checker/page.tsx");
+  const grading = read("app/pokemon-card-grading-calculator/page.tsx");
   const tracker = read("app/pokemon-card-price-tracker/page.tsx");
   const pokemon = read("app/pokemon-card-value-checker/page.tsx");
+  const nav = read("components/SiteNav.tsx");
   const sitemap = read("app/sitemap.ts");
+
+  assert.match(grading, /Pokemon Card Grading Calculator/);
+  assert.match(grading, /should I grade my Pokemon card/i);
+  assert.match(grading, /raw value, PSA 9 downside, PSA 10 upside/i);
+  assert.match(grading, /Analyze your Pokemon card/);
+  assert.match(grading, /\/pokemon-card-value-checker/);
+  assert.match(grading, /\/psa-grading-calculator/);
 
   assert.match(charizard, /Charizard Card Value Checker/);
   assert.match(charizard, /charizard card value checker/i);
@@ -139,8 +153,11 @@ test("pokemon support pages target charizard and price tracker wedges", () => {
   assert.match(tracker, /Analyze your Pokemon card/);
   assert.match(tracker, /\/charizard-card-value-checker/);
 
+  assert.match(nav, /href: "\/pokemon-card-grading-calculator"/);
+  assert.match(pokemon, /\/pokemon-card-grading-calculator/);
   assert.match(pokemon, /\/charizard-card-value-checker/);
   assert.match(pokemon, /\/pokemon-card-price-tracker/);
+  assert.match(sitemap, /\/pokemon-card-grading-calculator/);
   assert.match(sitemap, /\/charizard-card-value-checker/);
   assert.match(sitemap, /\/pokemon-card-price-tracker/);
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
 import { ScanGate } from "@/components/ScanGate";
@@ -57,6 +58,34 @@ const ANALYSIS_PROGRESS_MESSAGES = [
 ] as const;
 
 const PENDING_PAYWALL_CHECKOUT = "cardsnap:pendingPaywallCheckoutTs";
+
+function HeroVisual() {
+  return (
+    <div className="w-full">
+      <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 shadow-2xl shadow-black/40">
+        <Image
+          src="/cardsnap-homepage-visual.svg"
+          alt="CardSnap compares raw card value, PSA 9 downside, PSA 10 upside, and grading ROI verdict"
+          width={960}
+          height={720}
+          priority
+          className="block aspect-[4/3] w-full object-cover"
+        />
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-zinc-400 sm:text-xs">
+        <span className="rounded-lg border border-zinc-800 bg-zinc-900/70 px-2 py-2">
+          Raw value
+        </span>
+        <span className="rounded-lg border border-zinc-800 bg-zinc-900/70 px-2 py-2">
+          PSA 9 risk
+        </span>
+        <span className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-2 text-amber-300">
+          PSA 10 upside
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function readPaywallPendingTs(): number | null {
   if (typeof window === "undefined") return null;
@@ -687,7 +716,7 @@ export function HomePageClient() {
         }
       />
 
-      <main className="relative z-10 mx-auto flex max-w-xl flex-col items-center px-4 pb-20 pt-10 sm:pt-16">
+      <main className="relative z-10 mx-auto flex max-w-6xl flex-col items-center px-4 pb-20 pt-8 sm:px-6 sm:pt-12">
         {checkoutSyncing && (
           <div
             className="mb-6 w-full max-w-md rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-100"
@@ -700,102 +729,107 @@ export function HomePageClient() {
           </div>
         )}
 
-        {/* Form first: works logged-out, no auth wait; first free scan (server-enforced) */}
-        <div className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
-          {checkoutSyncing && (
-            <p className="mb-3 text-center text-xs text-amber-200/90">
-              Syncing your Pro status…
-            </p>
-          )}
-          <ScanForm
-            disabled={scanDisabled}
-            progressMessage={progressMessage}
-            onSubmit={handleSubmit}
-          />
+        <section className="grid w-full items-center gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12">
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Sports card grading calculator
+            </div>
 
-          {userId && !isPro && (
-            <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
-              <div className="flex gap-1">
-                {Array.from({ length: freeLimit }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 w-6 rounded-full transition-colors ${
-                      i < usageCount ? "bg-amber-400" : "bg-zinc-700"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs text-zinc-500">
-                {usageCount} of {freeLimit} free{" "}
-                {freeLimit === 1 ? "analysis" : "analyses"} used
+            <h1 className="mt-5 max-w-2xl text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Know if your card is worth grading{" "}
+              <span className="gradient-text">before you pay PSA fees.</span>
+            </h1>
+
+            <p className="mt-5 max-w-xl text-lg font-semibold leading-snug text-amber-300">
+              CardSnap compares raw value, PSA 9 downside, PSA 10 upside, and
+              grading cost so you can grade, sell raw, or skip with confidence.
+            </p>
+
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+              Enter the card name. Get a simple ROI verdict in seconds. No photo
+              upload, no marketplace spreadsheet, no guessing from one PSA 10 comp.
+            </p>
+
+            <ul className="mt-6 grid w-full max-w-xl gap-2.5 text-left text-sm text-zinc-300 sm:grid-cols-3 lg:grid-cols-1">
+              {[
+                "Avoid grading fees on cards that lose money at PSA 9",
+                "See raw vs PSA 9 vs PSA 10 in one result",
+                "Use 3 free analyses — no signup required",
+              ].map((line) => (
+                <li key={line} className="flex gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-3">
+                  <span className="mt-0.5 shrink-0 text-amber-400" aria-hidden>
+                    ✓
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-5 flex w-full max-w-xl flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-xs text-zinc-400 lg:justify-start">
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span><strong className="text-white">3,200+</strong> analyses run</span>
               </span>
+              <span className="text-zinc-700">·</span>
+              <span>Built for collectors checking grading ROI</span>
             </div>
-          )}
-          {isPro && (
-            <div className="mt-4 border-t border-zinc-800 pt-3 text-center text-xs text-amber-400 font-medium">
-              ⚡ Pro — unlimited analyses
+
+            <PageAttribution className="mt-5 w-full justify-center text-center lg:justify-start lg:text-left" />
+          </div>
+
+          <div className="flex w-full flex-col gap-5">
+            <HeroVisual />
+
+            <div className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
+              {checkoutSyncing && (
+                <p className="mb-3 text-center text-xs text-amber-200/90">
+                  Syncing your Pro status…
+                </p>
+              )}
+              <ScanForm
+                disabled={scanDisabled}
+                progressMessage={progressMessage}
+                onSubmit={handleSubmit}
+              />
+
+              {userId && !isPro && (
+                <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
+                  <div className="flex gap-1">
+                    {Array.from({ length: freeLimit }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-1.5 w-6 rounded-full transition-colors ${
+                          i < usageCount ? "bg-amber-400" : "bg-zinc-700"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs text-zinc-500">
+                    {usageCount} of {freeLimit} free{" "}
+                    {freeLimit === 1 ? "analysis" : "analyses"} used
+                  </span>
+                </div>
+              )}
+              {isPro && (
+                <div className="mt-4 border-t border-zinc-800 pt-3 text-center text-xs text-amber-400 font-medium">
+                  ⚡ Pro — unlimited analyses
+                </div>
+              )}
             </div>
-          )}
-        </div>
+
+            {!result && !loading && (
+              <p className="text-center text-xs text-zinc-600">
+                Not sure what you get?{" "}
+                <a href="/sample-scan" className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300">
+                  See a sample analysis result →
+                </a>
+              </p>
+            )}
+          </div>
+        </section>
 
         {SHOW_CARD_COMPS && <CardCompsTest />}
-
-        <PageAttribution className="mt-8 mb-4 w-full text-center" />
-
-        {/* Hero (below tool so inputs paint first) */}
-        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1 text-xs font-semibold text-amber-400 uppercase tracking-wider">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-          Sports Card Grading Tool
-        </div>
-
-        <h1 className="mt-3 text-center text-4xl font-black tracking-tight text-white sm:text-5xl leading-[1.1]">
-          Should you grade{" "}
-          <span className="gradient-text">this card?</span>
-        </h1>
-
-        <p className="mt-4 max-w-md text-center text-base font-semibold text-amber-400 leading-snug">
-          We don&apos;t grade your card. We tell you if it&apos;s worth grading.
-        </p>
-
-        <p className="mt-3 max-w-md text-center text-sm text-zinc-400 leading-relaxed">
-          See raw vs PSA 9 vs PSA 10 ROI before you pay $50 in grading fees. One analysis pays for itself.
-        </p>
-
-        <ul className="mt-6 w-full max-w-md space-y-2.5 text-left text-sm text-zinc-300">
-          {[
-            "Avoid wasting $50 on a card that misses gem",
-            "See exact PSA 9 vs PSA 10 break-even before submitting",
-            "Know the verdict before you send to PSA",
-          ].map((line) => (
-            <li key={line} className="flex gap-3">
-              <span className="mt-0.5 shrink-0 text-amber-400" aria-hidden>
-                ✓
-              </span>
-              <span>{line}</span>
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-5 w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-zinc-400">
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span><strong className="text-white">3,200+</strong> analyses run</span>
-          </span>
-          <span className="text-zinc-700">·</span>
-          <span>Built by collectors, trusted by flippers</span>
-          <span className="text-zinc-700">·</span>
-          <span>Use 3 free analyses — no signup required</span>
-        </div>
-
-        {/* Sample scan link */}
-        {!result && !loading && (
-          <p className="mt-3 text-center text-xs text-zinc-600">
-            Not sure what you get?{" "}
-            <a href="/sample-scan" className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300">
-              See a sample analysis result →
-            </a>
-          </p>
-        )}
 
         {/* Loading */}
         {loading && (

@@ -68,6 +68,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/cards`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${base}/sports-card-value-checker`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${base}/pokemon-card-value-checker`, lastModified, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/pokemon-card-grading-calculator`, lastModified, changeFrequency: "weekly", priority: 0.88 },
     { url: `${base}/charizard-card-value-checker`, lastModified, changeFrequency: "weekly", priority: 0.85 },
     { url: `${base}/pokemon-card-price-tracker`, lastModified, changeFrequency: "weekly", priority: 0.85 },
     { url: `${base}/pricing`, lastModified, changeFrequency: "monthly", priority: 0.85 },

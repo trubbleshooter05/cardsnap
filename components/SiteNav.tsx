@@ -10,6 +10,7 @@ import { notifyAuthModalDismissed, OPEN_AUTH_EVENT } from "@/lib/auth-events";
 const GUIDE_LINKS: { href: string; label: string }[] = [
   { href: "/guides", label: "All grading guides" },
   { href: "/pokemon-card-value-checker", label: "Pokemon Card Value Checker" },
+  { href: "/pokemon-card-grading-calculator", label: "Pokemon Grading Calculator" },
   { href: "/should-i-grade-zion-williamson-rookie-card", label: "Zion rookie — grade or not?" },
   { href: "/psa-9-vs-psa-10-worth-it", label: "PSA 9 vs PSA 10" },
   { href: "/is-grading-cards-worth-it-2026", label: "Is grading worth it (2026)?" },

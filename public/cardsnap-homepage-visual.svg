@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720" fill="none">
+  <rect width="960" height="720" rx="48" fill="#09090B"/>
+  <rect x="64" y="64" width="832" height="592" rx="36" fill="#121216" stroke="#2A2A31" stroke-width="2"/>
+  <rect x="104" y="104" width="314" height="448" rx="26" fill="#F8FAFC"/>
+  <rect x="126" y="126" width="270" height="404" rx="18" fill="#E11D48"/>
+  <rect x="150" y="150" width="222" height="144" rx="14" fill="#FEF3C7"/>
+  <circle cx="261" cy="221" r="46" fill="#F59E0B"/>
+  <path d="M222 276C244 255 278 255 300 276C284 290 238 290 222 276Z" fill="#7C2D12"/>
+  <rect x="150" y="330" width="222" height="24" rx="12" fill="#111827"/>
+  <rect x="150" y="370" width="146" height="18" rx="9" fill="#111827" opacity=".75"/>
+  <rect x="150" y="472" width="222" height="32" rx="16" fill="#111827"/>
+  <rect x="476" y="104" width="356" height="108" rx="22" fill="#18181B" stroke="#3F3F46" stroke-width="2"/>
+  <text x="508" y="150" fill="#A1A1AA" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">Raw value</text>
+  <text x="508" y="186" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="800">$140</text>
+  <rect x="476" y="240" width="356" height="108" rx="22" fill="#18181B" stroke="#3F3F46" stroke-width="2"/>
+  <text x="508" y="286" fill="#A1A1AA" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">If PSA 9</text>
+  <text x="508" y="322" fill="#FCA5A5" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="800">-$18 net</text>
+  <rect x="476" y="376" width="356" height="124" rx="22" fill="#241A0B" stroke="#F59E0B" stroke-width="3"/>
+  <text x="508" y="424" fill="#FCD34D" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800">If PSA 10</text>
+  <text x="508" y="464" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="900">+$315 upside</text>
+  <rect x="476" y="532" width="356" height="58" rx="18" fill="#B45309"/>
+  <text x="536" y="570" fill="#111827" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="900">Verdict: only grade if gem</text>
+  <path d="M418 328C445 328 458 328 476 328" stroke="#F59E0B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M450 306L476 328L450 350" stroke="#F59E0B" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

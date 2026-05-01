@@ -14,7 +14,7 @@ export default function HomePage() {
     operatingSystem: "Web",
     url: `${base}/`,
     description:
-      "Sports card grading decision tool: estimated raw and PSA-graded values, PSA population context, and a grade-or-skip style recommendation based on modeled net return after fees.",
+      "Sports card grading ROI tool that compares raw value, PSA 9 downside, PSA 10 upside, grading costs, and a simple grade-or-skip verdict before collectors pay PSA fees.",
     offers: {
       "@type": "Offer",
       price: "0",
