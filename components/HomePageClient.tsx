@@ -738,18 +738,6 @@ export function HomePageClient() {
           )}
         </div>
 
-        {!isPro && !result && (
-          <div className="w-full max-w-md">
-            <EmailCapture
-              source="pre_paywall"
-              title="Get monthly high-ROI grading picks"
-              description="Leave your email before you scan and we’ll send collector-friendly cards worth checking."
-              ctaLabel="Join"
-              successMessage="You're on the CardSnap list."
-            />
-          </div>
-        )}
-
         {SHOW_CARD_COMPS && <CardCompsTest />}
 
         <PageAttribution className="mt-8 mb-4 w-full text-center" />

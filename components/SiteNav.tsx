@@ -9,6 +9,7 @@ import { notifyAuthModalDismissed, OPEN_AUTH_EVENT } from "@/lib/auth-events";
 
 const GUIDE_LINKS: { href: string; label: string }[] = [
   { href: "/guides", label: "All grading guides" },
+  { href: "/pokemon-card-value-checker", label: "Pokemon Card Value Checker" },
   { href: "/should-i-grade-zion-williamson-rookie-card", label: "Zion rookie — grade or not?" },
   { href: "/psa-9-vs-psa-10-worth-it", label: "PSA 9 vs PSA 10" },
   { href: "/is-grading-cards-worth-it-2026", label: "Is grading worth it (2026)?" },
@@ -92,7 +93,7 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
               </button>
             )}
             <Link href="/" className="hover:text-white transition-colors">Analyze</Link>
-            <Link href="/cards" className="hover:text-white transition-colors">Card values</Link>
+            <Link href="/sports-card-value-checker" className="hover:text-white transition-colors">Card values</Link>
             <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
 
             {/* Desktop Guides dropdown */}
@@ -169,7 +170,7 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
             <div className="my-1 h-px bg-zinc-800" />
 
             <Link href="/" className={linkCls} onClick={close}>Analyze</Link>
-            <Link href="/cards" className={linkCls} onClick={close}>Card values</Link>
+            <Link href="/sports-card-value-checker" className={linkCls} onClick={close}>Card values</Link>
             <Link href="/pricing" className={linkCls} onClick={close}>Pricing</Link>
 
             <div className="my-1 h-px bg-zinc-800" />

@@ -16,9 +16,9 @@ import { JsonLd } from "@/components/JsonLd";
 export async function generateMetadata(): Promise<Metadata> {
   const base = getSiteUrl();
   return {
-    title: "Sports Card Values & Grading Guide | CardSnap",
+    title: "Sports Card Value Checker — Raw, PSA 9 & PSA 10 Prices | CardSnap",
     description:
-      "Browse CardSnap's crawlable card value hub: raw prices, PSA 9 values, PSA 10 values, population context, and grading verdicts for important sports and Pokemon cards.",
+      "Use CardSnap's sports card value checker to compare raw prices, PSA 9 values, PSA 10 values, price history signals, and grading ROI before you submit.",
     alternates: {
       canonical: `${base}/cards`,
     },
@@ -31,9 +31,9 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: "Sports Card Values & Grading Guide | CardSnap",
+      title: "Sports Card Value Checker | CardSnap",
       description:
-        "Raw, PSA 9, and PSA 10 value guides with grading verdicts for important sports and Pokemon cards.",
+        "Check raw, PSA 9, and PSA 10 sports card values with grading verdicts for important baseball, football, basketball, and Pokemon cards.",
       url: `${base}/cards`,
       siteName: "CardSnap",
       type: "website",
@@ -48,9 +48,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Sports Card Values & Grading Guide | CardSnap",
+      title: "Sports Card Value Checker | CardSnap",
       description:
-        "Raw, PSA 9, and PSA 10 value guides with grading verdicts for important cards.",
+        "Compare raw, PSA 9, and PSA 10 prices before you grade or sell.",
       images: ["/opengraph-image"],
     },
   };
@@ -77,7 +77,7 @@ export default function CardsIndexPage() {
   const itemListLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "CardSnap sports card value guides",
+    name: "CardSnap sports card value checker",
     url: `${base}/cards`,
     numberOfItems: cardPages.length,
     itemListElement: cardPages.map((card, index) => ({
@@ -96,28 +96,34 @@ export default function CardsIndexPage() {
 
       <main className="mx-auto max-w-3xl px-4 pb-16 pt-8 sm:px-6">
         <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          Sports card values &amp; grading guide
+          Sports Card Value Checker
         </h1>
         <p className="mt-3 text-zinc-400">
-          A crawlable index of every CardSnap card value guide. Each page includes
-          raw prices, PSA 9 and PSA 10 estimates, population context, grading
-          math, related cards, and a clear grade-or-sell verdict. Open any card
-          below, then{" "}
+          Look up raw value, PSA 9 value, PSA 10 upside, population context, and
+          grading ROI before you decide whether to sell raw or submit. Start with
+          a known card below, then{" "}
           <Link href="/" className="text-zinc-200 underline hover:text-white">
-            scan your own copy
+            Analyze your card
           </Link>
-          .
+          {" "}for a card-specific grading verdict.
         </p>
         <PageAttribution className="mt-4" />
 
         <p className="mt-6 text-sm text-zinc-500">
-          {cardPages.length} canonical card guides indexed at getcardsnap.com/cards.
+          {cardPages.length} canonical value guides indexed at getcardsnap.com/cards,
+          with baseball card price checker, football card price checker,
+          basketball card price checker, and Pokemon value lookup coverage.
         </p>
 
         <section className="mt-8 border-y border-zinc-800 py-5">
           <h2 className="text-base font-semibold text-white">
-            Popular card value guides
+            Popular sports card price checks
           </h2>
+          <p className="mt-2 text-sm text-zinc-500">
+            Each guide shows raw vs graded value, the PSA 9 downside, PSA 10
+            upside, and the sports card grading calculator math behind the
+            verdict.
+          </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {cardPages
               .slice()
@@ -148,8 +154,12 @@ export default function CardsIndexPage() {
             return (
               <section key={sport}>
                 <h2 className="border-b border-zinc-800 pb-2 text-xl font-semibold text-white">
-                  {sportLabel(sport)}
+                  {sportLabel(sport)} card price checker
                 </h2>
+                <p className="mt-3 text-sm text-zinc-500">
+                  Compare recent raw and PSA value ranges before you grade,
+                  sell, or add the card to a collection tracker.
+                </p>
                 <ul className="mt-4 divide-y divide-zinc-800">
                   {list.map((c) => (
                     <li
@@ -181,17 +191,40 @@ export default function CardsIndexPage() {
           })}
         </div>
 
+        <section className="mt-12 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+          <h2 className="text-lg font-semibold text-white">
+            Price history and tracker signals
+          </h2>
+          <p className="mt-2 text-sm text-zinc-400">
+            CardSnap is moving toward a sports card price tracker layer: raw
+            comps, PSA 9 comps, PSA 10 comps, grading fees, and price history
+            signals in one place. Today, use the value guides and analyzer to
+            compare the spread that matters most before you grade.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2 text-xs text-zinc-500">
+            <span className="rounded-full border border-zinc-700 px-3 py-1">
+              sports card price history
+            </span>
+            <span className="rounded-full border border-zinc-700 px-3 py-1">
+              sports card price tracker
+            </span>
+            <span className="rounded-full border border-zinc-700 px-3 py-1">
+              sports card collection tracker
+            </span>
+          </div>
+        </section>
+
         <aside className="mt-14 rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
           <p className="font-semibold text-white">Not listed?</p>
           <p className="mt-2 text-sm text-zinc-400">
-            Use the scanner for any card name — raw comps, PSA tiers, and a
-            verdict in seconds.
+            Use CardSnap for any card name — raw comps, PSA tiers, grading fees,
+            and a verdict in seconds.
           </p>
           <Link
             href="/"
             className="mt-4 inline-flex text-sm font-semibold text-zinc-200 hover:text-white hover:underline"
           >
-            Go to scan →
+            Analyze your card →
           </Link>
         </aside>
       </main>
