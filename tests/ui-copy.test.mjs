@@ -161,3 +161,18 @@ test("pokemon support pages target charizard and price tracker wedges", () => {
   assert.match(sitemap, /\/charizard-card-value-checker/);
   assert.match(sitemap, /\/pokemon-card-price-tracker/);
 });
+
+test("telegram market intel grade-or-skip gaps have crawlable content", () => {
+  const niche = read("lib/niche-content.ts");
+  const generatedNiche = read("lib/generated-niche-content.ts");
+  const sitemap = read("app/sitemap.ts");
+
+  assert.match(niche, /would-these-print-lines-ruin-the-chances-of-a-psa-10/);
+  assert.match(niche, /Would Print Lines Ruin the Chances of a PSA 10/);
+  assert.match(niche, /grade-estimate/);
+  assert.match(niche, /Grade Estimate: Should You Submit the Card/);
+  assert.match(generatedNiche, /"hockey"/);
+  assert.match(sitemap, /\/grade-or-skip\/hockey/);
+  assert.match(sitemap, /\/grade-or-skip\/would-these-print-lines-ruin-the-chances-of-a-psa-10/);
+  assert.match(sitemap, /\/grade-or-skip\/grade-estimate/);
+});

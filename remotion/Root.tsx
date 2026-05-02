@@ -5,6 +5,11 @@ import {
   CardSnapPsaUgcAd,
   PSA_UGC_FPS,
 } from './CardSnapPsaUgcAd';
+import {
+  CARD_SNAP_SEARCH_UGC_DURATIONS,
+  CardSnapSearchUgcBatch,
+  SEARCH_UGC_FPS,
+} from './CardSnapSearchUgcBatch';
 
 export const RemotionRoot = () => {
   return (
@@ -62,6 +67,33 @@ export const RemotionRoot = () => {
         width={1080}
         height={1920}
         defaultProps={{tone: 'psaCalm'}}
+      />
+      <Composition
+        id="CardSnapSearchUGCPrintLines"
+        component={CardSnapSearchUgcBatch}
+        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.printLines}
+        fps={SEARCH_UGC_FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{tone: 'printLines'}}
+      />
+      <Composition
+        id="CardSnapSearchUGCGradeEstimate"
+        component={CardSnapSearchUgcBatch}
+        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.gradeEstimate}
+        fps={SEARCH_UGC_FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{tone: 'gradeEstimate'}}
+      />
+      <Composition
+        id="CardSnapSearchUGCHockey"
+        component={CardSnapSearchUgcBatch}
+        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.hockey}
+        fps={SEARCH_UGC_FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{tone: 'hockey'}}
       />
     </>
   );

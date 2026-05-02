@@ -10,6 +10,7 @@
     "video:preview": "remotion preview remotion/index.ts",
     "video:render": "remotion render remotion/index.ts CardSnapUGCAd out/cardsnap-ugc-ad.mp4",
     "growth:intel": "tsx scripts/growth-intel.ts",
+    "ugc:daily": "tsx scripts/daily-ugc-workflow.ts",
     "generate-card-content": "tsx scripts/generate-card-content.ts",
     "add-cards": "tsx scripts/add-cards.ts"
   },
