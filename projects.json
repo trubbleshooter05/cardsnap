@@ -37,12 +37,12 @@
   },
   "cardsnap": {
     "enabled": true,
-    "site_url": "https://cardsnap-seven.vercel.app",
+    "site_url": "https://getcardsnap.com",
     "repo_root": "~/projects/cardsnap",
     "type": "generator_merge_build",
     "priority_urls": [
-      "https://cardsnap-seven.vercel.app/grade-or-skip/football",
-      "https://cardsnap-seven.vercel.app/grade-or-skip/yugioh"
+      "https://getcardsnap.com/grade-or-skip/football",
+      "https://getcardsnap.com/grade-or-skip/yugioh"
     ],
     "generator": {
       "cwd": "~/projects/cardsnap/seo-engine",
@@ -69,7 +69,7 @@
       ],
       "commit_message": "seo batch cardsnap"
     },
-    "sitemap_url": "https://cardsnap-seven.vercel.app/sitemap.xml"
+    "sitemap_url": "https://getcardsnap.com/sitemap.xml"
   },
   "movieslike": {
     "enabled": true,
