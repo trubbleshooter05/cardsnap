@@ -27,6 +27,7 @@ type Opportunity = {
 };
 
 const ROOT = process.cwd();
+const OBSIDIAN_DIR = "/Users/openclaw/ObsidianVault/cardsnap/growth-intel";
 const SITE = "https://getcardsnap.com";
 
 const TARGETS: TargetCluster[] = [
@@ -309,8 +310,13 @@ function buildOpportunities(routes: Set<string>, gscRows: CsvRow[]): Opportunity
         : "Existing route, copy gap"
       : "Missing exact-fit route";
 
-    const recommendedAsset =
-      target.assetType === "new_page"
+    const recommendedAsset = routeExists
+      ? keywordPresent
+        ? target.assetType === "internal_links"
+          ? `Add internal links into ${target.preferredPath}`
+          : `Monitor ${target.preferredPath}`
+        : `Refresh ${target.preferredPath}`
+      : target.assetType === "new_page"
         ? `Create ${target.preferredPath}`
         : target.assetType === "refresh"
           ? `Refresh ${target.preferredPath}`
@@ -436,13 +442,16 @@ function main(): void {
 
   const mdPath = path.join(docsDir, `cardsnap-growth-intel-${date}.md`);
   const csvPath = path.join(dataDir, `cardsnap-growth-intel-${date}.csv`);
+  const obsidianMdPath = path.join(OBSIDIAN_DIR, `cardsnap-growth-intel-${date}.md`);
 
-  writeFileSync(mdPath, buildMarkdown(date, routes, rows, opportunities));
+  const markdown = buildMarkdown(date, routes, rows, opportunities);
+  writeFileSync(mdPath, markdown);
   writeFileSync(csvPath, toCsv(opportunities));
+  mkdirSync(OBSIDIAN_DIR, { recursive: true });
+  writeFileSync(obsidianMdPath, markdown);
 
-  console.log(`Wrote ${path.relative(ROOT, mdPath)}`);
-  console.log(`Wrote ${path.relative(ROOT, csvPath)}`);
-  console.log(`Top opportunity: ${opportunities[0]?.opportunity ?? "none"}`);
+  const top = opportunities[0];
+  console.log(`${top?.priority ?? "P2"} CardSnap growth intel: ${top?.opportunity ?? "none"} -> ${top?.recommendedAsset ?? "no action"}`);
 }
 
 main();
