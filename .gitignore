@@ -39,7 +39,6 @@ seo-engine/outputs/
 # automation-generated files (cardsnap growth intel, UGC workflows)
 data/growth/
 docs/growth/
-remotion/CardSnapSearchUgcBatch.tsx
 scripts/daily-ugc-workflow.ts
 
 # Local UGC/marketing audio (seo-batch tolerates untracked; ignore avoids noise)
