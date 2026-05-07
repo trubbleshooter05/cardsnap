@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 
 type AuthModalProps = {
@@ -19,7 +19,13 @@ export function AuthModal({
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const supabase = createSupabaseBrowserClient();
+  const supabaseRef = useRef<ReturnType<typeof createSupabaseBrowserClient> | null>(null);
+  const getSupabase = () => {
+    if (!supabaseRef.current) {
+      supabaseRef.current = createSupabaseBrowserClient();
+    }
+    return supabaseRef.current;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +33,7 @@ export function AuthModal({
     setLoading(true);
 
     try {
+      const supabase = getSupabase();
       if (mode === "reset") {
         const appUrl =
           process.env.NEXT_PUBLIC_APP_URL ??
