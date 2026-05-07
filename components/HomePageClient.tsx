@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
 import { ScanGate } from "@/components/ScanGate";
@@ -733,7 +734,7 @@ export function HomePageClient() {
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-              Sports card grading calculator
+              Should I grade my card?
             </div>
 
             <h1 className="mt-5 max-w-2xl text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -742,20 +743,21 @@ export function HomePageClient() {
             </h1>
 
             <p className="mt-5 max-w-xl text-lg font-semibold leading-snug text-amber-300">
-              CardSnap compares raw value, PSA 9 downside, PSA 10 upside, and
-              grading cost so you can grade, sell raw, or skip with confidence.
+              CardSnap answers the collector question directly: should I grade
+              this card, sell it raw, or wait?
             </p>
 
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
-              Enter the card name. Get a simple ROI verdict in seconds. No photo
-              upload, no marketplace spreadsheet, no guessing from one PSA 10 comp.
+              Enter the card name and compare raw value, PSA 9 downside, PSA 10
+              upside, and grading cost in seconds. No marketplace spreadsheet,
+              no guessing from one PSA 10 comp.
             </p>
 
             <ul className="mt-6 grid w-full max-w-xl gap-2.5 text-left text-sm text-zinc-300 sm:grid-cols-3 lg:grid-cols-1">
               {[
                 "Avoid grading fees on cards that lose money at PSA 9",
                 "See raw vs PSA 9 vs PSA 10 in one result",
-                "Use 3 free analyses — no signup required",
+                "Get a grade, sell raw, or wait verdict",
               ].map((line) => (
                 <li key={line} className="flex gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-3">
                   <span className="mt-0.5 shrink-0 text-amber-400" aria-hidden>
@@ -765,6 +767,43 @@ export function HomePageClient() {
                 </li>
               ))}
             </ul>
+
+            <div className="mt-6 w-full max-w-xl space-y-2 text-center text-sm text-zinc-400 lg:text-left">
+              <p className="font-medium text-zinc-300">
+                Want the fee math without running a scan yet?
+              </p>
+              <p>
+                Walk through the{" "}
+                <Link
+                  href="/psa-grading-calculator"
+                  className="font-semibold text-amber-400 underline decoration-amber-500/40 underline-offset-2 hover:text-amber-300"
+                >
+                  sports card grading calculator
+                </Link>{" "}
+                (PSA ROI, hidden costs, PSA 9 vs 10). Pokémon, baseball, and
+                basketball shortcuts below.
+              </p>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs lg:justify-start">
+                <Link
+                  href="/pokemon-card-grading-calculator"
+                  className="text-zinc-500 underline-offset-2 hover:text-zinc-300 hover:underline"
+                >
+                  Pokémon grading calculator
+                </Link>
+                <Link
+                  href="/baseball-card-value-checker"
+                  className="text-zinc-500 underline-offset-2 hover:text-zinc-300 hover:underline"
+                >
+                  Baseball card value checker
+                </Link>
+                <Link
+                  href="/basketball-card-value-checker"
+                  className="text-zinc-500 underline-offset-2 hover:text-zinc-300 hover:underline"
+                >
+                  Basketball card value checker
+                </Link>
+              </div>
+            </div>
 
             <div className="mt-5 flex w-full max-w-xl flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 text-xs text-zinc-400 lg:justify-start">
               <span className="flex items-center gap-1.5">

@@ -23,12 +23,15 @@ type Opportunity = {
   sourceSignal: string;
   nextAction: string;
   ugcAngle: string;
+  ugcHook: string;
+  ugcScript: string;
   score: number;
 };
 
 const ROOT = process.cwd();
 const OBSIDIAN_DIR = "/Users/openclaw/ObsidianVault/cardsnap/growth-intel";
 const SITE = "https://getcardsnap.com";
+const UGC_HISTORY_FILE = path.join(ROOT, "data", "growth", "ugc-history.json");
 
 const TARGETS: TargetCluster[] = [
   {
@@ -222,6 +225,67 @@ function normalize(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+type UgcHistoryItem = { date: string; cluster: string; hook: string; script: string };
+
+function readUgcHistory(): UgcHistoryItem[] {
+  if (!existsSync(UGC_HISTORY_FILE)) return [];
+  try {
+    const parsed = JSON.parse(readFileSync(UGC_HISTORY_FILE, "utf8"));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeUgcHistory(items: UgcHistoryItem[]): void {
+  mkdirSync(path.dirname(UGC_HISTORY_FILE), { recursive: true });
+  writeFileSync(UGC_HISTORY_FILE, JSON.stringify(items.slice(-120), null, 2));
+}
+
+function dailyVariant(date: string, cluster: string): number {
+  const text = `${date}:${cluster}`;
+  return Array.from(text).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+}
+
+function buildUgcCreative(target: TargetCluster, date: string, history: UgcHistoryItem[]): { hook: string; script: string } {
+  const hooks = [
+    `I almost sent this in. Then I checked ${target.keyword} math first.`,
+    `Before I grade anything now, I run one check: ${target.keyword}.`,
+    `This is where collectors get burned: ${target.keyword} without downside math.`,
+    `I thought this was an easy submit. ${target.keyword} changed my mind fast.`,
+    `If you're asking "${target.keyword}", do this before paying PSA.`,
+    `Quick collector rule: never trust one comp when testing ${target.keyword}.`,
+  ];
+  const bridges = [
+    "Most misses happen when the PSA 10 upside looks huge but the PSA 9 case loses money.",
+    "The trap is grading fee plus realistic grade outcomes, not the dream comp.",
+    "A card can look like a winner until you model the downside case honestly.",
+    "When the PSA 9 outcome is weak, the whole submission becomes a gamble.",
+  ];
+  const closes = [
+    "Run the raw vs PSA 9 vs PSA 10 check first, then decide: grade, hold, or skip.",
+    "I only submit cards that still make sense in a non-perfect grade outcome.",
+    "This one check has saved me from more bad submissions than any hot-tip thread.",
+    "If the downside is weak, I skip and move to the next card immediately.",
+  ];
+
+  const recent = history.slice(-30);
+  const usedHooks = new Set(recent.map((item) => normalize(item.hook)));
+  const usedScripts = new Set(recent.map((item) => normalize(item.script)));
+  const seed = dailyVariant(date, target.cluster);
+
+  for (let i = 0; i < hooks.length * bridges.length * closes.length; i += 1) {
+    const hook = hooks[(seed + i) % hooks.length];
+    const bridge = bridges[(seed + i * 2) % bridges.length];
+    const close = closes[(seed + i * 3) % closes.length];
+    const script = `${hook} ${bridge} ${target.nextAction} ${close}`;
+    if (!usedHooks.has(normalize(hook)) && !usedScripts.has(normalize(script))) return { hook, script };
+  }
+
+  const hook = hooks[seed % hooks.length];
+  return { hook, script: `${hook} ${bridges[seed % bridges.length]} ${target.nextAction} ${closes[seed % closes.length]}` };
+}
+
 function toNumber(value: string | undefined): number {
   if (!value) return 0;
   const parsed = Number(value.replace("%", ""));
@@ -283,7 +347,7 @@ function mentionsKeyword(route: string, keyword: string): boolean {
   return normalize(pageTextForRoute(route)).includes(normalize(keyword));
 }
 
-function buildOpportunities(routes: Set<string>, gscRows: CsvRow[]): Opportunity[] {
+function buildOpportunities(routes: Set<string>, gscRows: CsvRow[], date: string, history: UgcHistoryItem[]): Opportunity[] {
   return TARGETS.map((target) => {
     const exactRouteExists = routes.has(target.preferredPath);
     const dynamicRouteExists = Array.from(routes).some((route) => {
@@ -324,6 +388,7 @@ function buildOpportunities(routes: Set<string>, gscRows: CsvRow[]): Opportunity
             ? `Add internal links into ${target.preferredPath}`
             : "Create UGC script";
 
+    const creative = buildUgcCreative(target, date, history);
     return {
       priority,
       opportunity: target.keyword,
@@ -334,6 +399,8 @@ function buildOpportunities(routes: Set<string>, gscRows: CsvRow[]): Opportunity
       sourceSignal: signal,
       nextAction: target.nextAction,
       ugcAngle: target.ugcAngle,
+      ugcHook: creative.hook,
+      ugcScript: creative.script,
       score,
     };
   }).sort((a, b) => b.score - a.score || a.opportunity.localeCompare(b.opportunity));
@@ -401,7 +468,9 @@ ${top.map((opp, index) => `${index + 1}. **${opp.opportunity}** (${opp.priority}
    - Status: ${opp.routeStatus}
    - Why: ${opp.sourceSignal}
    - Next: ${opp.nextAction}
-   - UGC angle: ${opp.ugcAngle}`).join("\n\n")}
+   - UGC angle: ${opp.ugcAngle}
+   - UGC hook: ${opp.ugcHook}
+   - UGC script: ${opp.ugcScript}`).join("\n\n")}
 
 ## Recommended Build Queue
 
@@ -433,7 +502,12 @@ function main(): void {
   const { date } = parseArgs();
   const routes = getExistingRoutes();
   const rows = getGscRows();
-  const opportunities = buildOpportunities(routes, rows);
+  const history = readUgcHistory();
+  const opportunities = buildOpportunities(routes, rows, date, history);
+  writeUgcHistory([
+    ...history,
+    ...opportunities.map((opp) => ({ date, cluster: opp.cluster, hook: opp.ugcHook, script: opp.ugcScript })),
+  ]);
 
   const docsDir = path.join(ROOT, "docs", "growth");
   const dataDir = path.join(ROOT, "data", "growth");

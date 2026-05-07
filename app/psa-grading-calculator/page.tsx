@@ -10,16 +10,16 @@ import { CONTENT_LAST_REVIEWED_ISO } from "@/lib/site-constants";
 export async function generateMetadata(): Promise<Metadata> {
   const base = getSiteUrl();
   return {
-    title: "PSA Grading Calculator — Estimate Card Value & ROI | CardSnap",
+    title: "Sports Card Grading Calculator — PSA Fees & ROI | CardSnap",
     description:
-      "Calculate PSA grading ROI instantly. Compare raw vs PSA 9 vs PSA 10 values, estimate grading costs, and decide if your card is worth submitting.",
+      "Free sports card grading calculator for PSA: model raw vs PSA 9 vs PSA 10 value, add fees and selling costs, and see when grading pays—or when fees eat your upside.",
     alternates: {
       canonical: `${base}/psa-grading-calculator`,
     },
     openGraph: {
-      title: "PSA Grading Calculator — Estimate Card Value & ROI",
+      title: "Sports Card Grading Calculator — PSA Fees & ROI",
       description:
-        "Calculate PSA grading ROI instantly. Compare raw vs PSA 9 vs PSA 10 values, estimate grading costs, and decide if your card is worth submitting.",
+        "Model PSA grading ROI before you ship: comps, PSA 9/10 lift, grading fees and selling friction.",
       type: "article",
       url: `${base}/psa-grading-calculator`,
     },
@@ -133,9 +133,9 @@ export default function PsaGradingCalculatorPage() {
   const articleLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: "PSA Grading Calculator — Estimate Card Value & ROI",
+    headline: "Sports Card Grading Calculator — PSA Fees, ROI & When to Ship",
     description:
-      "Calculate PSA grading ROI instantly. Compare raw vs PSA 9 vs PSA 10 values, estimate grading costs, and decide if your card is worth submitting.",
+      "Use this PSA-focused sports card grading calculator to benchmark raw versus graded outcomes, layered fees, and realistic upside before you submit.",
     dateModified: CONTENT_LAST_REVIEWED_ISO,
     author: { "@type": "Organization", name: "CardSnap Research Team" },
     publisher: {
@@ -147,22 +147,71 @@ export default function PsaGradingCalculatorPage() {
     mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
   };
 
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "How do I estimate sports card grading ROI before PSA fees?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "Compare raw sold comps to PSA 9 and PSA 10 comps, subtract PSA service fees and shipping, then add marketplace selling fees. If PSA 9 upside does not clear your minimum profit, skip or sell raw.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "When do PSA grading fees wipe out profit?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "Low raw values, pessimistic PSA outcomes (PSA 8 or lower likely), and express fees on borderline cards routinely make fees consume the entire margin—especially when you only model a PSA 10 exit.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Does this replace an official PSA grading submission quote?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            "No. PSA publishes the final fee. This page is an educational sports card grading calculator that previews economics using typical fee ranges and comps so you can sanity-check before committing.",
+        },
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <JsonLd data={articleLd} />
+      <JsonLd data={faqLd} />
       <SeoSiteNav />
 
       <main className="mx-auto max-w-3xl px-4 pb-16 pt-8 sm:px-6">
         {/* Hero H1 */}
         <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          PSA Grading Calculator
+          Sports card grading calculator (PSA-focused)
         </h1>
+        <p className="mt-2 text-sm font-medium text-amber-400/90 sm:text-base">
+          Model fees, PSA 9 downside, and PSA 10 upside—the same signals CardSnap
+          uses in its instant analysis.
+        </p>
         <p className="mt-3 text-lg text-zinc-300">
-          Estimate your card&apos;s ROI before you submit. Calculate the difference
-          between raw, PSA 9, and PSA 10 values to decide if grading is worth
-          it.
+          Estimate sports card grading ROI before you submit to PSA. Compare
+          raw value to PSA 9 and PSA 10 outcomes, layer in grading and selling
+          friction, then decide if the card earns a slab or should stay raw.
         </p>
         <PageAttribution className="mt-4" />
+
+        <aside className="mt-6 rounded-xl border border-amber-500/25 bg-amber-500/8 p-4 text-sm text-zinc-200">
+          <p className="font-semibold text-amber-300">Why collectors start here</p>
+          <p className="mt-2 text-zinc-300 leading-relaxed">
+            The most common grading mistake is paying PSA fees without mapping
+            the <span className="text-white">PSA 9 path</span>: if fees and
+            resale friction eat the PSA 9 upside, the submission was never
+            economically sound—regardless of PSA 10 hopes.
+          </p>
+        </aside>
 
         <div className="mt-8">
           <AdSlot />
@@ -274,6 +323,12 @@ export default function PsaGradingCalculatorPage() {
             ROI = (Graded Value − Grading Cost) − Raw Value. PSA costs $15–$200+ depending on speed and card value.
             If your raw card is worth $10 and grading costs $50, the graded value must exceed $60 to profit.
           </p>
+          <p className="mt-3 text-zinc-400">
+            The calculator is most useful when you treat PSA 9 as the downside
+            case. A card that only works as a PSA 10 is a speculation, while a
+            card that still protects profit at PSA 9 is a much cleaner grading
+            candidate.
+          </p>
 
           <div className="mt-6 space-y-4">
             {roiExamples.map((example) => (
@@ -363,10 +418,79 @@ export default function PsaGradingCalculatorPage() {
           </p>
         </section>
 
+        {/* FAQs — match FAQPage JSON-LD */}
+        <section className="mt-12 border-t border-zinc-800 pt-10">
+          <h2 className="text-2xl font-semibold text-white">Sports card grading calculator FAQ</h2>
+          <dl className="mt-6 space-y-6">
+            <div>
+              <dt className="font-semibold text-zinc-100">
+                How do I estimate sports card grading ROI before PSA fees?
+              </dt>
+              <dd className="mt-2 text-sm text-zinc-400 leading-relaxed">
+                Compare raw sold comps to PSA 9 and PSA 10 comps, subtract PSA
+                service fees and shipping, then add marketplace selling fees. If
+                PSA 9 upside does not clear your minimum profit, skip or sell
+                raw.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-zinc-100">
+                When do PSA grading fees wipe out profit?
+              </dt>
+              <dd className="mt-2 text-sm text-zinc-400 leading-relaxed">
+                Low raw values, pessimistic PSA outcomes (PSA 8 or lower likely),
+                and express fees on borderline cards routinely make fees consume
+                the entire margin—especially when you only model a PSA 10 exit.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-zinc-100">
+                Does this replace an official PSA grading submission quote?
+              </dt>
+              <dd className="mt-2 text-sm text-zinc-400 leading-relaxed">
+                No. PSA publishes the final fee. This page is an educational
+                sports card grading calculator that previews economics using
+                typical fee ranges and comps so you can sanity-check before
+                committing.
+              </dd>
+            </div>
+          </dl>
+        </section>
+
         {/* Related Links */}
         <section className="mt-12 border-t border-zinc-800 pt-8">
-          <h2 className="text-lg font-semibold text-white">Niche Guides by Sport</h2>
+          <h2 className="text-lg font-semibold text-white">Related tools &amp; guides</h2>
           <nav className="mt-4 flex flex-col gap-2 text-sm">
+            <Link
+              href="/"
+              className="text-zinc-400 hover:text-zinc-200 underline"
+            >
+              → Should I grade my card? Instant CardSnap analysis
+            </Link>
+            <Link
+              href="/pokemon-card-grading-calculator"
+              className="text-zinc-400 hover:text-zinc-200 underline"
+            >
+              → Pokémon grading calculator
+            </Link>
+            <Link
+              href="/baseball-card-value-checker"
+              className="text-zinc-400 hover:text-zinc-200 underline"
+            >
+              → Baseball card value checker
+            </Link>
+            <Link
+              href="/basketball-card-value-checker"
+              className="text-zinc-400 hover:text-zinc-200 underline"
+            >
+              → Basketball card value checker
+            </Link>
+            <Link
+              href="/sports-card-value-checker"
+              className="text-zinc-400 hover:text-zinc-200 underline"
+            >
+              → Sports card value checker hub
+            </Link>
             <Link
               href="/grade-or-skip/baseball"
               className="text-zinc-400 hover:text-zinc-200 underline"
@@ -384,6 +508,12 @@ export default function PsaGradingCalculatorPage() {
               className="text-zinc-400 hover:text-zinc-200 underline"
             >
               → Pokémon card grading strategy
+            </Link>
+            <Link
+              href="/watchlist"
+              className="text-zinc-400 hover:text-zinc-200 underline"
+            >
+              → Watch borderline cards before submitting
             </Link>
             <Link
               href="/cards"

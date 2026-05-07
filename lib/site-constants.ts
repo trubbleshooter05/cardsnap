@@ -5,7 +5,7 @@ export const EDITORIAL_BYLINE = "CardSnap Research Team";
  * Last substantive review of on-site methodology copy and tool behavior description.
  * Update when methodology, pricing logic description, or legal pages materially change.
  */
-export const CONTENT_LAST_REVIEWED_ISO = "2026-04-11";
+export const CONTENT_LAST_REVIEWED_ISO = "2026-05-06";
 
 export function formatContentUpdatedLong(isoDate: string = CONTENT_LAST_REVIEWED_ISO): string {
   const normalized = isoDate.includes("T") ? isoDate : `${isoDate}T12:00:00Z`;

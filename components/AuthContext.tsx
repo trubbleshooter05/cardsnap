@@ -15,14 +15,21 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  // Stable ref so the client is never recreated on re-renders
-  const supabaseRef = useRef(createSupabaseBrowserClient());
-  const supabase = supabaseRef.current;
+  // Lazy init to avoid issues during SSR/build when env vars may be missing
+  const supabaseRef = useRef<ReturnType<typeof createSupabaseBrowserClient> | null>(null);
+
+  const getSupabase = () => {
+    if (!supabaseRef.current) {
+      supabaseRef.current = createSupabaseBrowserClient();
+    }
+    return supabaseRef.current;
+  };
 
   useEffect(() => {
     // Check current session
     const initAuth = async () => {
       try {
+        const supabase = getSupabase();
         const { data: { session } } = await supabase.auth.getSession();
         console.log("[cardsnap:auth]", "init: getSession", {
           hasSession: Boolean(session),
@@ -38,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
 
     // Listen for auth state changes
+    const supabase = getSupabase();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("[cardsnap:auth]", "onAuthStateChange", {
         event,
@@ -55,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await getSupabase().auth.signOut();
     setUser(null);
   };
 

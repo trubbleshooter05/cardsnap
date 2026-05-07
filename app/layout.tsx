@@ -12,11 +12,12 @@ const siteUrl = getSiteUrl();
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "CardSnap — Is your card worth grading?",
+    default:
+      "Should I Grade My Card? Sports Card PSA ROI Tool | CardSnap",
     template: "%s | CardSnap",
   },
   description:
-    "Instant sports card value comps, PSA grading ROI, and a clear grade-or-skip verdict. Free to try — no account required.",
+    "Should I grade my card? Instant raw vs PSA comps, grading fees modeled, and a clear grade-or-skip verdict — before you ship to PSA.",
   alternates: {
     canonical: "/",
   },
@@ -24,9 +25,9 @@ export const metadata: Metadata = {
     google: "EdP7De48YXoMCUbFmJu9PoxdBlBof-HSUxlZTYVnjiQ",
   },
   openGraph: {
-    title: "CardSnap — Is your card worth grading?",
+    title: "Should I Grade My Card? Sports Card PSA ROI | CardSnap",
     description:
-      "Instant sports card value comps, PSA grading ROI, and a clear grade-or-skip verdict.",
+      "Should I grade my card? Compare raw value, PSA 9/10, fees, and a grade-or-skip verdict in seconds.",
     url: "/",
     siteName: "CardSnap",
     type: "website",
@@ -42,8 +43,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CardSnap — Is your card worth grading?",
-    description: "Sports card values, PSA comps, and a grading verdict in seconds.",
+    title: "Should I Grade My Card? | CardSnap",
+    description:
+      "Sports card values, PSA comps, fees, and a grading verdict in seconds.",
     images: ["/opengraph-image"],
   },
 };
