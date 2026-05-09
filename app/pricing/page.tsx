@@ -8,12 +8,12 @@ const base = getSiteUrl();
 export const metadata: Metadata = {
   title: "CardSnap Pricing — Pro Grading Decisions",
   description:
-    "CardSnap Pro pricing: 3 free card analyses, then unlimited grade-or-sell decisions for collectors who want to avoid bad PSA submissions.",
+    "CardSnap pricing: 5 free card scans, prepaid scan packs, or unlimited grading decisions with monthly or annual Pro.",
   alternates: { canonical: `${base}/pricing` },
   openGraph: {
     title: "CardSnap Pricing — Pro Grading Decisions",
     description:
-      "Get 3 free analyses, then unlock unlimited card grading ROI decisions with CardSnap Pro.",
+      "Start with 5 free scans, then choose scan packs or unlimited Pro (monthly or annual).",
     url: `${base}/pricing`,
     siteName: "CardSnap",
     type: "website",
@@ -42,32 +42,40 @@ export default function PricingPage() {
             Stop guessing before you pay to grade a card.
           </h1>
           <p className="mt-4 text-base leading-relaxed text-zinc-400 sm:text-lg">
-            Run 3 free analyses, then upgrade when CardSnap saves you from one bad
-            grading submission. Pro is built for collectors who want a clear
-            grade, sell, or watch decision before spending on PSA fees.
+            Run 5 free scans, then pick prepaid scan packs or unlimited Pro. Built
+            for collectors who want a clear grade, sell, or watch decision before
+            spending on PSA fees.
           </p>
         </div>
 
         <section className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 sm:p-8">
-            <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
-              <span className="text-5xl font-black tracking-tight text-white">$9</span>
-              <span className="pb-2 text-lg font-semibold text-zinc-300">/mo</span>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-300">
+              Unlimited Pro
+            </p>
+            <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-2">
+              <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
+                <span className="text-5xl font-black tracking-tight text-white">$99</span>
+                <span className="pb-2 text-lg font-semibold text-zinc-300">/yr</span>
+              </div>
+              <div className="flex flex-wrap items-end gap-x-2 gap-y-1 border-l border-amber-500/30 pl-6">
+                <span className="text-4xl font-black tracking-tight text-white">$9.99</span>
+                <span className="pb-2 text-lg font-semibold text-zinc-300">/mo</span>
+              </div>
             </div>
             <p className="mt-3 text-sm text-zinc-400">
-              Founding annual option: <strong className="text-amber-200">$29/yr founding</strong>.
-              Stripe shows the exact active plan before payment.
+              Stripe shows the exact price before checkout. Yearly is less than twelve months billed monthly (~$120/yr).
             </p>
 
             <Link
               href="/"
               className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-5 text-sm font-bold text-zinc-950 shadow-lg shadow-amber-500/20 transition hover:from-amber-300 hover:to-orange-400"
             >
-              Analyze 3 cards free
+              Analyze 5 cards free
             </Link>
 
             <p className="mt-3 text-center text-xs text-zinc-500">
-              No signup required for free analyses. Upgrade only when the math matters.
+              No signup required for free scans. Upgrade when the math matters.
             </p>
           </div>
 
@@ -82,6 +90,28 @@ export default function PricingPage() {
               ))}
             </ul>
           </div>
+        </section>
+
+        <section className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8">
+          <h2 className="text-xl font-bold text-white">Scan packs — no subscription</h2>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+            Signed-in checkout: add prepaid scans when you prefer pay-as-you-go.
+          </p>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-3">
+            {[
+              ["10 scans", "$9.99"],
+              ["50 scans", "$29"],
+              ["200 scans", "$79"],
+            ].map(([label, price]) => (
+              <li
+                key={label}
+                className="rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-4"
+              >
+                <p className="text-lg font-bold text-white">{price}</p>
+                <p className="mt-1 text-sm text-zinc-400">{label}</p>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 sm:p-8">

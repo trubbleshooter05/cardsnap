@@ -35,11 +35,17 @@ export async function GET(req: NextRequest) {
 
   const { data: userRow } = await supabase
     .from("users")
-    .select("is_pro")
+    .select("is_pro, scan_credits")
     .eq("id", userId)
     .maybeSingle();
 
   const isPro = Boolean(userRow?.is_pro);
+  const prepaid =
+    typeof userRow?.scan_credits === "number" &&
+    Number.isFinite(userRow.scan_credits)
+      ? Math.max(0, userRow.scan_credits)
+      : 0;
+  const limit = isPro ? FREE_SCAN_LIMIT : FREE_SCAN_LIMIT + prepaid;
 
   const { count, error } = await supabase
     .from("scans")
@@ -61,7 +67,7 @@ export async function GET(req: NextRequest) {
     {
       count: count ?? 0,
       isPro,
-      limit: FREE_SCAN_LIMIT,
+      limit,
     },
     {
       headers: {

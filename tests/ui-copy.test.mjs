@@ -23,7 +23,7 @@ test("primary flow uses analyze language and progress messages", () => {
   assert.match(nav, /Analyze/);
   assert.match(page, /raw value, PSA 9 downside, PSA 10 upside/);
   assert.match(home, /Know if your card is worth grading/);
-  assert.match(home, /CardSnap compares raw value, PSA 9 downside, PSA 10 upside/);
+  assert.match(home, /CardSnap compares raw card value, PSA 9 downside, PSA 10 upside/);
   assert.match(home, /cardsnap-homepage-visual\.svg/);
   assert.doesNotMatch(form, /Scan Your Card/);
   assert.doesNotMatch(home, /Analyzing your card/);
@@ -54,7 +54,7 @@ test("result card emphasizes upside and market movement", () => {
   assert.match(result, /Card values fluctuate/);
 });
 
-test("monetization funnel shows pricing and gives three free analyses", () => {
+test("monetization funnel shows pricing and gives five free scans", () => {
   const usage = read("lib/usage-limits.ts");
   const gate = read("components/ScanGate.tsx");
   const pricing = read("app/pricing/page.tsx");
@@ -62,12 +62,15 @@ test("monetization funnel shows pricing and gives three free analyses", () => {
   const footer = read("components/SiteFooter.tsx");
   const sitemap = read("app/sitemap.ts");
 
-  assert.match(usage, /FREE_SCAN_LIMIT = 3/);
-  assert.match(gate, /\$9\/mo/);
-  assert.match(gate, /\$29\/yr founding/);
+  assert.match(usage, /FREE_SCAN_LIMIT = 5/);
+  assert.match(gate, /\$99\/yr unlimited/);
+  assert.match(gate, /\$9\.99\/mo unlimited/);
+  assert.match(gate, /10 scans/);
+  assert.match(gate, /\$9\.99/);
   assert.match(pricing, /CardSnap Pro/);
-  assert.match(pricing, /\$9/);
-  assert.match(pricing, /\$29/);
+  assert.match(pricing, /\$99/);
+  assert.match(pricing, /\$9\.99/);
+  assert.match(pricing, /Scan packs/);
   assert.match(nav, /Pricing/);
   assert.match(footer, /Pricing/);
   assert.match(sitemap, /\/pricing/);

@@ -414,7 +414,7 @@ export default function PsaGradingCalculatorPage() {
             Analyze Your Card Now →
           </Link>
           <p className="mt-3 text-xs text-zinc-500">
-            3 free analyses. No signup required.
+            5 free scans. No signup required.
           </p>
         </section>
 

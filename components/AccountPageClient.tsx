@@ -143,7 +143,7 @@ export function AccountPageClient() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ subscriptionPlan: "annual" }),
       });
       if (!res.ok) {
         alert("Checkout unavailable. Check Stripe configuration.");

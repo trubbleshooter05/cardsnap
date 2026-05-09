@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
-import { ScanGate } from "@/components/ScanGate";
+import { ScanGate, type SubscriptionPlanToggle } from "@/components/ScanGate";
 import { SiteNav } from "@/components/SiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
+import { OpportunitiesWidget } from "@/components/OpportunitiesWidget";
 import { useAuth } from "@/components/useAuth";
 import {
   requestOpenAuthModal,
@@ -59,6 +60,22 @@ const ANALYSIS_PROGRESS_MESSAGES = [
 ] as const;
 
 const PENDING_PAYWALL_CHECKOUT = "cardsnap:pendingPaywallCheckoutTs";
+/** Current session handoff after sign-in (subscription plan or pack). */
+const PENDING_CHECKOUT_KEY = "cardsnap:pendingCheckoutV2";
+
+type PendingCheckoutStored =
+  | { t: number; kind: "subscription"; plan: SubscriptionPlanToggle }
+  | { t: number; kind: "pack"; credits: 10 | 50 | 200 };
+
+type PendingCheckout =
+  | { kind: "subscription"; plan: SubscriptionPlanToggle }
+  | { kind: "pack"; credits: 10 | 50 | 200 };
+
+function pendingFromStored(stored: PendingCheckoutStored): PendingCheckout {
+  return stored.kind === "subscription"
+    ? { kind: "subscription", plan: stored.plan }
+    : { kind: "pack", credits: stored.credits };
+}
 
 function HeroVisual() {
   return (
@@ -88,29 +105,67 @@ function HeroVisual() {
   );
 }
 
-function readPaywallPendingTs(): number | null {
+function readPendingCheckoutStored(): PendingCheckoutStored | null {
   if (typeof window === "undefined") return null;
   try {
-    const s = window.sessionStorage.getItem(PENDING_PAYWALL_CHECKOUT);
-    if (!s) return null;
-    const t = Number(s);
-    if (!Number.isFinite(t) || Date.now() - t > 15 * 60 * 1000) {
-      window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
+    const raw = window.sessionStorage.getItem(PENDING_CHECKOUT_KEY);
+    if (raw) {
+      const o = JSON.parse(raw) as Partial<PendingCheckoutStored> | null;
+      const t =
+        typeof o?.t === "number" ? o.t : NaN;
+      if (
+        !o ||
+        !Number.isFinite(t) ||
+        Date.now() - t > 15 * 60 * 1000
+      ) {
+        window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+        return null;
+      }
+      if (o.kind === "subscription" && (o.plan === "annual" || o.plan === "monthly")) {
+        return { kind: "subscription", plan: o.plan, t };
+      }
+      if (
+        o.kind === "pack" &&
+        (o.credits === 10 || o.credits === 50 || o.credits === 200)
+      ) {
+        return { kind: "pack", credits: o.credits, t };
+      }
+      window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
       return null;
     }
-    return t;
+    const legacy = window.sessionStorage.getItem(PENDING_PAYWALL_CHECKOUT);
+    if (legacy) {
+      const ts = Number(legacy);
+      if (!Number.isFinite(ts) || Date.now() - ts > 15 * 60 * 1000) {
+        window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
+        return null;
+      }
+      return { kind: "subscription", plan: "annual", t: ts };
+    }
+    return null;
   } catch {
+    try {
+      window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+      window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
+    } catch {
+      /* ignore */
+    }
     return null;
   }
 }
 
-function setPaywallPendingFromCta() {
+function setPendingCheckoutFromCta(pending: PendingCheckout) {
   if (typeof window === "undefined") return;
   try {
+    const payload: PendingCheckoutStored =
+      pending.kind === "subscription"
+        ? { kind: "subscription", plan: pending.plan, t: Date.now() }
+        : { kind: "pack", credits: pending.credits, t: Date.now() };
     window.sessionStorage.setItem(
-      PENDING_PAYWALL_CHECKOUT,
-      String(Date.now())
+      PENDING_CHECKOUT_KEY,
+      JSON.stringify(payload)
     );
+    window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
   } catch {
     /* ignore */
   }
@@ -119,6 +174,7 @@ function setPaywallPendingFromCta() {
 function clearPaywallPending() {
   if (typeof window === "undefined") return;
   try {
+    window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
     window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
   } catch {
     /* ignore */
@@ -189,6 +245,9 @@ export function HomePageClient() {
   const [result, setResult] = useState<ScanResponse | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
+  const [packBuying, setPackBuying] = useState<
+    Partial<Record<10 | 50 | 200, boolean>>
+  >({});
   const [reportCheckouting, setReportCheckouting] = useState(false);
   const [checkoutSyncing, setCheckoutSyncing] = useState(false);
   const [progressIndex, setProgressIndex] = useState(0);
@@ -197,13 +256,12 @@ export function HomePageClient() {
   /** If a recent successful scan said `isPro: true`, do not let a stale /api/usage response clear Pro. */
   const lastProFromScanRef = useRef<{ pro: boolean; t: number } | null>(null);
   const scanInFlightRef = useRef(false);
-  const pendingPaywallCheckoutRef = useRef(false);
+  const pendingPaywallCheckoutRef = useRef<PendingCheckout | null>(null);
   const checkoutInFlightRef = useRef(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   // IDs for /api/usage and /api/scan. Never wait for auth init: anonymous ID must be ready
-  // before getSession() finishes so the first free scan works with no login (FREE_SCAN_LIMIT=1
-  // is enforced on the server, not with a login wall).
+  // before getSession() finishes so the first free scan works with no login (limits are enforced on the server, not with a login wall).
   useLayoutEffect(() => {
     if (user?.id) {
       setUserId(user.id);
@@ -312,8 +370,13 @@ export function HomePageClient() {
     [user?.id]
   );
 
-  const runStripeCheckout = useCallback(
-    async (source: "cta" | "post_login") => {
+  const runProductCheckout = useCallback(
+    async (
+      source: "cta" | "post_login",
+      payload:
+        | { kind: "subscription"; plan: SubscriptionPlanToggle }
+        | { kind: "pack"; credits: 10 | 50 | 200 }
+    ) => {
       const uid = user?.id ?? userId;
       if (!uid) {
         console.warn(AUTH_LOG, "upgrade: no user id — abort", { source });
@@ -324,11 +387,17 @@ export function HomePageClient() {
         return;
       }
       checkoutInFlightRef.current = true;
-      setUpgrading(true);
+      const isSub = payload.kind === "subscription";
+      if (isSub) setUpgrading(true);
+      else
+        setPackBuying((prev) => ({ ...prev, [payload.credits]: true }));
       try {
         persistAnonymousId(uid);
         const supabase = createSupabaseBrowserClient();
-        console.log(AUTH_LOG, "upgrade: wait for access token", { source, uid: uid.slice(0, 8) });
+        console.log(AUTH_LOG, "upgrade: wait for access token", {
+          source,
+          uid: uid.slice(0, 8),
+        });
         const token = await waitForAccessToken(supabase, {
           context: "create-checkout",
           maxMs: 25_000,
@@ -338,14 +407,18 @@ export function HomePageClient() {
           alert("Authentication required. Please sign in again.");
           return;
         }
-        console.log(AUTH_LOG, "upgrade: POST /api/create-checkout", { source });
+        const body =
+          payload.kind === "subscription"
+            ? { subscriptionPlan: payload.plan }
+            : { packCredits: payload.credits };
+        console.log(AUTH_LOG, "upgrade: POST /api/create-checkout", { source, body });
         const res = await fetch("/api/create-checkout", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify(body),
         });
         if (!res.ok) {
           console.warn(AUTH_LOG, "upgrade: checkout HTTP", res.status);
@@ -356,7 +429,9 @@ export function HomePageClient() {
         console.log(AUTH_LOG, "upgrade: redirecting to Stripe", { source });
         window.location.href = url;
       } finally {
-        setUpgrading(false);
+        if (isSub) setUpgrading(false);
+        else if (payload.kind === "pack")
+          setPackBuying((prev) => ({ ...prev, [payload.credits]: false }));
         checkoutInFlightRef.current = false;
       }
     },
@@ -369,11 +444,13 @@ export function HomePageClient() {
     void refreshUsage(userId);
   }, [userId, refreshUsage]);
 
-  // On checkout return: sync subscription once
+  // On checkout return: sync subscription for Pro, refresh usage for packs
   useEffect(() => {
     if (typeof window === "undefined" || !userId || !user?.id) return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("upgraded") !== "1") return;
+    const upgraded = params.get("upgraded") === "1";
+    const packPurchase = params.get("pack_purchase") === "1";
+    if (!upgraded && !packPurchase) return;
 
     let cancelled = false;
 
@@ -385,7 +462,7 @@ export function HomePageClient() {
         const supabase = createSupabaseBrowserClient();
         const token = await getAccessTokenRaced(supabase);
 
-        if (token) {
+        if (upgraded && token) {
           await fetch("/api/sync-subscription", {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
@@ -450,7 +527,7 @@ export function HomePageClient() {
             AUTH_LOG,
             "auth modal dismissed, no session after delay — clear paywall checkout intent"
           );
-          pendingPaywallCheckoutRef.current = false;
+          pendingPaywallCheckoutRef.current = null;
           clearPaywallPending();
         })();
       }, 450);
@@ -466,8 +543,9 @@ export function HomePageClient() {
     if (authLoading) return;
     if (!user?.id) return;
     const fromRef = pendingPaywallCheckoutRef.current;
-    const fromStore = readPaywallPendingTs() != null;
-    if (!fromRef && !fromStore) return;
+    const stored = readPendingCheckoutStored();
+    const pending = fromRef ?? (stored ? pendingFromStored(stored) : null);
+    if (!pending) return;
     if (checkoutInFlightRef.current) {
       console.log(
         AUTH_LOG,
@@ -476,15 +554,14 @@ export function HomePageClient() {
       return;
     }
     console.log(AUTH_LOG, "auth: session ready — handoff to checkout", {
-      fromRef,
-      fromStore,
+      pending,
       userId: user.id,
     });
-    pendingPaywallCheckoutRef.current = false;
+    pendingPaywallCheckoutRef.current = null;
     clearPaywallPending();
     setGateOpen(false);
-    void runStripeCheckout("post_login");
-  }, [user?.id, authLoading, runStripeCheckout]);
+    void runProductCheckout("post_login", pending);
+  }, [user?.id, authLoading, runProductCheckout]);
 
   const handleSubmit = async (payload: {
     cardName: string;
@@ -649,20 +726,41 @@ export function HomePageClient() {
     }
   };
 
-  const handleUpgrade = () => {
-    console.log(AUTH_LOG, "paywall CTA: Unlock Pro clicked", {
+  const handleSubscribe = useCallback((plan: SubscriptionPlanToggle) => {
+    console.log(AUTH_LOG, "paywall CTA: subscribe clicked", {
       hasUser: Boolean(user?.id),
+      plan,
     });
     if (!user?.id) {
-      pendingPaywallCheckoutRef.current = true;
-      setPaywallPendingFromCta();
+      const pending: PendingCheckout = { kind: "subscription", plan };
+      pendingPaywallCheckoutRef.current = pending;
+      setPendingCheckoutFromCta({ kind: "subscription", plan });
       console.log(AUTH_LOG, "auth: opening sign-in (pending checkout after login)");
       requestOpenAuthModal();
       return;
     }
     setGateOpen(false);
-    void runStripeCheckout("cta");
-  };
+    void runProductCheckout("cta", { kind: "subscription", plan });
+  }, [user?.id, runProductCheckout]);
+
+  const handlePackPurchase = useCallback(
+    (credits: 10 | 50 | 200) => {
+      console.log(AUTH_LOG, "paywall CTA: pack clicked", {
+        hasUser: Boolean(user?.id),
+        credits,
+      });
+      if (!user?.id) {
+        const pending: PendingCheckout = { kind: "pack", credits };
+        pendingPaywallCheckoutRef.current = pending;
+        setPendingCheckoutFromCta({ kind: "pack", credits });
+        requestOpenAuthModal();
+        return;
+      }
+      setGateOpen(false);
+      void runProductCheckout("cta", { kind: "pack", credits });
+    },
+    [user?.id, runProductCheckout]
+  );
 
   const handleReportCheckout = async () => {
     if (reportCheckouting) return;
@@ -711,7 +809,7 @@ export function HomePageClient() {
                   : "border-zinc-700 bg-zinc-900 text-zinc-400"
               }`}
             >
-              {isPro ? "⚡ Pro" : `${scansLeft} free left`}
+              {isPro ? "⚡ Pro" : `${scansLeft} scans left`}
             </span>
           ) : null
         }
@@ -868,6 +966,8 @@ export function HomePageClient() {
           </div>
         </section>
 
+        <OpportunitiesWidget />
+
         {SHOW_CARD_COMPS && <CardCompsTest />}
 
         {/* Loading */}
@@ -910,16 +1010,24 @@ export function HomePageClient() {
         open={gateOpen}
         onClose={() => {
           console.log(AUTH_LOG, "paywall: closed (backdrop or Maybe later)");
-          pendingPaywallCheckoutRef.current = false;
+          pendingPaywallCheckoutRef.current = null;
           clearPaywallPending();
           setGateOpen(false);
         }}
-        onUpgrade={handleUpgrade}
+        onSubscribe={handleSubscribe}
+        onPackPurchase={handlePackPurchase}
         onReportCheckout={handleReportCheckout}
         upgrading={upgrading}
+        packBuying={packBuying}
         reportCheckouting={reportCheckouting}
       />
 
     </div>
   );
 }
+
+// Note: Add this import at the top:
+// import { OpportunitiesWidget } from "@/components/OpportunitiesWidget";
+
+// Then add this after the main hero section (around line 850):
+// <OpportunitiesWidget />

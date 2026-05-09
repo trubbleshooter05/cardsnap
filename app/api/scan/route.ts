@@ -15,7 +15,10 @@ import type {
 } from "@supabase/supabase-js";
 
 /** Fallback when DB read times out (shape matches Supabase success + null row). */
-const EMPTY_USER_ROW: PostgrestMaybeSingleResponse<{ is_pro: boolean }> = {
+const EMPTY_USER_ROW: PostgrestMaybeSingleResponse<{
+  is_pro: boolean;
+  scan_credits: number | null;
+}> = {
   data: null,
   error: null,
   count: null,
@@ -103,7 +106,7 @@ export async function POST(req: NextRequest) {
   const userResult = await withTimeout(
     supabase
       .from("users")
-      .select("is_pro")
+      .select("is_pro, scan_credits")
       .eq("id", userId)
       .maybeSingle(),
     3000,
@@ -112,6 +115,10 @@ export async function POST(req: NextRequest) {
   );
   const { data: userRow } = userResult;
   const isPro = Boolean(userRow?.is_pro);
+  const prepaidCredits =
+    typeof userRow?.scan_credits === "number" && Number.isFinite(userRow.scan_credits)
+      ? Math.max(0, userRow.scan_credits)
+      : 0;
 
   const usedResult = await withTimeout(
     supabase
@@ -123,7 +130,7 @@ export async function POST(req: NextRequest) {
     "scan.db.usedcount"
   );
   const used = usedResult.count ?? 0;
-  if (!isPro && used >= FREE_SCAN_LIMIT) {
+  if (!isPro && used >= FREE_SCAN_LIMIT + prepaidCredits) {
     return NextResponse.json(
       { error: "scan_limit_reached" },
       { status: 402 }
@@ -226,7 +233,7 @@ export async function POST(req: NextRequest) {
   const proResult = await withTimeout(
     supabase
       .from("users")
-      .select("is_pro")
+      .select("is_pro, scan_credits")
       .eq("id", userId)
       .maybeSingle(),
     3000,
@@ -234,6 +241,15 @@ export async function POST(req: NextRequest) {
     "scan.db.pro"
   );
   const { data: proRow } = proResult;
+  const isProResponse = Boolean(proRow?.is_pro);
+  const prepaidForLimit =
+    typeof proRow?.scan_credits === "number" &&
+    Number.isFinite(proRow.scan_credits)
+      ? Math.max(0, proRow.scan_credits)
+      : 0;
+  /** Total non-Pro scan allowance (included free scans + prepaid pack credits). */
+  const tierScanLimit =
+    FREE_SCAN_LIMIT + (isProResponse ? 0 : prepaidForLimit);
 
   console.log("[scan] returning response with merged data");
   return NextResponse.json(
@@ -243,8 +259,8 @@ export async function POST(req: NextRequest) {
       /** @deprecated use freeScansUsed — kept for older clients */
       scansUsedThisMonth: freeScansUsed,
       freeScansUsed,
-      freeScanLimit: FREE_SCAN_LIMIT,
-      isPro: Boolean(proRow?.is_pro),
+      freeScanLimit: tierScanLimit,
+      isPro: isProResponse,
     },
     { headers: extraHeaders }
   );

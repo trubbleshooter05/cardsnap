@@ -15,8 +15,12 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
  *   id text primary key,
  *   is_pro boolean not null default false,
  *   stripe_customer_id text,
- *   scan_count_this_month int not null default 0
+ *   scan_count_this_month int not null default 0,
+ *   scan_credits int not null default 0 -- prepaid scans from Stripe one-time packs
  * );
+ *
+ * -- Prepaid packs (Stripe one-time Checkout):
+ * alter table public.users add column if not exists scan_credits int not null default 0;
  *
  * If you see PGRST204 / "Could not find the 'card_name' column", run:
  *   alter table public.scans add column if not exists card_name text;
