@@ -157,6 +157,9 @@ export function SeoGuidePage({ guide }: { guide: SeoGuideDefinition }) {
             <h2 className="text-2xl font-semibold text-white sm:text-[1.65rem]">
               {guide.cta.title}
             </h2>
+            <p className="text-base font-semibold text-amber-200/95">
+              Try CardSnap free → 5 scans, no credit card
+            </p>
             <GuideBlocks blocks={guide.cta.blocks} base={base} />
             <div className="pt-2">
               <Link

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getSiteUrl } from "@/lib/site-url";
 import { SEO_GUIDE_DEFINITIONS_PHASE2 } from "@/lib/seo-guides-data-phase2";
 import { SEO_GUIDE_DEFINITIONS_POKEMON } from "@/lib/seo-guides-data-pokemon";
+import { SEO_GUIDES_IN_DIRECTORY } from "@/lib/seo-guides-data-may-2026";
 import type { SeoGuideDefinition } from "@/lib/seo-guides-types";
 
 export type {
@@ -13,8 +14,13 @@ export type {
 
 const POKEMON_SLUGS = new Set(SEO_GUIDE_DEFINITIONS_POKEMON.map((g) => g.slug));
 
+const DIRECTORY_GUIDES_SLUGS = new Set(
+  SEO_GUIDES_IN_DIRECTORY.map((g) => g.slug)
+);
+
 export function seoGuidePath(slug: string): string {
   if (POKEMON_SLUGS.has(slug)) return `/should-i-grade-pokemon/${slug}`;
+  if (DIRECTORY_GUIDES_SLUGS.has(slug)) return `/guides/${slug}`;
   return `/${slug}`;
 }
 
@@ -725,5 +731,6 @@ const SEO_GUIDE_DEFINITIONS: SeoGuideDefinition[] = [
     },
   },
   ...SEO_GUIDE_DEFINITIONS_PHASE2,
+  ...SEO_GUIDES_IN_DIRECTORY,
   ...SEO_GUIDE_DEFINITIONS_POKEMON,
 ];

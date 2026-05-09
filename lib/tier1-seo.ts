@@ -9,14 +9,24 @@ export type Tier1Entry = {
 };
 
 /**
- * Tier 1 pages (10): 3 keyword families × curated cards.
- * Data values come from `data/cards.json` via `cardSlug`.
+ * Tier 1 pages (programmatic SEO): curated cards × keyword templates.
+ * `cardSlug` must exist in `data/cards.json` / `cardPages`.
  */
 export const TIER1_SEO_PAGES: Tier1Entry[] = [
   { template: "should_grade", cardSlug: "luka-doncic-2018-panini-prizm-280-value" },
   { template: "should_grade", cardSlug: "michael-jordan-1986-fleer-57-value" },
   { template: "should_grade", cardSlug: "lebron-james-2003-topps-chrome-111-value" },
   { template: "should_grade", cardSlug: "mike-trout-2011-topps-update-us175-value" },
+  { template: "should_grade", cardSlug: "derek-jeter-1993-sp-foil-279-value" },
+  { template: "should_grade", cardSlug: "joe-burrow-2020-panini-prizm-307-value" },
+  { template: "should_grade", cardSlug: "zion-williamson-2019-panini-mosaic-209-value" },
+  { template: "should_grade", cardSlug: "tiger-woods-2001-sp-authentic-51-value" },
+  { template: "should_grade", cardSlug: "ken-griffey-jr-1989-upper-deck-1-value" },
+  { template: "should_grade", cardSlug: "saquon-barkley-2018-panini-donruss-rated-rookie-306-value" },
+  { template: "should_grade", cardSlug: "wayne-gretzky-1979-o-pee-chee-18-value" },
+  { template: "should_grade", cardSlug: "carmelo-anthony-2003-upper-deck-303-value" },
+  { template: "should_grade", cardSlug: "kobe-bryant-1996-topps-chrome-138-value" },
+  { template: "should_grade", cardSlug: "paolo-banchero-2022-panini-prizm-233-value" },
   { template: "psa10_value", cardSlug: "mickey-mantle-1952-topps-311-value" },
   { template: "psa10_value", cardSlug: "patrick-mahomes-2017-panini-prizm-269-value" },
   { template: "psa10_value", cardSlug: "anthony-edwards-2020-panini-prizm-258-value" },
