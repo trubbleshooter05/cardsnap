@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdSlot, areCardAdSlotsEnabled } from "@/components/AdSlot";
 import { JsonLd } from "@/components/JsonLd";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import type {
@@ -181,6 +182,12 @@ export function SeoGuidePage({ guide }: { guide: SeoGuideDefinition }) {
               </p>
             ))}
           </section>
+
+          {areCardAdSlotsEnabled() ? (
+            <div className="mt-10">
+              <AdSlot />
+            </div>
+          ) : null}
         </article>
       </main>
     </div>

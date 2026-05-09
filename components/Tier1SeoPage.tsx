@@ -5,7 +5,7 @@ import { formatUsd, formatUsdSigned } from "@/lib/format-currency";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { PageAttribution } from "@/components/PageAttribution";
 import { JsonLd } from "@/components/JsonLd";
-import { AdSlot } from "@/components/AdSlot";
+import { AdSlot, areCardAdSlotsEnabled } from "@/components/AdSlot";
 import type { Tier1Template } from "@/lib/tier1-seo";
 import {
   buildTier1Faqs,
@@ -109,8 +109,6 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
             <li className="text-zinc-300">{card.playerName}</li>
           </ol>
         </nav>
-
-        <AdSlot />
 
         <h1 className="text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
           {tier1Title(card, template)}
@@ -267,6 +265,12 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
           </Link>
         </section>
 
+        {areCardAdSlotsEnabled() ? (
+          <div className="mt-10">
+            <AdSlot />
+          </div>
+        ) : null}
+
         <section className="mt-12 border-t border-zinc-800 pt-8">
           <h2 className="text-lg font-semibold text-white">Internal links</h2>
           <ul className="mt-4 space-y-2 text-sm">
@@ -315,10 +319,6 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
             ))}
           </dl>
         </section>
-
-        <div className="mt-10">
-          <AdSlot />
-        </div>
       </main>
     </div>
   );
