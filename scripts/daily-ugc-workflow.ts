@@ -25,13 +25,22 @@ type DailyAsset = {
   youtubeDescription: string;
   pinnedComment: string;
   voiceText: string;
+  hook?: string;
+  tensionPoint?: string;
+  reveal?: string;
+  cta?: string;
 };
 
 const ROOT = process.cwd();
 const REMOTION_ENTRY = "remotion/index.ts";
 const PUBLIC_DIR = path.join(ROOT, "public");
 
-type CopyVariant = Pick<DailyAsset, "tiktokCaption" | "youtubeTitle" | "youtubeDescription" | "pinnedComment" | "voiceText">;
+type CopyVariant = Pick<DailyAsset, "tiktokCaption" | "youtubeTitle" | "youtubeDescription" | "pinnedComment" | "voiceText"> & {
+  hook: string;
+  tensionPoint: string;
+  reveal: string;
+  cta: string;
+};
 
 const COPY_VARIANTS: Record<SearchUgcTone, CopyVariant[]> = {
   almost_overpaid: [
