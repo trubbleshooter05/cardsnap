@@ -1,9 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import dotenv from "dotenv";
+
+dotenv.config({ path: path.join(process.env.HOME!, ".hermes", ".env") });
 
 type CsvRow = Record<string, string>;
-type SearchUgcTone = "printLines" | "gradeEstimate" | "hockey";
+type SearchUgcTone = "almost_overpaid" | "psa9_destroyer" | "mistake_avoided";
 
 type DailyArgs = {
   date: string;
@@ -31,162 +34,91 @@ const PUBLIC_DIR = path.join(ROOT, "public");
 type CopyVariant = Pick<DailyAsset, "tiktokCaption" | "youtubeTitle" | "youtubeDescription" | "pinnedComment" | "voiceText">;
 
 const COPY_VARIANTS: Record<SearchUgcTone, CopyVariant[]> = {
-  printLines: [
+  almost_overpaid: [
     {
-      tiktokCaption:
-        "Stop grading cards off PSA 10 screenshots.\nPSA 9 decides the risk. Run CardSnap before you submit.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Stop grading cards off PSA 10 screenshots",
-      youtubeDescription:
-        "PSA 9 decides the risk. Run CardSnap before you submit. Run the downside before you pay the fee.",
-      pinnedComment: "That is how grading fees disappear.",
-      voiceText:
-        "Stop grading cards off PSA 10 screenshots. That is how grading fees disappear. The real decision is not: can it hit a 10? It is: does this still work at PSA 9? Raw value is the floor. PSA 10 is not the whole story. CardSnap compares raw, PSA 9, PSA 10, and fees. One view. One grade-or-skip verdict. If the math only works at a perfect 10, that is not a grading plan. Skipping a bad submission is still a win. You kept the grading fee in your pocket. Run the downside before you pay the fee. CardSnap. Grade smarter.",
+      hook: "I almost paid $400 too much for this card.",
+      tensionPoint: "PSA 10 comps looked insane. Ready to buy.",
+      reveal: "Then CardSnap showed the PSA 9 reality.",
+      cta: "Saved $400. Wish I found this sooner.",
+      voiceText: "I almost paid $400 too much for this card. Checked PSA 10 comps. Looked insane. Thumb on buy. Then I ran CardSnap. PSA 9 destroys profit. Grading fees wipe it out. Just saved myself four hundred.",
+      tiktokCaption: "Almost overpaid $400.\nOnly checked PSA 10 comps.\nCardSnap showed the real numbers.\n#sportscards #cardcollector #cardsnap",
+      youtubeTitle: "I almost overpaid $400—until PSA 9 comps showed up",
+      youtubeDescription: "High PSA 10 comp, low buy price. Seemed perfect. CardSnap showed PSA 9 destroyed the margin.",
+      pinnedComment: "Close calls are the expensive ones.",
     },
     {
-      tiktokCaption:
-        "Raw value is the foundation. PSA 9 is the real question.\nCheck the downside math before grading.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Raw value is the foundation, PSA 9 is the real question",
-      youtubeDescription:
-        "Check the downside math before grading. CardSnap breaks down raw vs PSA 9 vs PSA 10 instantly.",
-      pinnedComment: "Raw looked solid at a 9.",
-      voiceText:
-        "Raw value is the foundation. PSA 9 is the real question. Because if PSA 9 does not beat raw, the fee makes no sense. CardSnap is built on this math. Three tiers. Three outcomes. Raw. The floor. PSA 9. The bet. PSA 10. The hope. Most cards live in the middle. And fees are real. That is why the grade-or-skip call comes first. Before the submission. Before the label. Before the cost. Check the downside math before you send it in. CardSnap. One grade, one verdict.",
+      hook: "This card looked like a $600 flip.",
+      tensionPoint: "PSA 10 comp right there. Owner asking low. Perfect.",
+      reveal: "CardSnap showed PSA 9 was 30% less.",
+      cta: "Would've cost me thousands in mistakes.",
+      voiceText: "This card looked like a $600 flip. PSA 10 comp sitting there. Owner asking low. Then I ran CardSnap. PSA 9 was way less. Fees erased the edge. Instant skip. And I felt smart for checking.",
+      tiktokCaption: "Looked like the perfect flip.\nPSA 9 changed my mind.\n#sportscards #cardcollector #cardsnap #tradingcards",
+      youtubeTitle: "Looked like a perfect flip—PSA 9 ruined it",
+      youtubeDescription: "High PSA 10 comp, low buy price seemed perfect. PSA 9 comps at 30% less changed the math completely.",
+      pinnedComment: "The 9 is the real test.",
     },
     {
-      tiktokCaption:
-        "Pretty card. Expensive grading. Worth the risk?\nRun the numbers on raw, PSA 9, and PSA 10 first.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Pretty card, expensive grading—worth the risk",
-      youtubeDescription:
-        "Run the ROI on raw, PSA 9, and PSA 10 before submitting. CardSnap does the math for you.",
-      pinnedComment: "Visual appeal is not math.",
-      voiceText:
-        "Pretty card. Expensive grading. Worth the risk? That is the whole question. A beautiful card in hand might be worth less than a 9 in a slab. Or it might not. CardSnap shows you the three scenarios instantly. Raw. Slabbed at 9. Slabbed at 10. Then the fees. Then the real outcome. No guessing from one comp listing. No prayers for a 10. Just the math. Some pretty cards skip grading completely because the math works better raw. That is a win. You avoided the cost. You kept the gain. Run the scenario before you submit. CardSnap. The ROI tool.",
-    },
-    {
-      tiktokCaption:
-        "Perfect 10 submissions are cost-center bets.\nRun the PSA 9 outcome first.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Perfect 10 submissions are cost-center bets—test PSA 9 first",
-      youtubeDescription:
-        "Before betting on a 10, see what a 9 nets. CardSnap shows raw vs 9 vs 10 ROI instantly.",
-      pinnedComment: "PSA 9 is the realistic play.",
-      voiceText:
-        "Perfect 10 submissions are cost-center bets. Expensive. Risky. Unlikely. So before you commit to that bet, run the PSA 9 scenario. What if it comes back a 9? Do you still break even? Does the card stay valuable? CardSnap builds that check into the workflow. Raw value. PSA 9 expectation. PSA 10 dream. Then fees. Then decision. Most cards make sense to grade at a 9. Some do not. And finding out costs nothing. Run the realistic scenario before the hopeful one. That is grade-or-skip thinking. CardSnap. The smart grading tool.",
-    },
-    {
-      tiktokCaption:
-        "Screenshots of PSA 10s are not a grading strategy.\nTest the real downside math.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Screenshots of PSA 10s aren't a strategy",
-      youtubeDescription:
-        "Test actual downside math before grading. CardSnap: raw vs 9 vs 10, all fees included.",
-      pinnedComment: "Comps do not predict outcomes.",
-      voiceText:
-        "Screenshots of PSA 10s are not a grading strategy. They are hope. Real strategy is: what if this card comes back a 9? Or even an 8? That downside matters. That is where fees eat your profit. CardSnap does not let you skip that part. Every submission starts with the worst-case math. Raw value stays. PSA 9 becomes the real benchmark. PSA 10 is upside only if the math still works. No prayers. No comps-based guessing. Just the numbers. Grade the cards that work at a 9. Skip the rest. That is how you avoid grading-fee creep. CardSnap. Real ROI math.",
+      hook: "Nobody told me PSA 9 destroys profit.",
+      tensionPoint: "Been grading for years. Thought I knew the math.",
+      reveal: "CardSnap showed I was submitting losing cards.",
+      cta: "Collectors need to check this first.",
+      voiceText: "Nobody told me PSA 9 destroys profit. Been grading for years. Thought I had it figured. CardSnap ran the numbers. I was submitting cards that barely beat raw at a 9. That's how you bleed money. Changed everything.",
+      tiktokCaption: "Collecting for years and didn't realize I was making expensive mistakes.\nCardSnap showed me in seconds.\n#sportscards #psagrading #cardcollector #cardsnap",
+      youtubeTitle: "I've been collecting wrong for years",
+      youtubeDescription: "Realized PSA 9 scenarios were neutral or losing on half my submissions. Grading fees are real.",
+      pinnedComment: "The 9 is where profit goes to die.",
     },
   ],
-  gradeEstimate: [
+  psa9_destroyer: [
     {
-      tiktokCaption:
-        "I thought this card was a lock until I added fees.\nRaw, PSA 9, PSA 10, and net outcome. CardSnap.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "I thought this card was a lock until I added fees",
-      youtubeDescription: "Raw, PSA 9, PSA 10, and net outcome. CardSnap. Run the fee-check before you submit.",
-      pinnedComment: "Raw looked fine. PSA 10 looked amazing.",
-      voiceText:
-        "I thought this card was a lock until I added fees. Raw looked fine. PSA 10 looked amazing. Then grading and shipping showed up. The upside got thin fast. PSA 9 plus fees changed the whole play. A good-looking submit became risky. CardSnap breaks out raw, PSA 9, PSA 10, and net. No guessing from one comp. Sometimes the smartest grading move is not grading. This is why the fee-check comes first. Before the label. Before the invoice. Run the fee-check before you submit. CardSnap. Raw vs graded, fast.",
+      hook: "PSA 9 just destroyed this card's value.",
+      tensionPoint: "Looked like an easy submit. Clean. Sharp corners.",
+      reveal: "CardSnap showed PSA 9 at $180. Fees kill it.",
+      cta: "That's why I check CardSnap first.",
+      voiceText: "PSA 9 just destroyed this card's value. Looked like an easy submit. Perfect centering. Clean surface. CardSnap showed the real math. At a 9, the margin disappears. Fees eat everything. Instant skip.",
+      tiktokCaption: "This looked perfect until PSA 9 comps showed the truth.\nCardSnap does the math instantly.\n#sportscards #psagrading #cardcollector #cardsnap",
+      youtubeTitle: "Looked perfect—until PSA 9 comps ruined it",
+      youtubeDescription: "High PSA 10 comp looked amazing. PSA 9 at that price point meant losing money on fees.",
+      pinnedComment: "The 9 is the filter.",
     },
     {
-      tiktokCaption:
-        "This card looked bulletproof until fees hit.\nCardSnap: raw, PSA 9, PSA 10, and net cash.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Bulletproof card—until fees hit",
-      youtubeDescription:
-        "Grading fees are real costs. See raw vs PSA 9 vs PSA 10 net profit instantly with CardSnap.",
-      pinnedComment: "Fees are not optional.",
-      voiceText:
-        "This card looked bulletproof until fees hit. Strong raw value. PSA 10 comp was huge. But grading is not free. Shipping is not free. And sometimes PSA 9 is the result, not 10. So the upside shrinks fast. CardSnap forces you to do this math before you submit. Not after. Raw value is the safety net. PSA 9 is the realistic win. PSA 10 is the bonus. And fees come out of all three. Only PSA 9 scenarios that still beat raw are worth the submission. That is grade-or-skip logic. CardSnap. Fee-first thinking.",
-    },
-    {
-      tiktokCaption:
-        "Huge comp, tiny net after fees? That is why the estimate matters.\nRaw vs PSA 9 vs PSA 10 net.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Huge comp, tiny net after fees",
-      youtubeDescription:
-        "Comps are gross values. Grading fees and shipping eat most of the edge. CardSnap shows net profit.",
-      pinnedComment: "Net matters, not comps.",
-      voiceText:
-        "Huge comp, tiny net after fees. That is the problem with shopping for comp comparables and forgetting the costs. A card that looks worth $500 as a PSA 10 might net $50 after grading and shipping and fees. Is it worth submitting for a $50 upside? Not usually. CardSnap shows this in seconds. Raw value. PSA 9 net outcome. PSA 10 net outcome. All three after all costs. You see the edge instantly. And you decide before you pay. Not after. That is how you avoid expensive mistakes. CardSnap. Net-first ROI.",
-    },
-    {
-      tiktokCaption:
-        "The PSA 10 comp was amazing. Then I did the math.\nCardSnap: see the net first.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "The PSA 10 comp was amazing—then I did the math",
-      youtubeDescription:
-        "High comps mean nothing without profit math. CardSnap shows raw, PSA 9, PSA 10 net outcomes instantly.",
+      hook: "That's how grading fees disappear.",
+      tensionPoint: "Submitted five cards thinking 9 is profitable.",
+      reveal: "Got a 9. Barely broke even. Lost on half.",
+      cta: "CardSnap would've saved me hundreds.",
+      voiceText: "That's how grading fees disappear. You submit five cards. Bet on a 9. One comes back a 9. Fees eat the margin. Suddenly you're neutral. CardSnap forces you to test the 9 scenario first. Before you pay the fee.",
+      tiktokCaption: "This is how collectors lose money without realizing it.\nGrading fees plus PSA 9 equals no profit.\n#sportscards #cardgrading #cardcollector #cardsnap",
+      youtubeTitle: "How grading fees quietly destroy your profit",
+      youtubeDescription: "You think PSA 9 is acceptable. Then fees hit. They eat the margin. CardSnap makes you check before paying.",
       pinnedComment: "Math beats hope.",
-      voiceText:
-        "The PSA 10 comp was amazing. Then I did the math. Subtract grading. Subtract shipping. Subtract time. The edge was gone. CardSnap is built to catch this before you submit. Three tiers. Three real outcomes. Raw value. PSA 9 with fees. PSA 10 with fees. If none of those beat where you are now, you skip. If PSA 9 barely breaks even, you think twice. Only if PSA 9 still wins big do you actually grade. That is how the best graders think. CardSnap makes it automatic. Run the math before the submission. CardSnap. No surprises.",
-    },
-    {
-      tiktokCaption:
-        "One comp told the story. Three tiers told the truth.\nCardSnap: raw, 9, 10, and net.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "One comp told the story—three tiers told the truth",
-      youtubeDescription:
-        "Single comps are incomplete. CardSnap shows raw, PSA 9, PSA 10, and real net profit per tier.",
-      pinnedComment: "Range thinking beats single comps.",
-      voiceText:
-        "One comp told the story. Three tiers told the truth. The single PSA 10 listing looked amazing. But PSA 9 comps were 30% lower. And raw value was solid anyway. Suddenly the grading call was different. Maybe skip grading. Maybe just sell raw. CardSnap runs all three scenarios and shows the net outcome for each. Because one comp is not a decision. It is hope. Three tiers show reality. Raw is safe. Nine is likely. Ten is optimistic. See all three. Then decide. CardSnap. Real grading tool.",
     },
   ],
-  hockey: [
+  mistake_avoided: [
     {
-      tiktokCaption:
-        "This baseball card looked expensive until I checked raw value.\nCompare raw, PSA 9, and PSA 10 before grading.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "This baseball card looked expensive until I checked raw value",
-      youtubeDescription:
-        "Compare raw, PSA 9, and PSA 10 before grading. Before you send a baseball card in, run raw vs PSA 9 vs PSA 10.",
-      pinnedComment: "The PSA 10 comp is the headline. PSA 9 is the decision.",
-      voiceText:
-        "This baseball card looked expensive until I checked raw value. The PSA 10 comp looked huge. But PSA 9 told a different story. If PSA 9 barely beats raw, the fee can wipe out the edge. CardSnap turns comps into value tiers. Raw. PSA 9. PSA 10. That is the grade-or-skip verdict. Not the best-case fantasy. Before you send a baseball card in, run raw vs PSA 9 vs PSA 10.",
+      hook: "I was literally seconds away from buying this.",
+      tensionPoint: "Seller asking $280. Card looked solid. Thumb ready.",
+      reveal: "CardSnap showed PSA 9 at $200.",
+      cta: "Just saved $60 on one card.",
+      voiceText: "I was literally seconds away from buying this. Seller asking $280. Card looked solid. Thumb over buy now. Checked CardSnap. PSA 9 was $200. Raw should be $220 max. Just saved myself sixty bucks.",
+      tiktokCaption: "Seconds away from overpaying by $60.\nCardSnap caught it just in time.\n#sportscards #cardcollector #cardsnap #tradingcards",
+      youtubeTitle: "Almost overpaid—CardSnap saved me $60",
+      youtubeDescription: "About to buy at $280. CardSnap showed realistic PSA 9 comps at $200. Seller was way overpriced.",
+      pinnedComment: "Close calls are the expensive ones.",
     },
     {
-      tiktokCaption:
-        "Vintage baseball card raw value was more than PSA 9 net.\nCardSnap: sometimes raw wins.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Vintage baseball card—sometimes raw wins over slabbed",
-      youtubeDescription:
-        "Check if raw value beats PSA 9 net profit. For many vintage cards, it does. CardSnap shows the call.",
-      pinnedComment: "Raw is not always the backup plan.",
-      voiceText:
-        "Vintage baseball card raw value was more than PSA 9 net. That means do not grade. The card is worth more staying raw than it is slabbed at a nine with fees factored in. This is a win. CardSnap catches this instantly. Most collectors assume slabbed is always better. It is not. Raw value plus no shipping cost plus no fee sometimes beats PSA 9 profit by a lot. And it definitely beats PSA 10 hopes that never land. For vintage cards especially, run the raw math first. If raw wins, you are done. CardSnap. Raw ROI clarity.",
-    },
-    {
-      tiktokCaption:
-        "Beautiful baseball rookie. Insane PSA 10 comp. Then I checked the PSA 9 scenario.\nCardSnap.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Beautiful rookie—insane comp, realistic 9 scenario",
-      youtubeDescription:
-        "One comp is not a grading decision. CardSnap shows raw, PSA 9, and PSA 10 outcomes with fees included.",
-      pinnedComment: "Comps are not certainties.",
-      voiceText:
-        "Beautiful baseball rookie. Insane PSA 10 comp. Then I checked the PSA 9 scenario. The card might grade a 9, not a 10. PSA 9 value was half the comp. After fees, it barely beat raw. So why grade at all? CardSnap makes this comparison instant. One comp is hope. Three tiers are reality. Raw is the floor. PSA 9 is the likely outcome if you actually submit. PSA 10 is the dream. Only grade if PSA 9 justifies the cost and risk. Most beautiful rookies fail that test. CardSnap. Realistic grading.",
-    },
-    {
-      tiktokCaption:
-        "This 1990s baseball card raw value was stronger than I thought.\nCardSnap: see all three tiers before you submit.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "1990s baseball card—raw value stronger than I thought",
-      youtubeDescription:
-        "1990s cards often grade soft. Check if raw beats PSA 9 net before you submit. CardSnap does this instantly.",
-      pinnedComment: "1990s cards surprise you.",
-      voiceText:
-        "This 1990s baseball card raw value was stronger than I thought. Card looked like a good grading candidate. Centering was solid. Corners were okay. But raw comps for that set were actually high. And PSA 9 for 1990s cards can be unpredictable. So PSA 9 net ended up not beating the raw ask price. Meaning no grading edge. Meaning skip it. CardSnap shows this in one view. Raw value. PSA 9 math. PSA 10 hope. For cards from the 1990s, this check is critical. The market is weird. Raw sometimes wins. Grade only when nine justifies the cost. CardSnap. 1990s card clarity.",
-    },
-    {
-      tiktokCaption:
-        "Strong PSA 9 comp. Stronger raw value. So no grading needed.\nCardSnap: all three tiers, instant answer.\n#psagrading #sportscards #tradingcards #cardcollector #cardsnap",
-      youtubeTitle: "Strong PSA 9 comp—stronger raw value, so no grading",
-      youtubeDescription:
-        "Sometimes raw value beats PSA 9 profit. CardSnap shows when to grade and when to skip instantly.",
-      pinnedComment: "Skip can be the right call.",
-      voiceText:
-        "Strong PSA 9 comp. Stronger raw value. So no grading needed. That is the decision CardSnap forces you to make upfront. Many cards do not pencil out. The grading cost is real. The shipping is real. The time is real. And the grade is not guaranteed. So if your raw value is already strong, staying raw is the math that wins. CardSnap shows all three scenarios. When raw wins, you see it first. You do not have to find out after paying and waiting. Grade only when PSA 9 or better still beats raw profit-wise. CardSnap. Smart skip logic.",
+      hook: "Sports card collectors keep making this mistake.",
+      tensionPoint: "See one high comp. Anchor on it. Overpay.",
+      reveal: "CardSnap shows three tiers. Completely different.",
+      cta: "Run it before you buy. Seriously.",
+      voiceText: "Sports card collectors keep making this mistake. See one PSA 10 comp. Anchor on it. Overpay immediately. CardSnap forces you to see raw, 9, and 10. Three different numbers. Suddenly the buy looks stupid.",
+      tiktokCaption: "The one comp you saw was the highest.\nCardSnap shows the realistic range.\n#sportscards #cardcollector #cardsnap #collectibles",
+      youtubeTitle: "Why high comps destroy collector profit",
+      youtubeDescription: "You see the peak comp, ignore the realistic ones, buy too high. CardSnap shows the range instantly.",
+      pinnedComment: "Range beats single comps.",
     },
   ],
 };
+
 
 function dailyVariantIndex(date: string, poolSize: number): number {
   let h = 0;
@@ -201,34 +133,34 @@ function getCopyForDate(tone: SearchUgcTone, date: string): CopyVariant {
 }
 
 function renderTargetsForDate(date: string): DailyAsset[] {
-  const printLinesCopy = getCopyForDate("printLines", date);
-  const gradeEstimateCopy = getCopyForDate("gradeEstimate", date);
-  const hockeyCopy = getCopyForDate("hockey", date);
+  const almostOverpaidCopy = getCopyForDate("almost_overpaid", date);
+  const psa9DestroyerCopy = getCopyForDate("psa9_destroyer", date);
+  const mistakeAvoidedCopy = getCopyForDate("mistake_avoided", date);
 
   return [
     {
-      title: "Should I grade my card?",
+      title: almostOverpaidCopy.voiceText.split('.')[0],
       composition: "CardSnapSearchUGCPrintLines",
-      tone: "printLines",
-      output: `out/cardsnap-ugc-should-i-grade-${date}.mp4`,
-      audio: `audio/daily/${date}/cardsnap-search-ugc-printLines.mp3`,
-      ...printLinesCopy,
+      tone: "almost_overpaid",
+      output: `out/cardsnap-ugc-almost-overpaid-${date}.mp4`,
+      audio: `audio/daily/${date}/cardsnap-search-ugc-almost-overpaid.mp3`,
+      ...almostOverpaidCopy,
     },
     {
-      title: "Grading fee ate the upside",
+      title: psa9DestroyerCopy.voiceText.split('.')[0],
       composition: "CardSnapSearchUGCGradeEstimate",
-      tone: "gradeEstimate",
-      output: `out/cardsnap-ugc-fee-trap-${date}.mp4`,
-      audio: `audio/daily/${date}/cardsnap-search-ugc-gradeEstimate.mp3`,
-      ...gradeEstimateCopy,
+      tone: "psa9_destroyer",
+      output: `out/cardsnap-ugc-psa9-destroyer-${date}.mp4`,
+      audio: `audio/daily/${date}/cardsnap-search-ugc-psa9-destroyer.mp3`,
+      ...psa9DestroyerCopy,
     },
     {
-      title: "Baseball raw vs graded",
+      title: mistakeAvoidedCopy.voiceText.split('.')[0],
       composition: "CardSnapSearchUGCHockey",
-      tone: "hockey",
-      output: `out/cardsnap-ugc-baseball-value-${date}.mp4`,
-      audio: `audio/daily/${date}/cardsnap-search-ugc-hockey.mp3`,
-      ...hockeyCopy,
+      tone: "mistake_avoided",
+      output: `out/cardsnap-ugc-mistake-avoided-${date}.mp4`,
+      audio: `audio/daily/${date}/cardsnap-search-ugc-mistake-avoided.mp3`,
+      ...mistakeAvoidedCopy,
     },
   ];
 }
