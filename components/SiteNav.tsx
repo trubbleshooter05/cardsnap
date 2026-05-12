@@ -14,6 +14,7 @@ const GUIDE_LINKS: { href: string; label: string }[] = [
   { href: "/should-i-grade-zion-williamson-rookie-card", label: "Zion rookie — grade or not?" },
   { href: "/psa-9-vs-psa-10-worth-it", label: "PSA 9 vs PSA 10" },
   { href: "/is-grading-cards-worth-it-2026", label: "Is grading worth it (2026)?" },
+  { href: "/is-2024-panini-prizm-bo-nix-rookie-worth-grading-2026", label: "Bo Nix 2024 Prizm — grade?" },
   { href: "/methodology", label: "Methodology" },
   { href: "/psa-grading-calculator", label: "PSA Grading Calculator" },
   { href: "/grade-or-skip/baseball", label: "Baseball Cards" },

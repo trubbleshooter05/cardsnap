@@ -730,6 +730,163 @@ const SEO_GUIDE_DEFINITIONS: SeoGuideDefinition[] = [
       ],
     },
   },
+  {
+    slug: "is-2024-panini-prizm-bo-nix-rookie-worth-grading-2026",
+    title:
+      "Is a 2024 Panini Prizm Bo Nix Rookie Worth Grading in 2026?",
+    description:
+      "Should you grade Bo Nix's 2024 Panini Prizm base rookie or sell raw? 2026 PSA fee math, typical raw vs PSA 9 vs PSA 10 bands, and when submission still makes sense.",
+    h1: "Is a 2024 Panini Prizm Bo Nix Rookie Worth Grading in 2026?",
+    articleDescription:
+      "Player-specific grading economics for the 2024 Panini Prizm Bo Nix base rookie: market snapshot, break-even after PSA fees, and a clear grade-or-skip framework aligned with CardSnap ROI logic.",
+    intro: [
+      "With 2026 PSA grading fees still dominating hobby conversations, a lot of collectors are asking the same question about one of the cleaner quarterback rookie lines in modern football products: should you slab a 2024 Panini Prizm Bo Nix base rookie, or move it raw?",
+      "This page is not a price prediction — comps move weekly. It is a decision framework: typical resale bands, realistic all-in grading costs, and whether the PSA 9 path still clears fees before you fantasize about a 10.",
+    ],
+    sections: [
+      {
+        title: "Current market snapshot (early 2026)",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "On liquid marketplaces, well-centered base copies for Bo Nix's 2024 Prizm rookie have shown meaningful separation between raw auction endings and graded outcomes — but only when buyers trust eye appeal and the slab tier lines up with recent sales.",
+          },
+          {
+            kind: "bullet",
+            items: [
+              "Raw copies of the base Prizm rookie often land roughly in the $35–$65 range depending on centering, corners, and surface chatter under light.",
+              "PSA 10 examples for the same card have frequently printed in the $180–$280 band, with exceptional eye appeal copies occasionally pushing higher.",
+              "PSA 9 copies have often been a middle tier — think $90–$130 in typical windows — which matters because 9 is the most common realistic outcome on high-volume chrome rookies.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "Treat those ranges as orientation, not a quote: verify your parallel (true base vs silver vs color), your buy-in, and the last 30–60 days of sales before you submit.",
+          },
+        ],
+      },
+      {
+        title: "Grading math after PSA fee increases",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "PSA service pricing in 2026 depends on declared value, turnaround tier, and add-ons — but a practical planning band for many modern singles is still roughly $33–$80 all-in per card once you include inbound shipping, insurance choices, and return postage.",
+          },
+          {
+            kind: "subhead",
+            text: "A simple break-even walkthrough",
+          },
+          {
+            kind: "exampleRows",
+            rows: [
+              {
+                label: "Strong raw buy (nice centering):",
+                value: "~$50",
+                valueTone: "amber",
+              },
+              {
+                label: "All-in grading cost (fees + shipping, rounded):",
+                value: "~$50",
+                valueTone: "zinc",
+              },
+              {
+                label: "Total in the card:",
+                value: "~$100",
+                valueTone: "zinc",
+              },
+              {
+                label: "If it gems and sells like a PSA 10 (~$200–$280):",
+                value: "Roughly $100–$180 net upside vs your basis",
+                valueTone: "emerald",
+              },
+              {
+                label: "If it lands PSA 9 (~$90–$130):",
+                value: "Often break-even to modest win — depends on your exact buy-in",
+                valueTone: "amber",
+              },
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "The point is not that every copy profits. The point is that grading only makes sense when the PSA 9 outcome is still tolerable — not when you need a 10 to erase a thin purchase.",
+          },
+          {
+            kind: "callout",
+            text: "If PSA 9 would feel like a loss at your real all-in cost, you are not \"investing\" — you are buying a 10 lottery ticket with grading fees as the ticket price.",
+          },
+        ],
+      },
+      {
+        title: "Grade it — or sell raw",
+        blocks: [
+          {
+            kind: "subhead",
+            text: "Grade it if",
+          },
+          {
+            kind: "bullet",
+            items: [
+              "Centering, corners, edges, and surface look legitimately strong under harsh light — not just \"clean in a sleeve.\"",
+              "Your purchase price leaves room so a PSA 9 resale still clears fees without turning the submission into heartburn.",
+              "You believe in long-term Broncos / Bo Nix demand and want authentication plus the liquidity bump that slabs can bring.",
+              "You can wait out typical turnaround windows (often weeks to a couple of months depending on tier and volume).",
+            ],
+          },
+          {
+            kind: "subhead",
+            text: "Sell raw if",
+          },
+          {
+            kind: "bullet",
+            items: [
+              "You see centering drift, surface scratches, or edge whitening that will cap grades regardless of how loud the raw market feels.",
+              "You need cash faster than grading timelines allow, or your profit model cannot survive a 9.",
+              "You're trying to avoid post-fee regret after PSA increases — especially on a single base copy where fees are a huge percent of gross.",
+            ],
+          },
+        ],
+      },
+      {
+        title: "Why Prizm base rookies are a special case",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Panini Prizm is high-volume football chrome: huge print, huge demand, and a brutal gem rate once you look closely. That is why comps cluster fast and why PSA 9 vs PSA 10 spreads can swing your entire ROI.",
+          },
+          {
+            kind: "paragraph",
+            text: "For Bo Nix specifically, you're also betting on NFL storylines: health, wins, and how much collector attention stays on the Broncos QB line over the next few seasons. Slabs help with buyer trust — they do not replace fundamentals on condition.",
+          },
+          {
+            kind: "paragraph",
+            text: "For more set-level context, read the 2023 Panini Prizm football rookie grading guide at /guides/2023-panini-prizm-football-rookie-grading-guide. For fee-level framing across the hobby, pair this page with /is-grading-cards-worth-it-2026.",
+          },
+        ],
+      },
+    ],
+    cta: {
+      title: "Model Bo Nix economics before you submit",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "CardSnap compares raw vs PSA 9 vs PSA 10 style outcomes against fees and shipping so you see whether grading is a risk-managed decision — or a gem-only gamble — before you pay PSA.",
+        },
+        {
+          kind: "paragraph",
+          text: "Try CardSnap free → 5 scans, no credit card — get a grade-or-skip style read with comp context.",
+        },
+        { kind: "toolLink", lead: "Run the numbers on your copy:" },
+      ],
+      buttonText: "Try CardSnap free",
+    },
+    finalSection: {
+      title: "Verdict",
+      paragraphs: [
+        "For a nicely centered 2024 Panini Prizm Bo Nix base rookie bought with margin, grading can still make financial sense in 2026 — not because every card gems, but because strong raw and solid PSA 10 resale bands often leave room after realistic fees when the 9 path is not catastrophic.",
+        "If your copy is borderline, the market already prices some of that risk — and selling raw can be the rational move. When you're unsure, start with photos, magnification, and math, not hope.",
+      ],
+    },
+  },
   ...SEO_GUIDE_DEFINITIONS_PHASE2,
   ...SEO_GUIDES_IN_DIRECTORY,
   ...SEO_GUIDE_DEFINITIONS_POKEMON,
