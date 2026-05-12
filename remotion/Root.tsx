@@ -71,29 +71,29 @@ export const RemotionRoot = () => {
       <Composition
         id="CardSnapSearchUGCPrintLines"
         component={CardSnapSearchUgcBatch}
-        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.printLines}
+        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.almost_overpaid}
         fps={SEARCH_UGC_FPS}
         width={1080}
         height={1920}
-        defaultProps={{tone: 'printLines'}}
+        defaultProps={{tone: 'almost_overpaid', audioSrc: ''}}
       />
       <Composition
         id="CardSnapSearchUGCGradeEstimate"
         component={CardSnapSearchUgcBatch}
-        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.gradeEstimate}
+        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.psa9_destroyer}
         fps={SEARCH_UGC_FPS}
         width={1080}
         height={1920}
-        defaultProps={{tone: 'gradeEstimate'}}
+        defaultProps={{tone: 'psa9_destroyer', audioSrc: ''}}
       />
       <Composition
         id="CardSnapSearchUGCHockey"
         component={CardSnapSearchUgcBatch}
-        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.hockey}
+        durationInFrames={CARD_SNAP_SEARCH_UGC_DURATIONS.mistake_avoided}
         fps={SEARCH_UGC_FPS}
         width={1080}
         height={1920}
-        defaultProps={{tone: 'hockey'}}
+        defaultProps={{tone: 'mistake_avoided', audioSrc: ''}}
       />
     </>
   );
