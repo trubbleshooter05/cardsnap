@@ -32,7 +32,7 @@ export const nicheContentMap: Record<string, NicheContent> = {
   baseball: {
     sport: "Baseball",
     category: "baseball",
-    seoTitle: "Baseball Card Grading ROI Guide — When to Grade | CardSnap",
+    seoTitle: "Baseball Card Grading ROI Guide — When to Grade",
     seoDescription:
       "Should you grade that baseball card? See ROI by era: vintage cards, rookie cards, and key collectibles. Grade or skip logic.",
     h1: "Should You Grade Your Baseball Card?",
@@ -130,7 +130,7 @@ export const nicheContentMap: Record<string, NicheContent> = {
   basketball: {
     sport: "Basketball",
     category: "basketball",
-    seoTitle: "Basketball Card Grading ROI Guide — When to Grade | CardSnap",
+    seoTitle: "Basketball Card Grading ROI Guide — When to Grade",
     seoDescription:
       "Should you grade that basketball card? See ROI for MJ, LeBron, Luka rookies and modern hits. Grade or skip decision guide.",
     h1: "Should You Grade Your Basketball Card?",
@@ -228,7 +228,7 @@ export const nicheContentMap: Record<string, NicheContent> = {
   pokemon: {
     sport: "Pokémon",
     category: "pokemon",
-    seoTitle: "Pokémon Card Grading ROI Guide — When to Grade | CardSnap",
+    seoTitle: "Pokémon Card Grading ROI Guide — When to Grade",
     seoDescription:
       "Should you grade that Pokémon card? See ROI for Base Set holos, Charizards, and modern VMAX. Holo grading strategy.",
     h1: "Should You Grade Your Pokémon Card?",
@@ -325,7 +325,7 @@ export const nicheContentMap: Record<string, NicheContent> = {
   "would-these-print-lines-ruin-the-chances-of-a-psa-10": {
     sport: "Print Lines",
     category: "condition",
-    seoTitle: "Would Print Lines Ruin a PSA 10? | CardSnap",
+    seoTitle: "Would Print Lines Ruin a PSA 10?",
     seoDescription:
       "Print lines can ruin the chances of a PSA 10. Check how surface lines affect grading ROI before you pay PSA fees.",
     h1: "Would Print Lines Ruin the Chances of a PSA 10?",
@@ -397,7 +397,7 @@ export const nicheContentMap: Record<string, NicheContent> = {
   "grade-estimate": {
     sport: "Grade Estimate",
     category: "condition",
-    seoTitle: "Grade Estimate for Sports Cards | CardSnap",
+    seoTitle: "Grade Estimate for Sports Cards",
     seoDescription:
       "Need a card grade estimate? Check raw value, PSA 9, PSA 10, fees, and ROI before deciding whether to grade.",
     h1: "Grade Estimate: Should You Submit the Card?",
