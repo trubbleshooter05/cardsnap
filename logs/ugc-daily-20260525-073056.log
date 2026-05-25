@@ -1,0 +1,25 @@
+[Mon May 25 07:30:56 EDT 2026] === CardSnap UGC Daily Start ===
+[Mon May 25 07:30:56 EDT 2026] Running ugc:daily...
+
+> cardsnap@0.1.0 ugc:daily
+> tsx scripts/daily-ugc-workflow.ts --date=2026-05-25
+
+◇ injecting env (0) from ../../.hermes/.env // tip: ⌁ auth for agents [www.vestauth.com]
+[step] voiceovers (OpenAI)
+CardSnap UGC approval pack ready: 3 TikTok/Instagram videos for 2026-05-25.
+Top signal: should i grade my card.
+Full report: /Users/openclaw/ObsidianVault/cardsnap/ads/daily-ugc-approval-2026-05-25.md
+Posting copy: /Users/openclaw/projects/cardsnap/docs/growth/ugc-daily-pack-2026-05-25.md
+Voice MP3s: /Users/openclaw/projects/cardsnap/public/audio/daily/2026-05-25/cardsnap-search-ugc-almost-overpaid.mp3
+/Users/openclaw/projects/cardsnap/public/audio/daily/2026-05-25/cardsnap-search-ugc-psa9-destroyer.mp3
+/Users/openclaw/projects/cardsnap/public/audio/daily/2026-05-25/cardsnap-search-ugc-mistake-avoided.mp3
+Videos:
+/Users/openclaw/projects/cardsnap/out/cardsnap-ugc-almost-overpaid-2026-05-25.mp4
+/Users/openclaw/projects/cardsnap/out/cardsnap-ugc-psa9-destroyer-2026-05-25.mp4
+/Users/openclaw/projects/cardsnap/out/cardsnap-ugc-mistake-avoided-2026-05-25.mp4
+=== CardSnap UGC Daily Done ===
+Date: 2026-05-25
+Videos rendered: 3/3
+Copy pack: docs/growth/ugc-daily-pack-2026-05-25.md
+Videos: out/cardsnap-ugc-{funny,angry,urgent}-2026-05-25.mp4
+Log: /Users/openclaw/projects/cardsnap/logs/ugc-daily-20260525-073056.log

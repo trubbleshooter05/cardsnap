@@ -29,7 +29,10 @@ type Opportunity = {
 };
 
 const ROOT = process.cwd();
-const OBSIDIAN_DIR = "/Users/openclaw/ObsidianVault/cardsnap/growth-intel";
+function getObsidianDir(): string {
+  const vaultRoot = process.env.OBSIDIAN_VAULT_ROOT?.trim() || "/Users/openclaw/ObsidianVault";
+  return path.join(vaultRoot, "cardsnap", "growth-intel");
+}
 const SITE = "https://getcardsnap.com";
 const UGC_HISTORY_FILE = path.join(ROOT, "data", "growth", "ugc-history.json");
 
@@ -516,12 +519,13 @@ function main(): void {
 
   const mdPath = path.join(docsDir, `cardsnap-growth-intel-${date}.md`);
   const csvPath = path.join(dataDir, `cardsnap-growth-intel-${date}.csv`);
-  const obsidianMdPath = path.join(OBSIDIAN_DIR, `cardsnap-growth-intel-${date}.md`);
+  const obsidianDir = getObsidianDir();
+  const obsidianMdPath = path.join(obsidianDir, `cardsnap-growth-intel-${date}.md`);
 
   const markdown = buildMarkdown(date, routes, rows, opportunities);
   writeFileSync(mdPath, markdown);
   writeFileSync(csvPath, toCsv(opportunities));
-  mkdirSync(OBSIDIAN_DIR, { recursive: true });
+  mkdirSync(obsidianDir, { recursive: true });
   writeFileSync(obsidianMdPath, markdown);
 
   const top = opportunities[0];

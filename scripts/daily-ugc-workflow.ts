@@ -423,9 +423,29 @@ ${scriptBlocks}
 }
 
 function getObsidianAdsDir(): string | null {
+  const vaultRoot = process.env.OBSIDIAN_VAULT_ROOT?.trim();
+  if (vaultRoot) return path.join(vaultRoot, "cardsnap", "ads");
+
   const home = process.env.HOME;
   if (!home) return null;
   return path.join(home, "ObsidianVault", "cardsnap", "ads");
+}
+
+function summarizeError(error: unknown): string {
+  if (error instanceof Error) {
+    const parts = [error.message];
+    const cause = (error as Error & { cause?: unknown }).cause;
+
+    if (cause instanceof Error) {
+      parts.push(cause.message);
+    } else if (cause && typeof cause === "object" && "message" in cause && typeof cause.message === "string") {
+      parts.push(cause.message);
+    }
+
+    return parts.join(" | ");
+  }
+
+  return String(error);
 }
 
 async function synthesizeVoiceovers(assets: DailyAsset[], verbose: boolean) {
@@ -470,7 +490,26 @@ async function main() {
   mkdirSync(path.join(ROOT, "out"), { recursive: true });
   mkdirSync(path.join(ROOT, "docs", "growth"), { recursive: true });
 
-  run("npx", ["tsx", "scripts/growth-intel.ts", `--date=${args.date}`], args.verbose);
+  run(process.execPath, ["--import", "tsx", "scripts/growth-intel.ts", `--date=${args.date}`], args.verbose);
+
+  const opportunities = getTopOpportunities(args.date);
+  const approvalDoc = buildApprovalDoc(args.date, opportunities, assets);
+  const copyPack = buildCopyPack(args.date, assets);
+  const approvalPath = path.join(ROOT, "docs", "growth", `daily-ugc-approval-${args.date}.md`);
+  const copyPackPath = path.join(ROOT, "docs", "growth", `ugc-daily-pack-${args.date}.md`);
+  writeFileSync(approvalPath, approvalDoc);
+  writeFileSync(copyPackPath, copyPack);
+
+  const obsidianAdsDir = getObsidianAdsDir();
+  const obsidianApprovalPath = obsidianAdsDir
+    ? path.join(obsidianAdsDir, `daily-ugc-approval-${args.date}.md`)
+    : null;
+
+  if (obsidianAdsDir && obsidianApprovalPath) {
+    mkdirSync(obsidianAdsDir, { recursive: true });
+    writeFileSync(obsidianApprovalPath, approvalDoc);
+    writeFileSync(path.join(obsidianAdsDir, `ugc-daily-pack-${args.date}.md`), copyPack);
+  }
 
   await synthesizeVoiceovers(assets, args.verbose);
 
@@ -496,25 +535,6 @@ async function main() {
     }
   }
 
-  const opportunities = getTopOpportunities(args.date);
-  const approvalDoc = buildApprovalDoc(args.date, opportunities, assets);
-  const copyPack = buildCopyPack(args.date, assets);
-  const approvalPath = path.join(ROOT, "docs", "growth", `daily-ugc-approval-${args.date}.md`);
-  const copyPackPath = path.join(ROOT, "docs", "growth", `ugc-daily-pack-${args.date}.md`);
-  writeFileSync(approvalPath, approvalDoc);
-  writeFileSync(copyPackPath, copyPack);
-
-  const obsidianAdsDir = getObsidianAdsDir();
-  const obsidianApprovalPath = obsidianAdsDir
-    ? path.join(obsidianAdsDir, `daily-ugc-approval-${args.date}.md`)
-    : null;
-
-  if (obsidianAdsDir && obsidianApprovalPath) {
-    mkdirSync(obsidianAdsDir, { recursive: true });
-    writeFileSync(obsidianApprovalPath, approvalDoc);
-    writeFileSync(path.join(obsidianAdsDir, `ugc-daily-pack-${args.date}.md`), copyPack);
-  }
-
   const topOpportunity = opportunities[0]?.opportunity ?? "standing CardSnap grading ROI batch";
   console.log(
     [
@@ -529,6 +549,16 @@ async function main() {
 }
 
 main().catch((error) => {
+  const { date } = parseArgs();
+  const approvalPath = path.join(ROOT, "docs", "growth", `daily-ugc-approval-${date}.md`);
+  const obsidianAdsDir = getObsidianAdsDir();
+  const obsidianApprovalPath = obsidianAdsDir
+    ? path.join(obsidianAdsDir, `daily-ugc-approval-${date}.md`)
+    : approvalPath;
+
+  console.log(
+    `CardSnap UGC approval pack failed for ${date}: ${summarizeError(error)}. Approval report: ${obsidianApprovalPath}`,
+  );
   console.error(error);
   process.exit(1);
 });
