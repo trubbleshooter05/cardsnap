@@ -3,6 +3,8 @@ import "./globals.css";
 import { JsonLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AuthProvider } from "@/components/AuthContext";
+import { AttributionTracker } from "@/components/AttributionTracker";
+import { ConversionTracker } from "@/components/ConversionTracker";
 import { GoogleAnalyticsInit } from "@/components/google-analytics-init";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { getSiteUrl } from "@/lib/site-url";
@@ -78,6 +80,8 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-[#09090b] text-zinc-100 min-h-screen flex flex-col">
         <GoogleAnalytics />
+        <AttributionTracker />
+        <ConversionTracker />
         <JsonLd data={organizationLd} />
         <AuthProvider>
           <div className="flex-1">{children}</div>

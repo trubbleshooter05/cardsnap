@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import {
+  attributionToStripeMetadata,
+  sanitizeAttribution,
+} from "@/lib/attribution";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +21,11 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as {
     email?: string;
     scanId?: string;
+    attribution?: unknown;
   };
+  const attributionMetadata = attributionToStripeMetadata(
+    sanitizeAttribution(body.attribution)
+  );
 
   const stripe = new Stripe(secret);
   const session = await stripe.checkout.sessions.create({
@@ -39,11 +47,12 @@ export async function POST(req: Request) {
         quantity: 1,
       },
     ],
-    success_url: `${appUrl}/?report=success`,
+    success_url: `${appUrl}/?report=success&checkout_session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${appUrl}/?report=cancelled`,
     metadata: {
       scanId: body.scanId ?? "",
       source: "single_report",
+      ...attributionMetadata,
     },
   });
 

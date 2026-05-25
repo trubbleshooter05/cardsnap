@@ -16,6 +16,7 @@ import {
 } from "@/lib/auth-events";
 import { waitForAccessToken } from "@/lib/wait-for-access-token";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
+import { readStoredAttribution } from "@/lib/client-attribution";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
@@ -409,8 +410,14 @@ export function HomePageClient() {
         }
         const body =
           payload.kind === "subscription"
-            ? { subscriptionPlan: payload.plan }
-            : { packCredits: payload.credits };
+            ? {
+                subscriptionPlan: payload.plan,
+                attribution: readStoredAttribution(),
+              }
+            : {
+                packCredits: payload.credits,
+                attribution: readStoredAttribution(),
+              };
         console.log(AUTH_LOG, "upgrade: POST /api/create-checkout", { source, body });
         const res = await fetch("/api/create-checkout", {
           method: "POST",
@@ -769,7 +776,10 @@ export function HomePageClient() {
       const res = await fetch("/api/create-report-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scanId: result?.scanId }),
+        body: JSON.stringify({
+          scanId: result?.scanId,
+          attribution: readStoredAttribution(),
+        }),
       });
       if (!res.ok) {
         alert("Single report checkout is unavailable right now.");

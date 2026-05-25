@@ -39,6 +39,9 @@ seo-engine/outputs/
 # automation-generated files (cardsnap growth intel, UGC outputs)
 data/growth/
 docs/growth/
+ObsidianVault/
+logs/
 
 # Local UGC/marketing audio (seo-batch tolerates untracked; ignore avoids noise)
 /public/audio/*.mp3
+/public/audio/daily/

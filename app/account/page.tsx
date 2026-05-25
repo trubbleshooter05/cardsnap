@@ -4,6 +4,7 @@ import { AccountPageClient } from "@/components/AccountPageClient";
 export const metadata: Metadata = {
   title: "Account",
   description: "CardSnap plan, usage, and subscription management.",
+  robots: { index: false, follow: false },
 };
 
 export default function AccountPage() {

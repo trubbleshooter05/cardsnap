@@ -27,7 +27,11 @@ export async function generateMetadata({
     ? `${payload.confirmedName} · CardSnap`
     : "Card result · CardSnap";
 
-  return { title, description: "Sports card value and grading verdict on CardSnap." };
+  return {
+    title,
+    description: "Sports card value and grading verdict on CardSnap.",
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function SharedResultPage({

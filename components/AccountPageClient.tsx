@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { SiteNav } from "@/components/SiteNav";
 import { useAuth } from "@/components/useAuth";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
+import { readStoredAttribution } from "@/lib/client-attribution";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import { waitForAccessToken } from "@/lib/wait-for-access-token";
 
@@ -143,7 +144,10 @@ export function AccountPageClient() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ subscriptionPlan: "annual" }),
+        body: JSON.stringify({
+          subscriptionPlan: "annual",
+          attribution: readStoredAttribution(),
+        }),
       });
       if (!res.ok) {
         alert("Checkout unavailable. Check Stripe configuration.");

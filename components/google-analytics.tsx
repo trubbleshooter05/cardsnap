@@ -21,9 +21,7 @@ export function GoogleAnalytics() {
 
   useEffect(() => {
     if (typeof window.gtag !== "function") return;
-    const query = window.location.search.replace(/^\?/, "");
-    const pagePath = query ? `${pathname}?${query}` : pathname;
-    window.gtag("config", GA_MEASUREMENT_ID, { page_path: pagePath });
+    window.gtag("config", GA_MEASUREMENT_ID, { page_path: pathname });
   }, [pathname]);
 
   return null;

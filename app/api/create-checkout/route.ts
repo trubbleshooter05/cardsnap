@@ -6,6 +6,10 @@ import {
   type ScanPackCredits,
   scanPackPriceIdFromEnv,
 } from "@/lib/stripe-scan-packs";
+import {
+  attributionToStripeMetadata,
+  sanitizeAttribution,
+} from "@/lib/attribution";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +17,7 @@ const bodySchema = z
   .object({
     subscriptionPlan: z.enum(["annual", "monthly"]).optional(),
     packCredits: z.union([z.literal(10), z.literal(50), z.literal(200)]).optional(),
+    attribution: z.unknown().optional(),
   })
   .refine(
     (d) => !(d.packCredits != null && d.subscriptionPlan != null),
@@ -43,6 +48,9 @@ export async function POST(req: Request) {
   }
 
   const { subscriptionPlan, packCredits } = parsed.data;
+  const attributionMetadata = attributionToStripeMetadata(
+    sanitizeAttribution(parsed.data.attribution)
+  );
   const isPack = packCredits != null;
 
   const monthlyPriceId = process.env.STRIPE_PRICE_ID;
@@ -129,17 +137,19 @@ export async function POST(req: Request) {
       mode: "payment",
       customer: customerId,
       line_items: [{ price: packPriceId, quantity: 1 }],
-      success_url: `${appUrl}/?pack_purchase=1`,
+      success_url: `${appUrl}/?pack_purchase=1&credits=${packCredits}&checkout_session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/?canceled=1`,
       client_reference_id: userId,
       metadata: {
         userId,
         packCredits: String(packCredits),
+        ...attributionMetadata,
       },
       payment_intent_data: {
         metadata: {
           userId,
           packCredits: String(packCredits),
+          ...attributionMetadata,
         },
       },
     });
@@ -160,12 +170,12 @@ export async function POST(req: Request) {
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: subPriceId, quantity: 1 }],
-    success_url: `${appUrl}/?upgraded=1`,
+    success_url: `${appUrl}/?upgraded=1&plan=${subPlan}&checkout_session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${appUrl}/?canceled=1`,
     client_reference_id: userId,
-    metadata: { userId, subscriptionPlan: subPlan },
+    metadata: { userId, subscriptionPlan: subPlan, ...attributionMetadata },
     subscription_data: {
-      metadata: { userId, subscriptionPlan: subPlan },
+      metadata: { userId, subscriptionPlan: subPlan, ...attributionMetadata },
     },
   });
 
