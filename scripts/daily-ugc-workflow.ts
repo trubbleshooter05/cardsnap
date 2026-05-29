@@ -7,6 +7,9 @@ dotenv.config({ path: path.join(process.env.HOME!, ".hermes", ".env") });
 
 type CsvRow = Record<string, string>;
 type SearchUgcTone = "almost_overpaid" | "psa9_destroyer" | "mistake_avoided";
+type PersonalityClassicTone = "funny" | "angry" | "urgent";
+type PersonalityPsaTone = "psaFunny" | "psaAngry" | "psaCalm";
+type UgcBatchKind = "search" | "personality_classic" | "personality_psa";
 
 type DailyArgs = {
   date: string;
@@ -16,10 +19,12 @@ type DailyArgs = {
 
 type DailyAsset = {
   title: string;
-  tone: SearchUgcTone;
+  tone: string;
+  renderTone?: string;
   composition: string;
   output: string;
   audio: string;
+  needsVoiceover: boolean;
   tiktokCaption: string;
   youtubeTitle: string;
   youtubeDescription: string;
@@ -195,6 +200,180 @@ const COPY_VARIANTS: Record<SearchUgcTone, CopyVariant[]> = {
 };
 
 
+const PERSONALITY_COPY: Record<
+  PersonalityClassicTone | PersonalityPsaTone,
+  CopyVariant
+> = {
+  funny: {
+    hook: "I almost paid $25 to disappoint myself.",
+    tensionPoint: "Thought this card was definitely worth grading.",
+    reveal: "CardSnap showed the PSA 9 math.",
+    cta: "Check before you grade.",
+    voiceText: "I almost paid twenty five dollars to disappoint myself. CardSnap showed raw, PSA 9, PSA 10, and fees before I submitted.",
+    tiktokCaption: "Almost paid $25 to grade the wrong card.\nCardSnap does the math first.\n#sportscards #cardcollector #cardsnap #psagrading",
+    youtubeTitle: "I almost paid $25 to disappoint myself",
+    youtubeDescription: "Thought it was a lock for grading. CardSnap showed PSA 9 comps and fees changed the whole decision.",
+    pinnedComment: "Vibes are not a grading strategy.",
+  },
+  angry: {
+    hook: "This is the mistake that costs card collectors money.",
+    tensionPoint: "Used to only look at PSA 10 comps.",
+    reveal: "CardSnap showed what PSA 9 actually does to profit.",
+    cta: "Check ROI before you submit.",
+    voiceText: "This is the mistake that costs card collectors money. PSA 10 comps lie. CardSnap shows raw, nine, ten, and fees before you mail anything in.",
+    tiktokCaption: "PSA 10 comps trick collectors every day.\nRun the PSA 9 scenario first.\n#sportscards #psagrading #cardsnap",
+    youtubeTitle: "The grading mistake that costs collectors money",
+    youtubeDescription: "Looking only at PSA 10 comps is how fees disappear. CardSnap shows the downside before you submit.",
+    pinnedComment: "The 9 is the real test.",
+  },
+  urgent: {
+    hook: "Stop. This is how grading fees disappear.",
+    tensionPoint: "Almost sent this in because PSA 10 comps looked huge.",
+    reveal: "CardSnap showed the PSA 9 downside in seconds.",
+    cta: "Use CardSnap first.",
+    voiceText: "Stop. This is how grading fees disappear. PSA 10 comps looked huge. CardSnap showed the nine scenario and the fee math. Instant skip.",
+    tiktokCaption: "Stop sending in losing grades.\nCardSnap shows PSA 9 before fees hit.\n#sportscards #cardcollector #cardsnap",
+    youtubeTitle: "Stop — this is how grading fees disappear",
+    youtubeDescription: "High PSA 10 comp, bad PSA 9 math. CardSnap catches it before you pay the fee.",
+    pinnedComment: "Check PSA 9 first.",
+  },
+  psaFunny: {
+    hook: "I almost paid $25 to learn PSA 9 exists.",
+    tensionPoint: "This was going straight to grading. No math.",
+    reveal: "CardSnap showed raw, PSA 9, PSA 10, and the fee.",
+    cta: "Because vibes are not a grading strategy.",
+    voiceText: "I almost paid twenty five dollars to learn PSA nine exists. CardSnap showed raw, nine, ten, and the grading fee before I submitted.",
+    tiktokCaption: "Almost paid $25 to learn PSA 9 exists.\nCardSnap shows the math first.\n#sportscards #psagrading #cardsnap",
+    youtubeTitle: "I almost paid $25 to learn PSA 9 exists",
+    youtubeDescription: "Going straight to PSA without checking the nine scenario is expensive. CardSnap shows all tiers plus fees.",
+    pinnedComment: "The 9 surprise is real.",
+  },
+  psaAngry: {
+    hook: "PSA 10 comps are how collectors get tricked.",
+    tensionPoint: "Used to see a PSA 10 comp and immediately think send it.",
+    reveal: "CardSnap showed the PSA 9 downside.",
+    cta: "Check the downside first.",
+    voiceText: "PSA ten comps are how collectors get tricked. CardSnap shows raw, nine, ten, and estimated grading costs before you submit.",
+    tiktokCaption: "PSA 10 comps trick collectors.\nCheck PSA 9 before you submit.\n#sportscards #cardgrading #cardsnap",
+    youtubeTitle: "PSA 10 comps are how collectors get tricked",
+    youtubeDescription: "The real question is what happens at PSA 9. CardSnap shows the downside before fees hit.",
+    pinnedComment: "Downside first.",
+  },
+  psaCalm: {
+    hook: "Here is the math I check before grading any card.",
+    tensionPoint: "What is it worth raw?",
+    reveal: "Then what does it sell for as a PSA 9?",
+    cta: "Simple rule. Every card.",
+    voiceText: "Here is the math I check before grading any card. Raw value, PSA nine value, PSA ten value, and fees. CardSnap runs it in seconds.",
+    tiktokCaption: "Simple grading math every collector should run.\nRaw. PSA 9. PSA 10. Fees.\n#sportscards #cardcollector #cardsnap",
+    youtubeTitle: "The grading math I check on every card",
+    youtubeDescription: "Raw, PSA 9, PSA 10, and fees. CardSnap shows the full picture before you submit.",
+    pinnedComment: "Run the math first.",
+  },
+};
+
+
+function getBatchKind(date: string): UgcBatchKind {
+  const day = new Date(`${date}T12:00:00`).getDay();
+  if (day === 1 || day === 3 || day === 5) return "search";
+  if (day === 2 || day === 6) return "personality_classic";
+  return "personality_psa";
+}
+
+function batchKindLabel(kind: UgcBatchKind): string {
+  if (kind === "search") return "Search ROI batch (Mon/Wed/Fri)";
+  if (kind === "personality_classic") return "Classic UGC (Tue/Sat): funny / angry / urgent";
+  return "PSA UGC (Thu/Sun): psaFunny / psaAngry / psaCalm";
+}
+
+function buildSearchBatch(date: string): DailyAsset[] {
+  const almostOverpaidCopy = getCopyForDate("almost_overpaid", date);
+  const psa9DestroyerCopy = getCopyForDate("psa9_destroyer", date);
+  const mistakeAvoidedCopy = getCopyForDate("mistake_avoided", date);
+
+  return [
+    {
+      title: almostOverpaidCopy.voiceText.split(".")[0]!,
+      composition: "CardSnapSearchUGCPrintLines",
+      tone: "almost_overpaid",
+      output: `out/cardsnap-ugc-almost-overpaid-${date}.mp4`,
+      audio: `audio/daily/${date}/cardsnap-search-ugc-almost-overpaid.mp3`,
+      needsVoiceover: true,
+      ...almostOverpaidCopy,
+    },
+    {
+      title: psa9DestroyerCopy.voiceText.split(".")[0]!,
+      composition: "CardSnapSearchUGCGradeEstimate",
+      tone: "psa9_destroyer",
+      output: `out/cardsnap-ugc-psa9-destroyer-${date}.mp4`,
+      audio: `audio/daily/${date}/cardsnap-search-ugc-psa9-destroyer.mp3`,
+      needsVoiceover: true,
+      ...psa9DestroyerCopy,
+    },
+    {
+      title: mistakeAvoidedCopy.voiceText.split(".")[0]!,
+      composition: "CardSnapSearchUGCHockey",
+      tone: "mistake_avoided",
+      output: `out/cardsnap-ugc-mistake-avoided-${date}.mp4`,
+      audio: `audio/daily/${date}/cardsnap-search-ugc-mistake-avoided.mp3`,
+      needsVoiceover: true,
+      ...mistakeAvoidedCopy,
+    },
+  ];
+}
+
+function buildPersonalityClassicBatch(date: string): DailyAsset[] {
+  const targets: Array<{
+    tone: PersonalityClassicTone;
+    composition: string;
+    slug: string;
+  }> = [
+    { tone: "funny", composition: "CardSnapUGCAdFunny", slug: "funny" },
+    { tone: "angry", composition: "CardSnapUGCAdAngry", slug: "angry" },
+    { tone: "urgent", composition: "CardSnapUGCAdUrgent", slug: "urgent" },
+  ];
+
+  return targets.map(({ tone, composition, slug }) => {
+    const copy = PERSONALITY_COPY[tone];
+    return {
+      title: copy.hook,
+      tone,
+      renderTone: tone,
+      composition,
+      output: `out/cardsnap-ugc-${slug}-${date}.mp4`,
+      audio: "(built-in)",
+      needsVoiceover: false,
+      ...copy,
+    };
+  });
+}
+
+function buildPersonalityPsaBatch(date: string): DailyAsset[] {
+  const targets: Array<{
+    tone: PersonalityPsaTone;
+    composition: string;
+    slug: string;
+  }> = [
+    { tone: "psaFunny", composition: "CardSnapPsaUGCFunny", slug: "psa-funny" },
+    { tone: "psaAngry", composition: "CardSnapPsaUGCAngry", slug: "psa-angry" },
+    { tone: "psaCalm", composition: "CardSnapPsaUGCCalm", slug: "psa-calm" },
+  ];
+
+  return targets.map(({ tone, composition, slug }) => {
+    const copy = PERSONALITY_COPY[tone];
+    return {
+      title: copy.hook,
+      tone,
+      renderTone: tone,
+      composition,
+      output: `out/cardsnap-ugc-${slug}-${date}.mp4`,
+      audio: "(built-in)",
+      needsVoiceover: false,
+      ...copy,
+    };
+  });
+}
+
 function dailyVariantIndex(date: string, poolSize: number): number {
   let h = 0;
   for (let i = 0; i < date.length; i += 1) h = (h * 31 + date.charCodeAt(i)) | 0;
@@ -208,36 +387,10 @@ function getCopyForDate(tone: SearchUgcTone, date: string): CopyVariant {
 }
 
 function renderTargetsForDate(date: string): DailyAsset[] {
-  const almostOverpaidCopy = getCopyForDate("almost_overpaid", date);
-  const psa9DestroyerCopy = getCopyForDate("psa9_destroyer", date);
-  const mistakeAvoidedCopy = getCopyForDate("mistake_avoided", date);
-
-  return [
-    {
-      title: almostOverpaidCopy.voiceText.split('.')[0],
-      composition: "CardSnapSearchUGCPrintLines",
-      tone: "almost_overpaid",
-      output: `out/cardsnap-ugc-almost-overpaid-${date}.mp4`,
-      audio: `audio/daily/${date}/cardsnap-search-ugc-almost-overpaid.mp3`,
-      ...almostOverpaidCopy,
-    },
-    {
-      title: psa9DestroyerCopy.voiceText.split('.')[0],
-      composition: "CardSnapSearchUGCGradeEstimate",
-      tone: "psa9_destroyer",
-      output: `out/cardsnap-ugc-psa9-destroyer-${date}.mp4`,
-      audio: `audio/daily/${date}/cardsnap-search-ugc-psa9-destroyer.mp3`,
-      ...psa9DestroyerCopy,
-    },
-    {
-      title: mistakeAvoidedCopy.voiceText.split('.')[0],
-      composition: "CardSnapSearchUGCHockey",
-      tone: "mistake_avoided",
-      output: `out/cardsnap-ugc-mistake-avoided-${date}.mp4`,
-      audio: `audio/daily/${date}/cardsnap-search-ugc-mistake-avoided.mp3`,
-      ...mistakeAvoidedCopy,
-    },
-  ];
+  const kind = getBatchKind(date);
+  if (kind === "search") return buildSearchBatch(date);
+  if (kind === "personality_classic") return buildPersonalityClassicBatch(date);
+  return buildPersonalityPsaBatch(date);
 }
 
 function parseArgs(): DailyArgs {
@@ -325,15 +478,18 @@ function getTopOpportunities(date: string): CsvRow[] {
 
 function assertDistinctAssets(assets: DailyAsset[]) {
   const videoOutputs = new Set(assets.map((asset) => asset.output));
-  const audioOutputs = new Set(assets.map((asset) => asset.audio));
+  const voiceAssets = assets.filter((asset) => asset.needsVoiceover);
+  const audioOutputs = new Set(voiceAssets.map((asset) => asset.audio));
   const scripts = new Set(assets.map((asset) => asset.voiceText));
 
   if (videoOutputs.size !== assets.length) throw new Error("Daily UGC video outputs must be unique.");
-  if (audioOutputs.size !== assets.length) throw new Error("Daily UGC voiceover outputs must be unique.");
+  if (voiceAssets.length > 0 && audioOutputs.size !== voiceAssets.length) {
+    throw new Error("Daily UGC voiceover outputs must be unique.");
+  }
   if (scripts.size !== assets.length) throw new Error("Daily UGC voice scripts must be unique.");
 }
 
-function buildApprovalDoc(date: string, opportunities: CsvRow[], assets: DailyAsset[]): string {
+function buildApprovalDoc(date: string, opportunities: CsvRow[], assets: DailyAsset[], batchKind: UgcBatchKind): string {
   const outputLines = assets
     .map((target, index) => `${index + 1}. **${target.title}**\n   - Video: \`${target.output}\``)
     .join("\n");
@@ -350,6 +506,8 @@ function buildApprovalDoc(date: string, opportunities: CsvRow[], assets: DailyAs
   return `# CardSnap Daily UGC Approval Pack - ${date}
 
 Generated by \`npm run ugc:daily\`.
+
+**Batch:** ${batchKindLabel(batchKind)}
 
 ## Videos Ready For Review
 
@@ -372,7 +530,7 @@ Use the TikTok, Instagram, and YouTube Shorts copy from \`docs/growth/ugc-daily-
 `;
 }
 
-function buildCopyPack(date: string, assets: DailyAsset[]): string {
+function buildCopyPack(date: string, assets: DailyAsset[], batchKind: UgcBatchKind): string {
   const manifestRows = assets
     .map(
       (asset, index) =>
@@ -405,6 +563,8 @@ ${asset.pinnedComment}`,
   return `# CardSnap Daily UGC Copy Pack - ${date}
 
 Generated by \`npm run ugc:daily\`.
+
+**Batch:** ${batchKindLabel(batchKind)}
 
 ## Artifact Manifest
 
@@ -449,11 +609,17 @@ function summarizeError(error: unknown): string {
 }
 
 async function synthesizeVoiceovers(assets: DailyAsset[], verbose: boolean) {
+  const voiceAssets = assets.filter((asset) => asset.needsVoiceover);
+  if (voiceAssets.length === 0) {
+    process.stderr.write("[step] voiceovers skipped (built-in audio batch)\n");
+    return;
+  }
+
   process.stderr.write("[step] voiceovers (OpenAI)\n");
   const key = process.env.OPENAI_API_KEY;
   if (!key?.trim()) throw new Error("OPENAI_API_KEY is not set; cannot synthesize daily UGC voiceovers.");
 
-  for (const asset of assets) {
+  for (const asset of voiceAssets) {
     const outPath = path.join(PUBLIC_DIR, asset.audio);
     mkdirSync(path.dirname(outPath), { recursive: true });
     if (verbose) process.stderr.write(`[voice] ${asset.tone}: ${asset.voiceText.slice(0, 80)}...\n`);
@@ -484,6 +650,7 @@ async function synthesizeVoiceovers(assets: DailyAsset[], verbose: boolean) {
 
 async function main() {
   const args = parseArgs();
+  const batchKind = getBatchKind(args.date);
   const assets = renderTargetsForDate(args.date);
   assertDistinctAssets(assets);
 
@@ -493,8 +660,8 @@ async function main() {
   run(process.execPath, ["--import", "tsx", "scripts/growth-intel.ts", `--date=${args.date}`], args.verbose);
 
   const opportunities = getTopOpportunities(args.date);
-  const approvalDoc = buildApprovalDoc(args.date, opportunities, assets);
-  const copyPack = buildCopyPack(args.date, assets);
+  const approvalDoc = buildApprovalDoc(args.date, opportunities, assets, batchKind);
+  const copyPack = buildCopyPack(args.date, assets, batchKind);
   const approvalPath = path.join(ROOT, "docs", "growth", `daily-ugc-approval-${args.date}.md`);
   const copyPackPath = path.join(ROOT, "docs", "growth", `ugc-daily-pack-${args.date}.md`);
   writeFileSync(approvalPath, approvalDoc);
@@ -515,7 +682,9 @@ async function main() {
 
   if (!args.skipRender) {
     for (const target of assets) {
-      const props = JSON.stringify({ tone: target.tone, audioSrc: target.audio });
+      const props = target.needsVoiceover
+        ? JSON.stringify({ tone: target.renderTone ?? target.tone, audioSrc: target.audio })
+        : JSON.stringify({ tone: target.renderTone ?? target.tone });
       run(
         "npx",
         [
@@ -536,13 +705,18 @@ async function main() {
   }
 
   const topOpportunity = opportunities[0]?.opportunity ?? "standing CardSnap grading ROI batch";
+  const voiceLine = assets.some((asset) => asset.needsVoiceover)
+    ? `Voice MP3s: ${assets.filter((a) => a.needsVoiceover).map((asset) => path.join(PUBLIC_DIR, asset.audio)).join("\n")}`
+    : "Voice: built-in ElevenLabs audio (no daily TTS)";
+
   console.log(
     [
-      `CardSnap UGC approval pack ready: 3 TikTok/Instagram videos for ${args.date}.`,
+      `CardSnap UGC approval pack ready: 3 videos for ${args.date}.`,
+      `Batch: ${batchKindLabel(batchKind)}.`,
       `Top signal: ${topOpportunity}.`,
       `Full report: ${obsidianApprovalPath ?? approvalPath}`,
       `Posting copy: ${copyPackPath}`,
-      `Voice MP3s: ${assets.map((asset) => path.join(PUBLIC_DIR, asset.audio)).join("\n")}`,
+      voiceLine,
       `Videos:\n${assets.map((asset) => path.join(ROOT, asset.output)).join("\n")}`,
     ].join("\n"),
   );

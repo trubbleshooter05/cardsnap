@@ -1,8 +1,8 @@
 #!/bin/zsh
 # ─────────────────────────────────────────────────────────────────────────────
 # CardSnap UGC Daily Job — Hermes runner
-# Generates 3 UGC videos (funny/angry/urgent) with fresh Claude scripts + TTS
-# Schedule: daily at 7:00 AM
+# Generates 3 UGC videos (almost-overpaid / psa9-destroyer / mistake-avoided) via Remotion + TTS
+# Schedule: daily at 7:30 AM
 #
 # Register with Hermes:
 #   hermes skills add --name cardsnap-ugc-daily --script ~/projects/cardsnap/seo-engine/hermes/ugc-daily.sh
@@ -47,10 +47,15 @@ echo "[$(date)] Running ugc:daily..."
 npm run ugc:daily -- --date="${DATE}"
 
 # ── Summary to stdout (Hermes routes to Telegram via deliver:telegram) ────────
-VIDEO_COUNT=$(ls -1 "${CARDSNAP_DIR}/out/cardsnap-ugc-"*"-${DATE}.mp4" 2>/dev/null | wc -l | tr -d ' ')
+VIDEO_COUNT=$(ls -1 "${CARDSNAP_DIR}/out/"*"-${DATE}.mp4" 2>/dev/null | wc -l | tr -d ' ')
 echo "=== CardSnap UGC Daily Done ==="
 echo "Date: ${DATE}"
 echo "Videos rendered: ${VIDEO_COUNT}/3"
 echo "Copy pack: docs/growth/ugc-daily-pack-${DATE}.md"
-echo "Videos: out/cardsnap-ugc-{funny,angry,urgent}-${DATE}.mp4"
+echo ""
+ls -1 "${CARDSNAP_DIR}/out/"*"-${DATE}.mp4" 2>/dev/null | sed 's|.*/|  |' || echo "  (no videos found)"
+echo ""
+echo "=== POST TODAY (TikTok + YouTube Shorts + Reels) ==="
+echo "Captions: docs/growth/ugc-daily-pack-${DATE}.md"
+echo "Post all 3 MP4s. Bio link: getcardsnap.com"
 echo "Log: ${LOG_FILE}"
