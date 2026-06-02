@@ -107,7 +107,7 @@ interface SitePageConfig {
 
 const SITE_CONFIGS: Record<string, SitePageConfig> = {
   snapbrand: { siteId: "snapbrand", siteName: "SNAPBRAND", baseUrl: "https://snapbrand.io", defaultHashtags: ["logo", "branding", "smallbusiness", "aitools", "logodesign", "startups"] },
-  cardsnap: { siteId: "cardsnap", siteName: "CardSnap", baseUrl: "https://cardsnap.io", defaultHashtags: ["sportscards", "psagrading", "tradingcards", "cardcollecting", "cardgrading", "hobbylife"] },
+  cardsnap: { siteId: "cardsnap", siteName: "CardSnap", baseUrl: "https://getcardsnap.com", defaultHashtags: ["sportscards", "psagrading", "tradingcards", "cardcollecting", "cardgrading", "hobbylife"] },
   movieslike: { siteId: "movieslike", siteName: "WatchThis", baseUrl: "https://watchthis.app", defaultHashtags: ["movies", "movierecommendations", "watchthis", "filmtok", "movietok", "netflix"] },
   fursbliss: { siteId: "fursbliss", siteName: "FursBliss", baseUrl: "https://www.fursbliss.com", defaultHashtags: ["doghealth", "petcare", "dogs", "doglongevity", "dogsupplements", "dogowner"] },
 };

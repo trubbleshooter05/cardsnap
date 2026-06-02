@@ -95,7 +95,7 @@
     },
     {
       "site": "cardsnap",
-      "target_url": "https://cardsnap.io",
+      "target_url": "https://getcardsnap.com",
       "submission_url": "https://www.producthunt.com/",
       "platform": "Product Hunt",
       "category": "Launch / High Traffic",
@@ -108,7 +108,7 @@
     },
     {
       "site": "cardsnap",
-      "target_url": "https://cardsnap.io",
+      "target_url": "https://getcardsnap.com",
       "submission_url": "https://www.saashub.com/",
       "platform": "SaaSHub",
       "category": "Software directory",
@@ -121,7 +121,7 @@
     },
     {
       "site": "cardsnap",
-      "target_url": "https://cardsnap.io/psa-grading-calculator",
+      "target_url": "https://getcardsnap.com/psa-grading-calculator",
       "submission_url": "https://www.reddit.com/r/baseballcards/",
       "platform": "Reddit r/baseballcards",
       "category": "Community / Forum",
@@ -134,7 +134,7 @@
     },
     {
       "site": "cardsnap",
-      "target_url": "https://cardsnap.io",
+      "target_url": "https://getcardsnap.com",
       "submission_url": "https://tinystartups.com/",
       "platform": "Tiny Startups",
       "category": "Indie showcase",

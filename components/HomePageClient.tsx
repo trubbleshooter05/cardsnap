@@ -21,6 +21,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { EmailCapture } from "@/components/EmailCapture";
+import { HomeTrustSection } from "@/components/HomeTrustSection";
 import { CardCompsTest } from "@/components/CardCompsTest";
 
 const ResultCard = dynamic(
@@ -1014,6 +1015,7 @@ export function HomePageClient() {
             )}
           </div>
         )}
+        <HomeTrustSection />
       </main>
 
       <ScanGate

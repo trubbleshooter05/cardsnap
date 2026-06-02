@@ -87,7 +87,7 @@
         "@type": "Article",
         "headline": "Yu-Gi-Oh Card Grading ROI Guide — When to Grade | CardSnap",
         "description": "Should grade-or-skip Yu-Gi-Oh cards? See ROI by condition/era/player.",
-        "url": "https://cardsnap.io/grade-or-skip/yugioh",
+        "url": "https://getcardsnap.com/grade-or-skip/yugioh",
         "author": {
           "@type": "Organization",
           "name": "CardSnap"
@@ -104,13 +104,13 @@
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": "https://cardsnap.io"
+            "item": "https://getcardsnap.com"
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Grade or Skip",
-            "item": "https://cardsnap.io/grade-or-skip"
+            "item": "https://getcardsnap.com/grade-or-skip"
           },
           {
             "@type": "ListItem",

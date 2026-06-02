@@ -30,7 +30,7 @@ Built a free tool that lets you plug in:
 - Grading fee tier
 - And it tells you the ROI for each grade + whether it's worth submitting
 
-It's completely free, no account needed: [https://cardsnap.io/psa-grading-calculator](https://cardsnap.io/psa-grading-calculator)
+It's completely free, no account needed: [https://getcardsnap.com/psa-grading-calculator](https://getcardsnap.com/psa-grading-calculator)
 
 Also has grade-or-skip guides for baseball, basketball, and Pokémon cards specifically if you're trying to figure out which era/set makes sense to grade.
 
@@ -50,7 +50,7 @@ Happy to answer questions. What cards are you on the fence about grading right n
 
 ## Follow-Up Comment Template (2-3 days after posting, if engagement)
 
-> Thanks everyone for the feedback! We just added [football/yugioh] cards to the grade-or-skip guide based on requests. Check out: cardsnap.io/grade-or-skip/football
+> Thanks everyone for the feedback! We just added [football/yugioh] cards to the grade-or-skip guide based on requests. Check out: getcardsnap.com/grade-or-skip/football
 
 ---
 

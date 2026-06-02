@@ -24,7 +24,7 @@
     "cardsnap": {
       "id": "cardsnap",
       "name": "CardSnap",
-      "domain": "cardsnap.io",
+      "domain": "getcardsnap.com",
       "repo_path": "~/projects/cardsnap",
       "seo_strategy": "utility_tool",
       "primary_url_pattern": "/grade-or-skip/[category]",
