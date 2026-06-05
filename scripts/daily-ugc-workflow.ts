@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { accessSync, constants, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import dotenv from "dotenv";
@@ -39,6 +39,28 @@ type DailyAsset = {
 const ROOT = process.cwd();
 const REMOTION_ENTRY = "remotion/index.ts";
 const PUBLIC_DIR = path.join(ROOT, "public");
+
+function isWritableDir(dir: string): boolean {
+  try {
+    accessSync(dir, constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function resolveObsidianVaultRoot(): string | null {
+  const configuredRoot = process.env.OBSIDIAN_VAULT_ROOT?.trim();
+  if (configuredRoot) return configuredRoot;
+
+  const home = process.env.HOME;
+  const homeVaultRoot = home ? path.join(home, "ObsidianVault") : null;
+  if (homeVaultRoot && existsSync(homeVaultRoot) && isWritableDir(homeVaultRoot)) {
+    return homeVaultRoot;
+  }
+
+  return path.join(ROOT, "ObsidianVault");
+}
 
 type CopyVariant = Pick<DailyAsset, "tiktokCaption" | "youtubeTitle" | "youtubeDescription" | "pinnedComment" | "voiceText"> & {
   hook: string;
@@ -583,12 +605,8 @@ ${scriptBlocks}
 }
 
 function getObsidianAdsDir(): string | null {
-  const vaultRoot = process.env.OBSIDIAN_VAULT_ROOT?.trim();
-  if (vaultRoot) return path.join(vaultRoot, "cardsnap", "ads");
-
-  const home = process.env.HOME;
-  if (!home) return null;
-  return path.join(home, "ObsidianVault", "cardsnap", "ads");
+  const vaultRoot = resolveObsidianVaultRoot();
+  return vaultRoot ? path.join(vaultRoot, "cardsnap", "ads") : null;
 }
 
 function summarizeError(error: unknown): string {

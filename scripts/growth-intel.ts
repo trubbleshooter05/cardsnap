@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { accessSync, constants, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 type CsvRow = Record<string, string>;
@@ -29,8 +29,31 @@ type Opportunity = {
 };
 
 const ROOT = process.cwd();
+
+function isWritableDir(dir: string): boolean {
+  try {
+    accessSync(dir, constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function resolveObsidianVaultRoot(): string {
+  const configuredRoot = process.env.OBSIDIAN_VAULT_ROOT?.trim();
+  if (configuredRoot) return configuredRoot;
+
+  const home = process.env.HOME;
+  const homeVaultRoot = home ? path.join(home, "ObsidianVault") : null;
+  if (homeVaultRoot && existsSync(homeVaultRoot) && isWritableDir(homeVaultRoot)) {
+    return homeVaultRoot;
+  }
+
+  return path.join(ROOT, "ObsidianVault");
+}
+
 function getObsidianDir(): string {
-  const vaultRoot = process.env.OBSIDIAN_VAULT_ROOT?.trim() || "/Users/openclaw/ObsidianVault";
+  const vaultRoot = resolveObsidianVaultRoot();
   return path.join(vaultRoot, "cardsnap", "growth-intel");
 }
 const SITE = "https://getcardsnap.com";
