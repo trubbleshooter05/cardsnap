@@ -723,34 +723,42 @@ async function main() {
   }
 
   const topOpportunity = opportunities[0]?.opportunity ?? "standing CardSnap grading ROI batch";
-  const voiceLine = assets.some((asset) => asset.needsVoiceover)
-    ? `Voice MP3s: ${assets.filter((a) => a.needsVoiceover).map((asset) => path.join(PUBLIC_DIR, asset.audio)).join("\n")}`
-    : "Voice: built-in ElevenLabs audio (no daily TTS)";
+  const voiceStatus = assets.some((asset) => asset.needsVoiceover)
+    ? `${assets.filter((a) => a.needsVoiceover).length} voice MP3s`
+    : "built-in audio";
 
   console.log(
     [
-      `CardSnap UGC approval pack ready: 3 videos for ${args.date}.`,
-      `Batch: ${batchKindLabel(batchKind)}.`,
-      `Top signal: ${topOpportunity}.`,
-      `Full report: ${obsidianApprovalPath ?? approvalPath}`,
-      `Posting copy: ${copyPackPath}`,
-      voiceLine,
-      `Videos:\n${assets.map((asset) => path.join(ROOT, asset.output)).join("\n")}`,
-    ].join("\n"),
+      `CardSnap UGC approval pack ready for ${args.date}`,
+      `batch=${batchKindLabel(batchKind)}`,
+      `top_signal=${topOpportunity}`,
+      `report=${obsidianApprovalPath ?? approvalPath}`,
+      `copy=${copyPackPath}`,
+      `videos=${assets.length}`,
+      `voice=${voiceStatus}`,
+    ].join(" | "),
   );
 }
 
 main().catch((error) => {
   const { date } = parseArgs();
   const approvalPath = path.join(ROOT, "docs", "growth", `daily-ugc-approval-${date}.md`);
+  const copyPackPath = path.join(ROOT, "docs", "growth", `ugc-daily-pack-${date}.md`);
   const obsidianAdsDir = getObsidianAdsDir();
   const obsidianApprovalPath = obsidianAdsDir
     ? path.join(obsidianAdsDir, `daily-ugc-approval-${date}.md`)
     : approvalPath;
+  const obsidianCopyPackPath = obsidianAdsDir ? path.join(obsidianAdsDir, `ugc-daily-pack-${date}.md`) : copyPackPath;
+  const preservedFiles = [approvalPath, copyPackPath, obsidianApprovalPath, obsidianCopyPackPath]
+    .filter((filePath) => existsSync(filePath))
+    .join(", ");
 
   console.log(
-    `CardSnap UGC approval pack failed for ${date}: ${summarizeError(error)}. Approval report: ${obsidianApprovalPath}`,
+    [
+      `CardSnap UGC approval pack failed for ${date}`,
+      `error=${summarizeError(error)}`,
+      `preserved=${preservedFiles || obsidianApprovalPath}`,
+    ].join(" | "),
   );
-  console.error(error);
   process.exit(1);
 });
