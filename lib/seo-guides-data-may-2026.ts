@@ -703,4 +703,74 @@ export const SEO_GUIDES_IN_DIRECTORY: SeoGuideDefinition[] = [
       ],
     },
   },
+  {
+    slug: "1989-upper-deck-ken-griffey-jr-rookie-grading-guide",
+    title: "1989 Upper Deck Ken Griffey Jr. #1: PSA Grading Guide (2026)",
+    description:
+      "Should you grade the iconic 1989 Upper Deck Ken Griffey Jr. rookie? Raw vs PSA 9 vs PSA 10 spreads, centering risk, and when submission fees still make sense.",
+    h1: "1989 Upper Deck Ken Griffey Jr. Rookie — Grade or Sell Raw?",
+    articleDescription:
+      "Vintage flagship rookie grading economics: gem premiums, PSA 9 downside, and the break-even line collectors miss on UD #1 copies.",
+    intro: [
+      "The 1989 Upper Deck Ken Griffey Jr. #1 is one of the most searched baseball cards in grading forums — for good reason. A true PSA 10 commands a massive premium over raw and PSA 9 copies.",
+      "That headline tempts people to submit borderline copies. This guide walks through the same raw / PSA 9 / PSA 10 framing CardSnap uses so you can decide before you pay fees.",
+    ],
+    sections: [
+      {
+        title: "Why This Card Has Outsized PSA 10 Upside",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "UD #1 is a cultural rookie — buyers pay for gem certainty on iconic cardboard. The spread between strong raw and PSA 10 can be multiples, but PSA 9 often sits much closer to raw than headlines suggest.",
+          },
+          {
+            kind: "bullet",
+            items: [
+              "PSA 10: thin market at the top; huge upside if centering and corners are truly elite.",
+              "PSA 9: common exit for clean-but-not-gem copies; verify the tier jump clears all-in fees.",
+              "Raw: liquid for honest wear; sometimes the rational move when condition is ambiguous.",
+            ],
+          },
+        ],
+      },
+      {
+        title: "Condition Reality on 1989 Upper Deck",
+        blocks: [
+          {
+            kind: "bullet",
+            items: [
+              "Centering on UD rookies is scrutinized — off-center copies rarely gem.",
+              "Corner chipping on dark borders shows fast under sleeve wear.",
+              "Surface print dots and edge whitening punish eye appeal before PSA does.",
+            ],
+          },
+        ],
+      },
+      {
+        title: "When Grading UD Griffey Makes Sense",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Grade when you bought with margin, the copy presents as a real gem candidate, and PSA 9 still clears fees if you miss 10. Skip when you are secretly betting only on a 10 to rescue a thin raw market.",
+          },
+        ],
+      },
+    ],
+    cta: {
+      title: "Run the numbers on your copy",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "Enter your Griffey (or any card) in CardSnap to see raw, PSA 9, PSA 10, and expected net after fees — five free scans, no credit card.",
+        },
+      ],
+      buttonText: "Try CardSnap free",
+    },
+    finalSection: {
+      title: "Final thought",
+      paragraphs: [
+        "Iconic rookies reward patience: submit gems, not hopes. If PSA 9 math does not work on your buy-in, raw liquidity is often the honest exit.",
+      ],
+    },
+  },
 ];
