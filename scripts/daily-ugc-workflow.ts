@@ -3,7 +3,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import dotenv from "dotenv";
 
-dotenv.config({ path: path.join(process.env.HOME!, ".hermes", ".env") });
+dotenv.config({ path: path.join(process.env.HOME!, ".hermes", ".env"), quiet: true });
 
 type CsvRow = Record<string, string>;
 type SearchUgcTone = "almost_overpaid" | "psa9_destroyer" | "mistake_avoided";
