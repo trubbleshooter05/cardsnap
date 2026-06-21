@@ -45,3 +45,4 @@ logs/
 # Local UGC/marketing audio (seo-batch tolerates untracked; ignore avoids noise)
 /public/audio/*.mp3
 /public/audio/daily/
+.venv/

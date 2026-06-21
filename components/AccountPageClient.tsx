@@ -9,6 +9,10 @@ import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import { readStoredAttribution } from "@/lib/client-attribution";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import { waitForAccessToken } from "@/lib/wait-for-access-token";
+import {
+  trackCheckoutStarted,
+  trackUpgradeClicked,
+} from "@/lib/ga4-funnel";
 
 type Usage = {
   count: number;
@@ -129,6 +133,8 @@ export function AccountPageClient() {
 
   const handleUpgrade = async () => {
     if (!userId || !user?.id) return;
+    const payload = { kind: "subscription", plan: "annual" } as const;
+    trackUpgradeClicked(payload, "account");
     setCheckoutLoading(true);
     try {
       const supabase = createSupabaseBrowserClient();
@@ -154,6 +160,7 @@ export function AccountPageClient() {
         return;
       }
       const { url } = (await res.json()) as { url: string };
+      trackCheckoutStarted(payload, "account");
       window.location.href = url;
     } finally {
       setCheckoutLoading(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { trackCheckoutCompleted } from "@/lib/ga4-funnel";
 
 declare global {
   interface Window {
@@ -14,6 +15,9 @@ type ConversionEvent = {
   value: number;
   itemName: string;
   itemId: string;
+  productType: "subscription" | "scan_pack" | "report";
+  plan?: string;
+  packCredits?: number;
 };
 
 const CURRENCY = "USD";
@@ -36,6 +40,8 @@ function conversionFromSearch(search: string): ConversionEvent | null {
       value: plan === "monthly" ? 9.99 : 99,
       itemName: `CardSnap Pro ${plan}`,
       itemId: `cardsnap_pro_${plan}`,
+      productType: "subscription",
+      plan,
     };
   }
 
@@ -47,6 +53,8 @@ function conversionFromSearch(search: string): ConversionEvent | null {
       value: PACK_VALUES[credits] ?? 0,
       itemName: `CardSnap ${credits} scan pack`,
       itemId: `cardsnap_scan_pack_${credits}`,
+      productType: "scan_pack",
+      packCredits: Number(credits),
     };
   }
 
@@ -57,6 +65,7 @@ function conversionFromSearch(search: string): ConversionEvent | null {
       value: 4.99,
       itemName: "CardSnap single grading report",
       itemId: "cardsnap_single_report",
+      productType: "report",
     };
   }
 
@@ -84,6 +93,14 @@ export function ConversionTracker() {
           quantity: 1,
         },
       ],
+    });
+
+    trackCheckoutCompleted({
+      transaction_id: conversion.transactionId,
+      value: conversion.value,
+      product_type: conversion.productType,
+      plan: conversion.plan,
+      pack_credits: conversion.packCredits,
     });
   }, []);
 

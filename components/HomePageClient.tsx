@@ -20,7 +20,23 @@ import { readStoredAttribution } from "@/lib/client-attribution";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
+import {
+  trackCheckoutStarted,
+  trackPaywallShown,
+  trackResultViewed,
+  trackUpgradeClicked,
+  type Ga4CheckoutSource,
+} from "@/lib/ga4-funnel";
+import {
+  clearPendingCheckout,
+  pendingFromStored,
+  readPendingCheckoutStored,
+  runProductCheckoutSession,
+  setPendingCheckoutFromCta,
+  type ProductCheckoutPayload,
+} from "@/lib/product-checkout-client";
 import { EmailCapture } from "@/components/EmailCapture";
+import { ScanResultRevenueCta } from "@/components/ScanResultRevenueCta";
 import { HomeTrustSection } from "@/components/HomeTrustSection";
 import { CardCompsTest } from "@/components/CardCompsTest";
 
@@ -61,24 +77,6 @@ const ANALYSIS_PROGRESS_MESSAGES = [
   "Calculating ROI verdict",
 ] as const;
 
-const PENDING_PAYWALL_CHECKOUT = "cardsnap:pendingPaywallCheckoutTs";
-/** Current session handoff after sign-in (subscription plan or pack). */
-const PENDING_CHECKOUT_KEY = "cardsnap:pendingCheckoutV2";
-
-type PendingCheckoutStored =
-  | { t: number; kind: "subscription"; plan: SubscriptionPlanToggle }
-  | { t: number; kind: "pack"; credits: 10 | 50 | 200 };
-
-type PendingCheckout =
-  | { kind: "subscription"; plan: SubscriptionPlanToggle }
-  | { kind: "pack"; credits: 10 | 50 | 200 };
-
-function pendingFromStored(stored: PendingCheckoutStored): PendingCheckout {
-  return stored.kind === "subscription"
-    ? { kind: "subscription", plan: stored.plan }
-    : { kind: "pack", credits: stored.credits };
-}
-
 function HeroVisual() {
   return (
     <div className="w-full">
@@ -107,82 +105,6 @@ function HeroVisual() {
   );
 }
 
-function readPendingCheckoutStored(): PendingCheckoutStored | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.sessionStorage.getItem(PENDING_CHECKOUT_KEY);
-    if (raw) {
-      const o = JSON.parse(raw) as Partial<PendingCheckoutStored> | null;
-      const t =
-        typeof o?.t === "number" ? o.t : NaN;
-      if (
-        !o ||
-        !Number.isFinite(t) ||
-        Date.now() - t > 15 * 60 * 1000
-      ) {
-        window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
-        return null;
-      }
-      if (o.kind === "subscription" && (o.plan === "annual" || o.plan === "monthly")) {
-        return { kind: "subscription", plan: o.plan, t };
-      }
-      if (
-        o.kind === "pack" &&
-        (o.credits === 10 || o.credits === 50 || o.credits === 200)
-      ) {
-        return { kind: "pack", credits: o.credits, t };
-      }
-      window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
-      return null;
-    }
-    const legacy = window.sessionStorage.getItem(PENDING_PAYWALL_CHECKOUT);
-    if (legacy) {
-      const ts = Number(legacy);
-      if (!Number.isFinite(ts) || Date.now() - ts > 15 * 60 * 1000) {
-        window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
-        return null;
-      }
-      return { kind: "subscription", plan: "annual", t: ts };
-    }
-    return null;
-  } catch {
-    try {
-      window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
-      window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
-    } catch {
-      /* ignore */
-    }
-    return null;
-  }
-}
-
-function setPendingCheckoutFromCta(pending: PendingCheckout) {
-  if (typeof window === "undefined") return;
-  try {
-    const payload: PendingCheckoutStored =
-      pending.kind === "subscription"
-        ? { kind: "subscription", plan: pending.plan, t: Date.now() }
-        : { kind: "pack", credits: pending.credits, t: Date.now() };
-    window.sessionStorage.setItem(
-      PENDING_CHECKOUT_KEY,
-      JSON.stringify(payload)
-    );
-    window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
-  } catch {
-    /* ignore */
-  }
-}
-
-function clearPaywallPending() {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
-    window.sessionStorage.removeItem(PENDING_PAYWALL_CHECKOUT);
-  } catch {
-    /* ignore */
-  }
-}
-
 /*
  * Where `result` / `loading` / paywall can change (HomePageClient only):
  * - setResult(null): start of handleSubmit; "New scan" in ResultCard onNewScan.
@@ -191,14 +113,6 @@ function clearPaywallPending() {
  * - setGateOpen(false): successful 200 with scanId; ScanGate onClose.
  */
 
-/**
- * Heuristic that the JSON matches POST /api/scan success shape: flat merged payload
- * (see mergeScanResults + route spread) plus scanId, usage, isPro.
- *
- * Server always sends: ...merged, scanId, freeScansUsed, isPro — with worthGrading set in merge
- * from ROI (boolean). A previous bug required non-empty confirmedName; models can return "" which
- * made validation fail and (worse) skipped setGateOpen(false) after a good 200.
- */
 function hasValidMergedScanData(data: ScanResponse): boolean {
   if (data?.scanId == null || String(data.scanId).length === 0) return false;
 
@@ -215,6 +129,11 @@ function hasValidMergedScanData(data: ScanResponse): boolean {
     data.roi &&
       (data.roi.headlineVerdict === "grade" || data.roi.headlineVerdict === "skip")
   );
+}
+
+function isGradeVerdict(data: ScanResponse): boolean {
+  if (data.roi?.headlineVerdict === "grade") return true;
+  return data.worthGrading === true;
 }
 
 const SESSION_RACE_MS = 5_000;
@@ -258,9 +177,10 @@ export function HomePageClient() {
   /** If a recent successful scan said `isPro: true`, do not let a stale /api/usage response clear Pro. */
   const lastProFromScanRef = useRef<{ pro: boolean; t: number } | null>(null);
   const scanInFlightRef = useRef(false);
-  const pendingPaywallCheckoutRef = useRef<PendingCheckout | null>(null);
+  const pendingPaywallCheckoutRef = useRef<ProductCheckoutPayload | null>(null);
   const checkoutInFlightRef = useRef(false);
   const resultRef = useRef<HTMLDivElement>(null);
+  const lastResultTrackedRef = useRef<string | null>(null);
 
   // IDs for /api/usage and /api/scan. Never wait for auth init: anonymous ID must be ready
   // before getSession() finishes so the first free scan works with no login (limits are enforced on the server, not with a login wall).
@@ -375,9 +295,8 @@ export function HomePageClient() {
   const runProductCheckout = useCallback(
     async (
       source: "cta" | "post_login",
-      payload:
-        | { kind: "subscription"; plan: SubscriptionPlanToggle }
-        | { kind: "pack"; credits: 10 | 50 | 200 }
+      payload: ProductCheckoutPayload,
+      analyticsSource: Ga4CheckoutSource = "paywall"
     ) => {
       const uid = user?.id ?? userId;
       if (!uid) {
@@ -394,48 +313,24 @@ export function HomePageClient() {
       else
         setPackBuying((prev) => ({ ...prev, [payload.credits]: true }));
       try {
-        persistAnonymousId(uid);
-        const supabase = createSupabaseBrowserClient();
-        console.log(AUTH_LOG, "upgrade: wait for access token", {
-          source,
-          uid: uid.slice(0, 8),
-        });
-        const token = await waitForAccessToken(supabase, {
-          context: "create-checkout",
-          maxMs: 25_000,
-        });
-        if (!token) {
-          console.warn(AUTH_LOG, "upgrade: no token after wait", { source });
-          alert("Authentication required. Please sign in again.");
+        console.log(AUTH_LOG, "upgrade: POST /api/create-checkout", { source, payload });
+        const result = await runProductCheckoutSession(uid, payload);
+        if (!result.ok) {
+          if (result.reason === "no_token") {
+            console.warn(AUTH_LOG, "upgrade: no token after wait", { source });
+            alert("Authentication required. Please sign in again.");
+          } else {
+            console.warn(AUTH_LOG, "upgrade: checkout failed", { source });
+            alert("Checkout unavailable. Check Stripe configuration.");
+          }
           return;
         }
-        const body =
-          payload.kind === "subscription"
-            ? {
-                subscriptionPlan: payload.plan,
-                attribution: readStoredAttribution(),
-              }
-            : {
-                packCredits: payload.credits,
-                attribution: readStoredAttribution(),
-              };
-        console.log(AUTH_LOG, "upgrade: POST /api/create-checkout", { source, body });
-        const res = await fetch("/api/create-checkout", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) {
-          console.warn(AUTH_LOG, "upgrade: checkout HTTP", res.status);
-          alert("Checkout unavailable. Check Stripe configuration.");
-          return;
-        }
-        const { url } = (await res.json()) as { url: string };
         console.log(AUTH_LOG, "upgrade: redirecting to Stripe", { source });
-        window.location.href = url;
+        trackCheckoutStarted(
+          payload,
+          source === "post_login" ? "post_login" : analyticsSource
+        );
+        window.location.href = result.url;
       } finally {
         if (isSub) setUpgrading(false);
         else if (payload.kind === "pack")
@@ -512,6 +407,23 @@ export function HomePageClient() {
   }, [gateOpen]);
 
   useEffect(() => {
+    if (!gateOpen) return;
+    trackPaywallShown();
+  }, [gateOpen]);
+
+  useEffect(() => {
+    if (!result?.scanId) return;
+    if (lastResultTrackedRef.current === result.scanId) return;
+    lastResultTrackedRef.current = result.scanId;
+    trackResultViewed({
+      scan_id: result.scanId,
+      verdict: isGradeVerdict(result) ? "grade" : "skip",
+      is_pro: isPro,
+    });
+  }, [result, isPro]);
+
+
+  useEffect(() => {
     console.log(LOG, "state: isPro (ui) →", isPro, {
       usageCount,
       freeLimit,
@@ -536,7 +448,7 @@ export function HomePageClient() {
             "auth modal dismissed, no session after delay — clear paywall checkout intent"
           );
           pendingPaywallCheckoutRef.current = null;
-          clearPaywallPending();
+          clearPendingCheckout();
         })();
       }, 450);
     };
@@ -566,7 +478,7 @@ export function HomePageClient() {
       userId: user.id,
     });
     pendingPaywallCheckoutRef.current = null;
-    clearPaywallPending();
+    clearPendingCheckout();
     setGateOpen(false);
     void runProductCheckout("post_login", pending);
   }, [user?.id, authLoading, runProductCheckout]);
@@ -734,38 +646,40 @@ export function HomePageClient() {
     }
   };
 
-  const handleSubscribe = useCallback((plan: SubscriptionPlanToggle) => {
+  const handleSubscribe = useCallback((plan: SubscriptionPlanToggle, analyticsSource: Ga4CheckoutSource = "paywall") => {
+    const payload: ProductCheckoutPayload = { kind: "subscription", plan };
+    trackUpgradeClicked(payload, analyticsSource);
     console.log(AUTH_LOG, "paywall CTA: subscribe clicked", {
       hasUser: Boolean(user?.id),
       plan,
     });
     if (!user?.id) {
-      const pending: PendingCheckout = { kind: "subscription", plan };
-      pendingPaywallCheckoutRef.current = pending;
-      setPendingCheckoutFromCta({ kind: "subscription", plan });
+      pendingPaywallCheckoutRef.current = payload;
+      setPendingCheckoutFromCta(payload);
       console.log(AUTH_LOG, "auth: opening sign-in (pending checkout after login)");
       requestOpenAuthModal();
       return;
     }
     setGateOpen(false);
-    void runProductCheckout("cta", { kind: "subscription", plan });
+    void runProductCheckout("cta", payload, analyticsSource);
   }, [user?.id, runProductCheckout]);
 
   const handlePackPurchase = useCallback(
-    (credits: 10 | 50 | 200) => {
+    (credits: 10 | 50 | 200, analyticsSource: Ga4CheckoutSource = "paywall") => {
+      const payload: ProductCheckoutPayload = { kind: "pack", credits };
+      trackUpgradeClicked(payload, analyticsSource);
       console.log(AUTH_LOG, "paywall CTA: pack clicked", {
         hasUser: Boolean(user?.id),
         credits,
       });
       if (!user?.id) {
-        const pending: PendingCheckout = { kind: "pack", credits };
-        pendingPaywallCheckoutRef.current = pending;
-        setPendingCheckoutFromCta({ kind: "pack", credits });
+        pendingPaywallCheckoutRef.current = payload;
+        setPendingCheckoutFromCta(payload);
         requestOpenAuthModal();
         return;
       }
       setGateOpen(false);
-      void runProductCheckout("cta", { kind: "pack", credits });
+      void runProductCheckout("cta", payload, analyticsSource);
     },
     [user?.id, runProductCheckout]
   );
@@ -839,8 +753,8 @@ export function HomePageClient() {
           </div>
         )}
 
-        <section className="grid w-full items-center gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12">
-          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+        <section className="grid w-full items-start gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12">
+          <div className="order-2 flex flex-col items-center text-center lg:order-1 lg:items-start lg:text-left">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
               Should I grade my card?
@@ -926,10 +840,8 @@ export function HomePageClient() {
             <PageAttribution className="mt-5 w-full justify-center text-center lg:justify-start lg:text-left" />
           </div>
 
-          <div className="flex w-full flex-col gap-5">
-            <HeroVisual />
-
-            <div className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6">
+          <div className="order-1 flex w-full flex-col gap-5 lg:order-2">
+            <div className="order-1 w-full rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6 lg:order-2">
               {checkoutSyncing && (
                 <p className="mb-3 text-center text-xs text-amber-200/90">
                   Syncing your Pro status…
@@ -966,8 +878,12 @@ export function HomePageClient() {
               )}
             </div>
 
+            <div className="order-2 w-full lg:order-1">
+              <HeroVisual />
+            </div>
+
             {!result && !loading && (
-              <p className="text-center text-xs text-zinc-600">
+              <p className="order-3 text-center text-xs text-zinc-600 lg:order-3">
                 Not sure what you get?{" "}
                 <a href="/sample-scan" className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300">
                   See a sample analysis result →
@@ -1008,6 +924,14 @@ export function HomePageClient() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
+            {!isPro && isGradeVerdict(result) && (
+              <ScanResultRevenueCta
+                onUpgradePro={() => handleSubscribe("annual", "result_cta")}
+                onBuyScanPack={() => handlePackPurchase(10, "result_cta")}
+                upgrading={upgrading}
+                packBuying={Boolean(packBuying[10])}
+              />
+            )}
             {!isPro && (
               <div className="w-full max-w-xl">
                 <EmailCapture scanId={result.scanId} />
@@ -1023,7 +947,7 @@ export function HomePageClient() {
         onClose={() => {
           console.log(AUTH_LOG, "paywall: closed (backdrop or Maybe later)");
           pendingPaywallCheckoutRef.current = null;
-          clearPaywallPending();
+          clearPendingCheckout();
           setGateOpen(false);
         }}
         onSubscribe={handleSubscribe}
