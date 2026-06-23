@@ -187,7 +187,7 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               <StatCell
                 label="eBay comps"
                 value={ebayOk ? formatUsd(data.ebay.avgSoldPrice) : "—"}
-                sub={ebayOk ? "Recent listings avg" : "Live comps not configured"}
+                sub={ebayOk ? "Recent sold listings avg" : "Using model estimate"}
                 muted={!ebayOk}
               />
               <StatCell
@@ -231,7 +231,12 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             </div>
             {!ebayOk ? (
               <p className="mt-2 text-zinc-500">
-                eBay live comps are not configured for this estimate.
+                Values use CardSnap&apos;s model estimate and PSA population data when
+                available.{" "}
+                <Link href="/methodology" className="text-amber-400/90 underline-offset-2 hover:underline">
+                  See methodology
+                </Link>
+                .
               </p>
             ) : null}
           </div>

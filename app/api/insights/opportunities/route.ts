@@ -16,10 +16,10 @@ export async function GET(req: NextRequest) {
   const base = process.env.INSIGHTS_API_BASE_URL?.replace(/\/$/, "");
   if (!base) {
     return NextResponse.json(
-      { opportunities: CARD_OPPORTUNITY_FALLBACK.slice(0, limit) },
+      { opportunities: [] },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
         },
       }
     );

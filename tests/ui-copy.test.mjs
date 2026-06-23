@@ -37,7 +37,8 @@ test("result card explains estimate source and safer email opt-in is default", (
   assert.match(result, /How this estimate was calculated/);
   assert.match(result, /Source type/);
   assert.match(result, /Confidence level/);
-  assert.match(result, /eBay live comps are not configured/);
+  assert.match(result, /model estimate/);
+  assert.match(result, /\/methodology/);
   assert.match(email, /useState\(false\)/);
   assert.doesNotMatch(home, /Get monthly high-ROI grading picks/);
   assert.match(home, /<EmailCapture scanId=\{result\.scanId\} \/>/);
@@ -57,7 +58,7 @@ test("result card emphasizes upside and market movement", () => {
 test("monetization funnel shows pricing and gives five free scans", () => {
   const usage = read("lib/usage-limits.ts");
   const gate = read("components/ScanGate.tsx");
-  const pricing = read("app/pricing/page.tsx");
+  const pricing = read("components/PricingPageClient.tsx");
   const nav = read("components/SiteNav.tsx");
   const footer = read("components/SiteFooter.tsx");
   const sitemap = read("app/sitemap.ts");
