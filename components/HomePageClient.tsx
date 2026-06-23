@@ -381,12 +381,13 @@ export function HomePageClient() {
     void refreshUsage(userId);
   }, [userId, refreshUsage]);
 
-  // On checkout return: sync subscription for Pro, refresh usage for packs
+  // On checkout return: fulfill via Stripe session (webhook fallback) then refresh usage.
   useEffect(() => {
     if (typeof window === "undefined" || !userId || !user?.id) return;
     const params = new URLSearchParams(window.location.search);
     const upgraded = params.get("upgraded") === "1";
     const packPurchase = params.get("pack_purchase") === "1";
+    const checkoutSessionId = params.get("checkout_session_id");
     if (!upgraded && !packPurchase) return;
 
     let cancelled = false;
@@ -398,8 +399,18 @@ export function HomePageClient() {
       try {
         const supabase = createSupabaseBrowserClient();
         const token = await getAccessTokenRaced(supabase);
+        if (!token) return;
 
-        if (upgraded && token) {
+        if (checkoutSessionId) {
+          await fetch("/api/sync-checkout", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ checkoutSessionId }),
+          });
+        } else if (upgraded) {
           await fetch("/api/sync-subscription", {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },

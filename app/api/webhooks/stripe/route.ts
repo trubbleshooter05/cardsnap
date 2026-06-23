@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import {
-  SCAN_PACK_CREDITS,
-  type ScanPackCredits,
-} from "@/lib/stripe-scan-packs";
 import { createServerSupabase } from "@/lib/supabase";
+import { fulfillCheckoutSession } from "@/lib/stripe-fulfillment";
 
 export const dynamic = "force-dynamic";
 
@@ -36,69 +33,11 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userId =
-          session.metadata?.userId ??
-          (typeof session.client_reference_id === "string"
-            ? session.client_reference_id
-            : undefined);
-        const customerId =
-          typeof session.customer === "string"
-            ? session.customer
-            : session.customer?.id ?? null;
-
-        if (!userId) break;
-
-        if (session.mode === "subscription") {
-          const { error: upErr } = await supabase.from("users").upsert(
-            {
-              id: userId,
-              is_pro: true,
-              stripe_customer_id: customerId,
-            },
-            { onConflict: "id" }
-          );
-          if (upErr) {
-            console.error("checkout.session.completed upsert failed", upErr);
-            throw upErr;
-          }
-        } else if (session.mode === "payment" && session.payment_status === "paid") {
-          const raw = session.metadata?.packCredits;
-          const creditsToAdd = Number.parseInt(String(raw ?? "0"), 10);
-          const validPack = SCAN_PACK_CREDITS.includes(
-            creditsToAdd as ScanPackCredits
-          );
-          if (!validPack) break;
-
-          const { data: prev } = await supabase
-            .from("users")
-            .select("scan_credits")
-            .eq("id", userId)
-            .maybeSingle();
-          const nextCredits =
-            Number(prev?.scan_credits ?? 0) + creditsToAdd;
-
-          if (prev) {
-            const { error: upErr } = await supabase
-              .from("users")
-              .update({ scan_credits: nextCredits })
-              .eq("id", userId);
-            if (upErr) {
-              console.error("pack credits update failed", upErr);
-              throw upErr;
-            }
-          } else {
-            const { error: insErr } = await supabase.from("users").insert({
-              id: userId,
-              is_pro: false,
-              stripe_customer_id: customerId,
-              scan_credits: creditsToAdd,
-            });
-            if (insErr) {
-              console.error("pack credits insert failed", insErr);
-              throw insErr;
-            }
-          }
-        }
+        const result = await fulfillCheckoutSession(supabase, session);
+        console.log("[stripe webhook] checkout.session.completed", {
+          sessionId: session.id,
+          result,
+        });
         break;
       }
       case "customer.subscription.deleted":
