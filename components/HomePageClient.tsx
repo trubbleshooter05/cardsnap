@@ -258,7 +258,7 @@ export function HomePageClient() {
         if (deviceId) usageQuery.set("deviceId", deviceId);
         res = await fetch(
           `/api/usage?${usageQuery.toString()}`,
-          { cache: "no-store", headers, signal }
+          { cache: "no-store", credentials: "include", headers, signal }
         );
       } catch (e) {
         if (e instanceof Error && e.name === "AbortError") {
@@ -595,6 +595,7 @@ export function HomePageClient() {
       const res = await fetch("/api/scan", {
         method: "POST",
         cache: "no-store",
+        credentials: "include",
         headers,
         body: JSON.stringify({
           cardName: payload.cardName,

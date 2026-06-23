@@ -8,8 +8,7 @@ import { fetchPsaPopulation } from "@/lib/psa";
 import { mergeScanResults } from "@/lib/merge-scan";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
-import { CARDSNAP_DEVICE_COOKIE, isValidDeviceId } from "@/lib/cardsnap-device-id";
-import { resolveDeviceId } from "@/lib/server-device-id";
+import { resolveOrMintDeviceId } from "@/lib/server-device-id";
 import { isScanBlocked, scanBlockedReason } from "@/lib/scan-enforcement";
 import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
@@ -65,7 +64,7 @@ export async function POST(req: NextRequest) {
   let userId: string | null = null;
   const cookieRaw = cookies().get(CARDSNAP_USER_COOKIE)?.value;
   const bodyUserId = parsed.data.userId;
-  const deviceId = resolveDeviceId(req, parsed.data.deviceId);
+  const deviceId = resolveOrMintDeviceId(req, parsed.data.deviceId);
 
   // First try to get user from auth token
   const authHeader = req.headers.get("authorization");
@@ -125,7 +124,11 @@ export async function POST(req: NextRequest) {
     EMPTY_HEAD_COUNT,
     "scan.db.usedcount"
   );
-  const userScansUsed = usedResult.count ?? 0;
+  const userScansUsed = usedResult.count;
+  if (userScansUsed == null) {
+    console.error("[scan] user scan count unavailable — blocking (fail closed)");
+    return NextResponse.json({ error: "usage_check_failed" }, { status: 503 });
+  }
 
   let deviceScansUsed = 0;
   if (deviceId) {
@@ -138,7 +141,12 @@ export async function POST(req: NextRequest) {
       EMPTY_HEAD_COUNT,
       "scan.db.deviceusedcount"
     );
-    deviceScansUsed = deviceUsedResult.count ?? 0;
+    const rawDeviceCount = deviceUsedResult.count;
+    if (rawDeviceCount == null) {
+      console.error("[scan] device scan count unavailable — blocking (fail closed)");
+      return NextResponse.json({ error: "usage_check_failed" }, { status: 503 });
+    }
+    deviceScansUsed = rawDeviceCount;
   }
 
   const entitlement = {
@@ -288,14 +296,10 @@ export async function POST(req: NextRequest) {
     deviceFreeScanLimit: FREE_SCAN_LIMIT,
     isPro: isProResponse,
   });
-  if (!isValidUserId(cookieRaw) && isValidUserId(userId)) {
+  // Always refresh sticky ids so Safari keeps the same bucket across scans.
+  if (isValidUserId(userId)) {
     applyUserCookie(response, userId);
   }
-  if (
-    deviceId &&
-    !isValidDeviceId(cookies().get(CARDSNAP_DEVICE_COOKIE)?.value)
-  ) {
-    applyDeviceCookie(response, deviceId);
-  }
+  applyDeviceCookie(response, deviceId);
   return response;
 }

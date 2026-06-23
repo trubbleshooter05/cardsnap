@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase";
 import { isValidUserId } from "@/lib/cardsnap-user-id";
-import { resolveDeviceId } from "@/lib/server-device-id";
+import { resolveOrMintDeviceId } from "@/lib/server-device-id";
 import { applyDeviceCookie } from "@/lib/scan-cookies";
 
 export const dynamic = "force-dynamic";
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ merged: 0 });
   }
 
-  const deviceId = resolveDeviceId(req, parsed.data.deviceId);
+  const deviceId = resolveOrMintDeviceId(req, parsed.data.deviceId);
 
   const { error: updateError } = await supabase
     .from("scans")

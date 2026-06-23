@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
-import { resolveDeviceId } from "@/lib/server-device-id";
+import { resolveOrMintDeviceId } from "@/lib/server-device-id";
 import { isScanBlocked } from "@/lib/scan-enforcement";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const supabase = createServerSupabase();
-  const deviceId = resolveDeviceId(req);
+  const deviceId = resolveOrMintDeviceId(req);
 
   // Support both authenticated requests and legacy anonymous requests
   const authHeader = req.headers.get("authorization");
