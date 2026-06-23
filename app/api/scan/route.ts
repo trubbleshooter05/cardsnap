@@ -8,6 +8,10 @@ import { fetchPsaPopulation } from "@/lib/psa";
 import { mergeScanResults } from "@/lib/merge-scan";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
+import { CARDSNAP_DEVICE_COOKIE, isValidDeviceId } from "@/lib/cardsnap-device-id";
+import { resolveDeviceId } from "@/lib/server-device-id";
+import { isScanBlocked, scanBlockedReason } from "@/lib/scan-enforcement";
+import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
 import type {
   PostgrestMaybeSingleResponse,
@@ -37,20 +41,11 @@ const EMPTY_HEAD_COUNT = {
 
 export const dynamic = "force-dynamic";
 
-function setUserCookieHeader(userId: string): Record<string, string> {
-  const secure =
-    process.env.NODE_ENV === "production" ||
-    process.env.VERCEL === "1";
-  const cookie = `${CARDSNAP_USER_COOKIE}=${encodeURIComponent(
-    userId
-  )}; Path=/; Max-Age=31536000; SameSite=Lax${secure ? "; Secure" : ""}`;
-  return { "Set-Cookie": cookie };
-}
-
 const bodySchema = z.object({
   cardName: z.string().min(1).max(500),
   condition: z.string().min(1).max(120),
   userId: z.string().uuid(),
+  deviceId: z.string().uuid().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -70,6 +65,7 @@ export async function POST(req: NextRequest) {
   let userId: string | null = null;
   const cookieRaw = cookies().get(CARDSNAP_USER_COOKIE)?.value;
   const bodyUserId = parsed.data.userId;
+  const deviceId = resolveDeviceId(req, parsed.data.deviceId);
 
   // First try to get user from auth token
   const authHeader = req.headers.get("authorization");
@@ -129,10 +125,33 @@ export async function POST(req: NextRequest) {
     EMPTY_HEAD_COUNT,
     "scan.db.usedcount"
   );
-  const used = usedResult.count ?? 0;
-  if (!isPro && used >= FREE_SCAN_LIMIT + prepaidCredits) {
+  const userScansUsed = usedResult.count ?? 0;
+
+  let deviceScansUsed = 0;
+  if (deviceId) {
+    const deviceUsedResult = await withTimeout(
+      supabase
+        .from("scans")
+        .select("*", { count: "exact", head: true })
+        .eq("device_id", deviceId),
+      3000,
+      EMPTY_HEAD_COUNT,
+      "scan.db.deviceusedcount"
+    );
+    deviceScansUsed = deviceUsedResult.count ?? 0;
+  }
+
+  const entitlement = {
+    isPro,
+    prepaidCredits,
+    userScansUsed,
+    deviceScansUsed,
+  };
+
+  if (isScanBlocked(entitlement)) {
+    const reason = scanBlockedReason(entitlement) ?? "user_limit";
     return NextResponse.json(
-      { error: "scan_limit_reached" },
+      { error: "scan_limit_reached", reason },
       { status: 402 }
     );
   }
@@ -173,14 +192,24 @@ export async function POST(req: NextRequest) {
 
   const merged = mergeScanResults(ai, ebay, psa);
 
+  const insertPayload: {
+    user_id: string;
+    card_name: string;
+    result: typeof merged;
+    device_id?: string;
+  } = {
+    user_id: userId,
+    card_name: cardName,
+    result: merged,
+  };
+  if (deviceId) {
+    insertPayload.device_id = deviceId;
+  }
+
   const insertResult = await withTimeout(
     supabase
       .from("scans")
-      .insert({
-        user_id: userId,
-        card_name: cardName,
-        result: merged,
-      })
+      .insert(insertPayload)
       .select("id")
       .single(),
     5000,
@@ -211,10 +240,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const extraHeaders: Record<string, string> = {};
-  if (!isValidUserId(cookieRaw) && isValidUserId(userId)) {
-    Object.assign(extraHeaders, setUserCookieHeader(userId));
-  }
   if (cookieMismatch) {
     console.warn("scan: cardsnap_user_id cookie differs from body userId; using cookie");
   }
@@ -252,16 +277,25 @@ export async function POST(req: NextRequest) {
     FREE_SCAN_LIMIT + (isProResponse ? 0 : prepaidForLimit);
 
   console.log("[scan] returning response with merged data");
-  return NextResponse.json(
-    {
-      ...merged,
-      scanId: inserted.id,
-      /** @deprecated use freeScansUsed — kept for older clients */
-      scansUsedThisMonth: freeScansUsed,
-      freeScansUsed,
-      freeScanLimit: tierScanLimit,
-      isPro: isProResponse,
-    },
-    { headers: extraHeaders }
-  );
+  const response = NextResponse.json({
+    ...merged,
+    scanId: inserted.id,
+    /** @deprecated use freeScansUsed — kept for older clients */
+    scansUsedThisMonth: freeScansUsed,
+    freeScansUsed,
+    freeScanLimit: tierScanLimit,
+    deviceScansUsed: deviceId ? deviceScansUsed + 1 : deviceScansUsed,
+    deviceFreeScanLimit: FREE_SCAN_LIMIT,
+    isPro: isProResponse,
+  });
+  if (!isValidUserId(cookieRaw) && isValidUserId(userId)) {
+    applyUserCookie(response, userId);
+  }
+  if (
+    deviceId &&
+    !isValidDeviceId(cookies().get(CARDSNAP_DEVICE_COOKIE)?.value)
+  ) {
+    applyDeviceCookie(response, deviceId);
+  }
+  return response;
 }

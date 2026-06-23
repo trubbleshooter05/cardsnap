@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
+import { resolveDeviceId } from "@/lib/server-device-id";
+import { isScanBlocked } from "@/lib/scan-enforcement";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const supabase = createServerSupabase();
+  const deviceId = resolveDeviceId(req);
 
   // Support both authenticated requests and legacy anonymous requests
   const authHeader = req.headers.get("authorization");
@@ -24,7 +27,14 @@ export async function GET(req: NextRequest) {
 
   if (!userId) {
     return NextResponse.json(
-      { count: 0, isPro: false, limit: FREE_SCAN_LIMIT },
+      {
+        count: 0,
+        isPro: false,
+        limit: FREE_SCAN_LIMIT,
+        deviceScansUsed: 0,
+        deviceFreeScanLimit: FREE_SCAN_LIMIT,
+        blockedByDevice: false,
+      },
       {
         headers: {
           "Cache-Control": "private, no-store, max-age=0",
@@ -63,11 +73,35 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  let deviceScansUsed = 0;
+  if (deviceId) {
+    const { count: deviceCount, error: deviceError } = await supabase
+      .from("scans")
+      .select("*", { count: "exact", head: true })
+      .eq("device_id", deviceId);
+    if (deviceError) {
+      console.error("usage device count error", deviceError);
+    } else {
+      deviceScansUsed = deviceCount ?? 0;
+    }
+  }
+
+  const userScansUsed = count ?? 0;
+  const blockedByDevice = isScanBlocked({
+    isPro,
+    prepaidCredits: prepaid,
+    userScansUsed,
+    deviceScansUsed,
+  }) && !isPro && userScansUsed < limit;
+
   return NextResponse.json(
     {
-      count: count ?? 0,
+      count: userScansUsed,
       isPro,
       limit,
+      deviceScansUsed,
+      deviceFreeScanLimit: FREE_SCAN_LIMIT,
+      blockedByDevice,
     },
     {
       headers: {

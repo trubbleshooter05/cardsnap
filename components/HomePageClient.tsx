@@ -16,6 +16,8 @@ import {
 } from "@/lib/auth-events";
 import { waitForAccessToken } from "@/lib/wait-for-access-token";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
+import { getOrCreateDeviceId, persistDeviceId } from "@/lib/device-id";
+import { mergeAnonymousScansToAuthUser } from "@/lib/merge-anonymous-client";
 import { readStoredAttribution } from "@/lib/client-attribution";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
@@ -65,6 +67,9 @@ type UsagePayload = {
   count: number;
   isPro: boolean;
   limit: number;
+  deviceScansUsed?: number;
+  deviceFreeScanLimit?: number;
+  blockedByDevice?: boolean;
 };
 
 const LOG = "[cardsnap]";
@@ -181,10 +186,14 @@ export function HomePageClient() {
   const checkoutInFlightRef = useRef(false);
   const resultRef = useRef<HTMLDivElement>(null);
   const lastResultTrackedRef = useRef<string | null>(null);
+  const mergedForUserRef = useRef<string | null>(null);
 
   // IDs for /api/usage and /api/scan. Never wait for auth init: anonymous ID must be ready
   // before getSession() finishes so the first free scan works with no login (limits are enforced on the server, not with a login wall).
   useLayoutEffect(() => {
+    const deviceId = getOrCreateDeviceId();
+    if (deviceId) persistDeviceId(deviceId);
+
     if (user?.id) {
       setUserId(user.id);
       return;
@@ -244,8 +253,11 @@ export function HomePageClient() {
 
       let res: Response;
       try {
+        const deviceId = getOrCreateDeviceId();
+        const usageQuery = new URLSearchParams({ userId: uid });
+        if (deviceId) usageQuery.set("deviceId", deviceId);
         res = await fetch(
-          `/api/usage?userId=${encodeURIComponent(uid)}`,
+          `/api/usage?${usageQuery.toString()}`,
           { cache: "no-store", headers, signal }
         );
       } catch (e) {
@@ -291,6 +303,28 @@ export function HomePageClient() {
     },
     [user?.id]
   );
+
+  // Signup/login must not reset free scan usage from the same browser profile.
+  useEffect(() => {
+    if (!user?.id || authLoading) return;
+    if (mergedForUserRef.current === user.id) return;
+    mergedForUserRef.current = user.id;
+
+    const anonId = getOrCreateAnonymousId();
+    if (!anonId || anonId === user.id) return;
+
+    let cancelled = false;
+    void (async () => {
+      const merged = await mergeAnonymousScansToAuthUser(user.id, anonId);
+      if (cancelled) return;
+      console.log(LOG, "merge-anonymous complete", { merged, authUserId: user.id });
+      await refreshUsage(user.id);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, authLoading, refreshUsage]);
 
   const runProductCheckout = useCallback(
     async (
@@ -501,7 +535,10 @@ export function HomePageClient() {
       // Fresh entitlement before gating; uses return value (React state is async).
       const preUsage = await refreshUsage(scanUserId);
       if (preUsage !== null) {
-        if (!preUsage.isPro && preUsage.count >= preUsage.limit) {
+        if (
+          !preUsage.isPro &&
+          (preUsage.count >= preUsage.limit || preUsage.blockedByDevice)
+        ) {
           console.log(LOG, "paywall: pre-scan (free limit)", {
             isPro: preUsage.isPro,
             used: preUsage.count,
@@ -552,6 +589,7 @@ export function HomePageClient() {
           cardName: payload.cardName,
           condition: payload.condition,
           userId: scanUserId,
+          deviceId: getOrCreateDeviceId(),
         }),
         signal: controller.signal,
       });
