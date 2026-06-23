@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase";
+import { logCheckoutFunnelEvent } from "@/lib/checkout-funnel-log";
 import {
   type ScanPackCredits,
   scanPackPriceIdFromEnv,
@@ -157,6 +158,12 @@ export async function POST(req: Request) {
     if (!session.url) {
       return NextResponse.json({ error: "no_session_url" }, { status: 500 });
     }
+    void logCheckoutFunnelEvent(supabase, "checkout_started", {
+      userId,
+      checkoutSessionId: session.id,
+      source: "create-checkout",
+      payload: { kind: "pack", packCredits: packCredits },
+    });
     return NextResponse.json({ url: session.url });
   }
 
@@ -183,5 +190,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "no_session_url" }, { status: 500 });
   }
 
+  void logCheckoutFunnelEvent(supabase, "checkout_started", {
+    userId,
+    checkoutSessionId: session.id,
+    source: "create-checkout",
+    payload: { kind: "subscription", plan: subPlan },
+  });
   return NextResponse.json({ url: session.url });
 }

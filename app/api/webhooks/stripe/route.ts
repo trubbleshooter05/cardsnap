@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase";
 import { fulfillCheckoutSession } from "@/lib/stripe-fulfillment";
+import { logCheckoutFunnelEvent } from "@/lib/checkout-funnel-log";
 
 export const dynamic = "force-dynamic";
 
@@ -33,11 +34,27 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const result = await fulfillCheckoutSession(supabase, session);
-        console.log("[stripe webhook] checkout.session.completed", {
-          sessionId: session.id,
-          result,
-        });
+        try {
+          const result = await fulfillCheckoutSession(supabase, session);
+          const event =
+            result.status === "fulfilled" || result.status === "already_fulfilled"
+              ? "fulfill_success"
+              : "fulfill_skipped";
+          void logCheckoutFunnelEvent(supabase, event, {
+            userId: session.metadata?.userId ?? session.client_reference_id,
+            checkoutSessionId: session.id,
+            source: "webhook",
+            payload: { result: result.status, reason: "reason" in result ? result.reason : null },
+          });
+        } catch (e) {
+          void logCheckoutFunnelEvent(supabase, "fulfill_failed", {
+            userId: session.metadata?.userId ?? session.client_reference_id,
+            checkoutSessionId: session.id,
+            source: "webhook",
+            payload: { error: e instanceof Error ? e.message : "unknown" },
+          });
+          throw e;
+        }
         break;
       }
       case "customer.subscription.deleted":

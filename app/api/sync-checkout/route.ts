@@ -3,6 +3,7 @@ import { z } from "zod";
 import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase";
 import { fulfillCheckoutSession } from "@/lib/stripe-fulfillment";
+import { logCheckoutFunnelEvent } from "@/lib/checkout-funnel-log";
 
 export const dynamic = "force-dynamic";
 
@@ -65,9 +66,27 @@ export async function POST(req: Request) {
 
   try {
     const result = await fulfillCheckoutSession(supabase, session);
+    const event =
+      result.status === "fulfilled"
+        ? "fulfill_success"
+        : result.status === "already_fulfilled"
+          ? "fulfill_success"
+          : "fulfill_skipped";
+    void logCheckoutFunnelEvent(supabase, event, {
+      userId: user.id,
+      checkoutSessionId: session.id,
+      source: "sync-checkout",
+      payload: { result: result.status, reason: "reason" in result ? result.reason : null },
+    });
     return NextResponse.json({ synced: true, ...result });
   } catch (e) {
     console.error("sync-checkout fulfill failed", e);
+    void logCheckoutFunnelEvent(supabase, "fulfill_failed", {
+      userId: user.id,
+      checkoutSessionId: session.id,
+      source: "sync-checkout",
+      payload: { error: e instanceof Error ? e.message : "unknown" },
+    });
     return NextResponse.json({ error: "fulfill_failed" }, { status: 500 });
   }
 }
