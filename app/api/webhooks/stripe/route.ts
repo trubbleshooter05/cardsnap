@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase";
 import { fulfillCheckoutSession } from "@/lib/stripe-fulfillment";
 import { logCheckoutFunnelEvent } from "@/lib/checkout-funnel-log";
+import { reconcileProForStripeCustomer } from "@/lib/stripe-pro-reconcile";
 
 export const dynamic = "force-dynamic";
 
@@ -60,22 +61,19 @@ export async function POST(req: Request) {
       case "customer.subscription.deleted":
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
-        let userId = sub.metadata?.userId as string | undefined;
-        if (!userId && typeof sub.customer === "string") {
-          const { data: linkRow } = await supabase
-            .from("users")
-            .select("id")
-            .eq("stripe_customer_id", sub.customer)
-            .maybeSingle();
-          userId = linkRow?.id;
+        const customerId =
+          typeof sub.customer === "string"
+            ? sub.customer
+            : sub.customer?.id ?? null;
+        if (customerId) {
+          await reconcileProForStripeCustomer(stripe, supabase, customerId);
         }
-        if (!userId) break;
-        const active =
-          sub.status === "active" || sub.status === "trialing";
-        await supabase
-          .from("users")
-          .update({ is_pro: active })
-          .eq("id", userId);
+        const userId = sub.metadata?.userId as string | undefined;
+        if (userId) {
+          const active =
+            sub.status === "active" || sub.status === "trialing";
+          await supabase.from("users").update({ is_pro: active }).eq("id", userId);
+        }
         break;
       }
       default:

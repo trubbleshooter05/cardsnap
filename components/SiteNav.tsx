@@ -6,6 +6,7 @@ import { useAuth } from "@/components/useAuth";
 import { AuthModal } from "@/components/AuthModal";
 import { useEffect, useRef, useState } from "react";
 import { notifyAuthModalDismissed, OPEN_AUTH_EVENT } from "@/lib/auth-events";
+import { resetGuestSession } from "@/lib/reset-guest-session";
 
 const GUIDE_LINKS: { href: string; label: string }[] = [
   { href: "/guides", label: "All grading guides" },
@@ -120,6 +121,15 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
 
           {/* Right side: trailing badge + hamburger (mobile) */}
           <div className="flex items-center gap-2">
+            {!user && (
+              <button
+                type="button"
+                onClick={() => setAuthModalOpen(true)}
+                className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-400 hover:bg-zinc-800 lg:hidden"
+              >
+                Sign in
+              </button>
+            )}
             {trailing}
 
             {/* Hamburger — only on mobile */}
@@ -166,6 +176,15 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
                 onClick={() => { close(); setAuthModalOpen(true); }}
               >
                 Sign in
+              </button>
+            )}
+            {!user && (
+              <button
+                type="button"
+                className={`${linkCls} w-full text-left text-zinc-400`}
+                onClick={() => { close(); resetGuestSession(); }}
+              >
+                Reset free scans (fix stuck Pro)
               </button>
             )}
 

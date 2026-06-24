@@ -208,6 +208,10 @@ export function HomePageClient() {
   }, [userId]);
 
   useEffect(() => {
+    if (!user?.id) setIsPro(false);
+  }, [user?.id]);
+
+  useEffect(() => {
     if (!loading) {
       setProgressIndex(0);
       return;
@@ -279,6 +283,7 @@ export function HomePageClient() {
       let isPro = data.isPro;
       const recent = lastProFromScanRef.current;
       if (
+        user?.id &&
         recent &&
         recent.pro === true &&
         isPro === false &&
@@ -293,7 +298,7 @@ export function HomePageClient() {
 
       setUsageCount(data.count);
       setFreeLimit(data.limit);
-      setIsPro(isPro);
+      setIsPro(Boolean(user?.id && isPro));
       console.log(LOG, "subscription/pro resolved (usage API)", {
         isPro,
         count: data.count,
@@ -646,7 +651,7 @@ export function HomePageClient() {
         );
       }
 
-      lastProFromScanRef.current = { pro: data.isPro, t: Date.now() };
+      lastProFromScanRef.current = { pro: Boolean(user?.id && data.isPro), t: Date.now() };
       console.log(LOG, "scan: setResult(data) — calling", { scanId: data?.scanId });
       setResult(data);
       console.log(LOG, "scan: setResult dispatched");
@@ -654,7 +659,7 @@ export function HomePageClient() {
       const lim = data.freeScanLimit ?? FREE_SCAN_LIMIT;
       setUsageCount(used);
       setFreeLimit(lim);
-      setIsPro(data.isPro);
+      setIsPro(Boolean(user?.id && data.isPro));
       persistAnonymousId(scanUserId);
 
       // Any successful persisted scan (200 + scanId) must dismiss the paywall. Do not gate this on
@@ -758,6 +763,8 @@ export function HomePageClient() {
   };
 
   const scansLeft = Math.max(0, freeLimit - usageCount);
+  /** Pro UI only when signed in — never show Pro from stale anonymous browser ids. */
+  const showProUi = Boolean(user?.id && isPro);
   const scanDisabled = loading || checkoutSyncing;
   const progressMessage = ANALYSIS_PROGRESS_MESSAGES[progressIndex];
 
@@ -779,12 +786,12 @@ export function HomePageClient() {
           userId ? (
             <span
               className={`text-xs font-medium px-2.5 py-1 rounded-full border shrink-0 ${
-                isPro
+                showProUi
                   ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
                   : "border-zinc-700 bg-zinc-900 text-zinc-400"
               }`}
             >
-              {isPro ? "⚡ Pro" : `${scansLeft} scans left`}
+              {showProUi ? "⚡ Pro" : `${scansLeft} scans left`}
             </span>
           ) : null
         }
@@ -903,7 +910,7 @@ export function HomePageClient() {
                 onSubmit={handleSubmit}
               />
 
-              {userId && !isPro && (
+              {userId && !showProUi && (
                 <div className="mt-4 flex items-center justify-between border-t border-zinc-800 pt-4">
                   <div className="flex gap-1">
                     {Array.from({ length: freeLimit }).map((_, i) => (
@@ -921,7 +928,7 @@ export function HomePageClient() {
                   </span>
                 </div>
               )}
-              {isPro && (
+              {showProUi && (
                 <div className="mt-4 border-t border-zinc-800 pt-3 text-center text-xs text-amber-400 font-medium">
                   ⚡ Pro — unlimited analyses
                 </div>
