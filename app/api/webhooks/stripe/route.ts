@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase";
 import { fulfillCheckoutSession } from "@/lib/stripe-fulfillment";
 import { logCheckoutFunnelEvent } from "@/lib/checkout-funnel-log";
 import { reconcileProForStripeCustomer } from "@/lib/stripe-pro-reconcile";
+import { handleChargeRefunded } from "@/lib/stripe-revoke";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,21 @@ export async function POST(req: Request) {
         }
         break;
       }
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        try {
+          const result = await handleChargeRefunded(stripe, supabase, charge);
+          void logCheckoutFunnelEvent(supabase, "refund_revoked", {
+            userId: typeof charge.customer === "string" ? charge.customer : charge.customer?.id,
+            source: "webhook",
+            payload: result,
+          });
+        } catch (e) {
+          console.error("charge.refunded handler failed", e);
+          throw e;
+        }
+        break;
+      }
       case "customer.subscription.deleted":
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
@@ -68,12 +84,7 @@ export async function POST(req: Request) {
         if (customerId) {
           await reconcileProForStripeCustomer(stripe, supabase, customerId);
         }
-        const userId = sub.metadata?.userId as string | undefined;
-        if (userId) {
-          const active =
-            sub.status === "active" || sub.status === "trialing";
-          await supabase.from("users").update({ is_pro: active }).eq("id", userId);
-        }
+
         break;
       }
       default:

@@ -8,3 +8,7 @@ create table if not exists public.stripe_checkout_fulfillments (
 );
 create index if not exists stripe_checkout_fulfillments_user_id_idx
   on public.stripe_checkout_fulfillments (user_id);
+
+-- Track refund revocations (run once if table already exists).
+alter table public.stripe_checkout_fulfillments
+  add column if not exists revoked_at timestamptz;

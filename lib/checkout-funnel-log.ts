@@ -4,7 +4,8 @@ export type CheckoutFunnelEvent =
   | "checkout_started"
   | "fulfill_success"
   | "fulfill_failed"
-  | "fulfill_skipped";
+  | "fulfill_skipped"
+  | "refund_revoked";
 
 type LogPayload = Record<string, string | number | boolean | null | undefined>;
 
