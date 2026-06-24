@@ -22,11 +22,12 @@ export function EmailCapture({
   const [email, setEmail] = useState("");
   const [picks, setPicks] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [successCopy, setSuccessCopy] = useState(successMessage);
 
   if (status === "done") {
     return (
       <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-4 py-3 text-center text-sm text-emerald-400">
-        ✓ {successMessage}
+        ✓ {successCopy}
       </div>
     );
   }
@@ -42,6 +43,17 @@ export function EmailCapture({
         body: JSON.stringify({ email, picks, scanId, source }),
       });
       if (res.ok) {
+        const body = (await res.json()) as {
+          emailSent?: boolean;
+          leadSaved?: boolean;
+        };
+        if (body.emailSent) {
+          setSuccessCopy("Sent! Check your inbox for your full grading analysis.");
+        } else if (body.leadSaved) {
+          setSuccessCopy("Saved! You're on the list — email delivery is being set up.");
+        } else {
+          setSuccessCopy("Saved!");
+        }
         setStatus("done");
       } else {
         setStatus("error");
