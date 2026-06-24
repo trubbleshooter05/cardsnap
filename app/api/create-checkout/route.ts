@@ -5,6 +5,7 @@ import { createServerSupabase } from "@/lib/supabase";
 import { logCheckoutFunnelEvent } from "@/lib/checkout-funnel-log";
 import {
   type ScanPackCredits,
+  SCAN_PACK_UNIT_AMOUNT_CENTS,
   scanPackPriceIdFromEnv,
 } from "@/lib/stripe-scan-packs";
 import {
@@ -134,6 +135,21 @@ export async function POST(req: Request) {
       packCredits as ScanPackCredits,
       process.env
     )!;
+    const expectedCents =
+      SCAN_PACK_UNIT_AMOUNT_CENTS[packCredits as ScanPackCredits];
+    const stripePrice = await stripe.prices.retrieve(packPriceId);
+    if (stripePrice.unit_amount !== expectedCents) {
+      console.error("scan pack price mismatch", {
+        packCredits,
+        packPriceId,
+        expectedCents,
+        actualCents: stripePrice.unit_amount,
+      });
+      return NextResponse.json(
+        { error: "stripe_pack_price_mismatch" },
+        { status: 500 }
+      );
+    }
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer: customerId,

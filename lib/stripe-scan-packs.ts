@@ -3,6 +3,13 @@
 export const SCAN_PACK_CREDITS = [10, 50, 200] as const;
 export type ScanPackCredits = (typeof SCAN_PACK_CREDITS)[number];
 
+/** Display + Stripe unit_amount (cents) — must match UI and env price IDs. */
+export const SCAN_PACK_UNIT_AMOUNT_CENTS: Record<ScanPackCredits, number> = {
+  10: 999,
+  50: 2900,
+  200: 7900,
+};
+
 export function packPriceIdEnvKey(credits: ScanPackCredits): string {
   switch (credits) {
     case 10:
