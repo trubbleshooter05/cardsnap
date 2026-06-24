@@ -9,7 +9,7 @@ import { mergeScanResults } from "@/lib/merge-scan";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
-import { isScanBlocked, scanBlockedReason } from "@/lib/scan-enforcement";
+import { isScanBlocked, scanBlockedReason, shouldConsumePrepaidCredit } from "@/lib/scan-enforcement";
 import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
 import type {
@@ -246,6 +246,21 @@ export async function POST(req: NextRequest) {
       },
       { status: 500 }
     );
+  }
+
+  if (
+    !isPro &&
+    prepaidCredits > 0 &&
+    shouldConsumePrepaidCredit(userScansUsed, deviceScansUsed)
+  ) {
+    const nextCredits = Math.max(0, prepaidCredits - 1);
+    const { error: creditErr } = await supabase
+      .from("users")
+      .update({ scan_credits: nextCredits })
+      .eq("id", userId);
+    if (creditErr) {
+      console.error("[scan] prepaid credit decrement failed", creditErr);
+    }
   }
 
   if (cookieMismatch) {

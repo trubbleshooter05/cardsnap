@@ -18,6 +18,8 @@ type Usage = {
   count: number;
   isPro: boolean;
   limit: number;
+  prepaidCredits?: number;
+  scansRemaining?: number | null;
 };
 
 export function AccountPageClient() {
@@ -76,6 +78,7 @@ export function AccountPageClient() {
     void refresh(userId).finally(() => setLoading(false));
   }, [userId, refresh]);
 
+
   const handleSync = async () => {
     if (!userId || !user?.id) return;
     setSyncing(true);
@@ -89,10 +92,24 @@ export function AccountPageClient() {
         return;
       }
 
-      const res = await fetch("/api/sync-subscription", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const params = new URLSearchParams(window.location.search);
+      const checkoutSessionId = params.get("checkout_session_id");
+      let res: Response;
+      if (checkoutSessionId) {
+        res = await fetch("/api/sync-checkout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ checkoutSessionId }),
+        });
+      } else {
+        res = await fetch("/api/sync-subscription", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({})) as { error?: string };
@@ -113,6 +130,21 @@ export function AccountPageClient() {
       setSyncing(false);
     }
   };
+
+  useEffect(() => {
+    if (!user?.id || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (
+      params.get("checkout_session_id") ||
+      params.get("upgraded") === "1" ||
+      params.get("pack_purchase") === "1"
+    ) {
+      void handleSync().finally(() => {
+        window.history.replaceState({}, "", "/account");
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const handlePortal = async () => {
     setPortalLoading(true);
@@ -169,7 +201,7 @@ export function AccountPageClient() {
 
   const scansLeft =
     usage && !usage.isPro
-      ? Math.max(0, usage.limit - usage.count)
+      ? (usage.scansRemaining ?? Math.max(0, usage.limit - usage.count))
       : null;
 
   return (
@@ -220,6 +252,11 @@ export function AccountPageClient() {
                 <dd className="text-right text-zinc-200">
                   {usage.isPro ? (
                     <span className="text-amber-400 font-medium">Unlimited</span>
+                  ) : usage.prepaidCredits && usage.prepaidCredits > 0 ? (
+                    <>
+                      <span className="text-amber-300 font-medium">{usage.prepaidCredits} prepaid</span>
+                      {scansLeft != null ? <> · {scansLeft} scans left</> : null}
+                    </>
                   ) : (
                     <>
                       {scansLeft} free left ({usage.count} of {usage.limit} used)

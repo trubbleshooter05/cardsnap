@@ -7,44 +7,47 @@ export type ScanEntitlement = {
   deviceScansUsed: number;
 };
 
-export type ScanEntitlementLimits = {
-  userLimit: number;
-  deviceFreeLimit: number;
-};
-
-export function scanEntitlementLimits(
-  isPro: boolean,
-  prepaidCredits: number
-): ScanEntitlementLimits {
-  return {
-    userLimit: isPro ? Number.MAX_SAFE_INTEGER : FREE_SCAN_LIMIT + prepaidCredits,
-    deviceFreeLimit: FREE_SCAN_LIMIT,
-  };
+export function freeScansRemaining(userScansUsed: number): number {
+  return Math.max(0, FREE_SCAN_LIMIT - userScansUsed);
 }
 
-/** True when a non-Pro scan must be rejected (402). Paid credits bypass device cap. */
+export function hasFreeScanAvailable(
+  userScansUsed: number,
+  deviceScansUsed: number
+): boolean {
+  return (
+    userScansUsed < FREE_SCAN_LIMIT && deviceScansUsed < FREE_SCAN_LIMIT
+  );
+}
+
+export function scansRemainingNonPro(
+  userScansUsed: number,
+  prepaidCredits: number
+): number {
+  return freeScansRemaining(userScansUsed) + Math.max(0, prepaidCredits);
+}
+
+export function shouldConsumePrepaidCredit(
+  userScansUsed: number,
+  deviceScansUsed: number
+): boolean {
+  return !hasFreeScanAvailable(userScansUsed, deviceScansUsed);
+}
+
 export function isScanBlocked(entitlement: ScanEntitlement): boolean {
   const { isPro, prepaidCredits, userScansUsed, deviceScansUsed } = entitlement;
   if (isPro) return false;
-
-  const { userLimit, deviceFreeLimit } = scanEntitlementLimits(isPro, prepaidCredits);
-
-  if (userScansUsed >= userLimit) return true;
-  if (prepaidCredits === 0 && deviceScansUsed >= deviceFreeLimit) return true;
-
-  return false;
+  if (hasFreeScanAvailable(userScansUsed, deviceScansUsed)) return false;
+  if (prepaidCredits > 0) return false;
+  return true;
 }
 
 export function scanBlockedReason(
   entitlement: ScanEntitlement
 ): "user_limit" | "device_limit" | null {
   if (!isScanBlocked(entitlement)) return null;
-
-  const { isPro, prepaidCredits, userScansUsed, deviceScansUsed } = entitlement;
-  const { userLimit, deviceFreeLimit } = scanEntitlementLimits(isPro, prepaidCredits);
-
-  if (userScansUsed >= userLimit) return "user_limit";
-  if (prepaidCredits === 0 && deviceScansUsed >= deviceFreeLimit) return "device_limit";
-
+  const { userScansUsed, deviceScansUsed } = entitlement;
+  if (userScansUsed >= FREE_SCAN_LIMIT) return "user_limit";
+  if (deviceScansUsed >= FREE_SCAN_LIMIT) return "device_limit";
   return "user_limit";
 }

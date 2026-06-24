@@ -67,6 +67,8 @@ type UsagePayload = {
   count: number;
   isPro: boolean;
   limit: number;
+  prepaidCredits?: number;
+  scansRemaining?: number | null;
   deviceScansUsed?: number;
   deviceFreeScanLimit?: number;
   blockedByDevice?: boolean;
@@ -166,6 +168,9 @@ export function HomePageClient() {
   const [userId, setUserId] = useState<string | null>(null);
   const [usageCount, setUsageCount] = useState(0);
   const [freeLimit, setFreeLimit] = useState(FREE_SCAN_LIMIT);
+  const [prepaidCredits, setPrepaidCredits] = useState(0);
+  const [scansRemaining, setScansRemaining] = useState<number | null>(null);
+  const [packPurchaseBanner, setPackPurchaseBanner] = useState<string | null>(null);
   const [isPro, setIsPro] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResponse | null>(null);
@@ -298,6 +303,10 @@ export function HomePageClient() {
 
       setUsageCount(data.count);
       setFreeLimit(data.limit);
+      setPrepaidCredits(data.prepaidCredits ?? 0);
+      setScansRemaining(
+        typeof data.scansRemaining === "number" ? data.scansRemaining : null
+      );
       setIsPro(Boolean(user?.id && isPro));
       console.log(LOG, "subscription/pro resolved (usage API)", {
         isPro,
@@ -388,7 +397,7 @@ export function HomePageClient() {
 
   // On checkout return: fulfill via Stripe session (webhook fallback) then refresh usage.
   useEffect(() => {
-    if (typeof window === "undefined" || !userId || !user?.id) return;
+    if (typeof window === "undefined" || !userId) return;
     const params = new URLSearchParams(window.location.search);
     const upgraded = params.get("upgraded") === "1";
     const packPurchase = params.get("pack_purchase") === "1";
@@ -403,7 +412,10 @@ export function HomePageClient() {
 
       try {
         const supabase = createSupabaseBrowserClient();
-        const token = await getAccessTokenRaced(supabase);
+        const token = await waitForAccessToken(supabase, {
+          context: "checkout-return",
+          maxMs: 15000,
+        });
         if (!token) return;
 
         if (checkoutSessionId) {
@@ -425,7 +437,14 @@ export function HomePageClient() {
         console.error("sync error", err);
       } finally {
         if (!cancelled) {
-          await refreshUsage(userId);
+          const usage = await refreshUsage(userId);
+          if (packPurchase && usage?.prepaidCredits) {
+            setPackPurchaseBanner(
+              `${usage.prepaidCredits} prepaid scan${usage.prepaidCredits === 1 ? "" : "s"} ready`
+            );
+          } else if (upgraded && usage?.isPro) {
+            setPackPurchaseBanner("Pro activated — unlimited scans");
+          }
           window.history.replaceState({}, "", "/");
           setCheckoutSyncing(false);
         }
@@ -762,7 +781,8 @@ export function HomePageClient() {
     }
   };
 
-  const scansLeft = Math.max(0, freeLimit - usageCount);
+  const scansLeft =
+    scansRemaining ?? Math.max(0, freeLimit - usageCount);
   /** Pro UI only when signed in — never show Pro from stale anonymous browser ids. */
   const showProUi = Boolean(user?.id && isPro);
   const scanDisabled = loading || checkoutSyncing;
@@ -791,13 +811,23 @@ export function HomePageClient() {
                   : "border-zinc-700 bg-zinc-900 text-zinc-400"
               }`}
             >
-              {showProUi ? "⚡ Pro" : `${scansLeft} scans left`}
+              {showProUi ? "⚡ Pro" : prepaidCredits > 0 && scansLeft > 0 ? `${scansLeft} scans` : `${scansLeft} scans left`}
             </span>
           ) : null
         }
       />
 
       <main className="relative z-10 mx-auto flex max-w-6xl flex-col items-center px-4 pb-20 pt-8 sm:px-6 sm:pt-12">
+        {packPurchaseBanner && !checkoutSyncing && (
+          <div
+            className="mb-6 w-full max-w-md rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-100"
+            role="status"
+          >
+            <p className="font-semibold">Purchase confirmed</p>
+            <p className="mt-1 text-xs text-emerald-200/90">{packPurchaseBanner}</p>
+          </div>
+        )}
+
         {checkoutSyncing && (
           <div
             className="mb-6 w-full max-w-md rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-100"
@@ -899,7 +929,17 @@ export function HomePageClient() {
 
           <div className="order-1 flex w-full flex-col gap-5 lg:order-2">
             <div className="order-1 w-full rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6 lg:order-2">
-              {checkoutSyncing && (
+              {packPurchaseBanner && !checkoutSyncing && (
+          <div
+            className="mb-6 w-full max-w-md rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-100"
+            role="status"
+          >
+            <p className="font-semibold">Purchase confirmed</p>
+            <p className="mt-1 text-xs text-emerald-200/90">{packPurchaseBanner}</p>
+          </div>
+        )}
+
+        {checkoutSyncing && (
                 <p className="mb-3 text-center text-xs text-amber-200/90">
                   Syncing your Pro status…
                 </p>

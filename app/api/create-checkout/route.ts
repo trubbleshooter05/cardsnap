@@ -8,6 +8,7 @@ import {
   SCAN_PACK_UNIT_AMOUNT_CENTS,
   scanPackPriceIdFromEnv,
 } from "@/lib/stripe-scan-packs";
+import { STRIPE_CHECKOUT_BRANDING } from "@/lib/stripe-checkout-branding";
 import {
   attributionToStripeMetadata,
   sanitizeAttribution,
@@ -151,6 +152,7 @@ export async function POST(req: Request) {
       );
     }
     const session = await stripe.checkout.sessions.create({
+      branding_settings: STRIPE_CHECKOUT_BRANDING,
       mode: "payment",
       customer: customerId,
       line_items: [{ price: packPriceId, quantity: 1 }],
@@ -190,6 +192,7 @@ export async function POST(req: Request) {
       : (monthlyPriceId as string);
 
   const session = await stripe.checkout.sessions.create({
+    branding_settings: STRIPE_CHECKOUT_BRANDING,
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: subPriceId, quantity: 1 }],

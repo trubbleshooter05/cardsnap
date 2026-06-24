@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
-import { isScanBlocked } from "@/lib/scan-enforcement";
+import { isScanBlocked, scansRemainingNonPro } from "@/lib/scan-enforcement";
 
 export const dynamic = "force-dynamic";
 
@@ -50,12 +50,12 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   const isPro = Boolean(userRow?.is_pro);
-  const prepaid =
+  const prepaidCredits =
     typeof userRow?.scan_credits === "number" &&
     Number.isFinite(userRow.scan_credits)
       ? Math.max(0, userRow.scan_credits)
       : 0;
-  const limit = isPro ? FREE_SCAN_LIMIT : FREE_SCAN_LIMIT + prepaid;
+  const limit = isPro ? FREE_SCAN_LIMIT : FREE_SCAN_LIMIT + prepaidCredits;
 
   const { count, error } = await supabase
     .from("scans")
@@ -89,16 +89,22 @@ export async function GET(req: NextRequest) {
   const userScansUsed = count ?? 0;
   const blockedByDevice = isScanBlocked({
     isPro,
-    prepaidCredits: prepaid,
+    prepaidCredits,
     userScansUsed,
     deviceScansUsed,
-  }) && !isPro && userScansUsed < limit;
+  }) && !isPro && prepaidCredits === 0 && userScansUsed < limit;
+
+  const scansRemaining = isPro
+    ? null
+    : scansRemainingNonPro(userScansUsed, prepaidCredits);
 
   return NextResponse.json(
     {
       count: userScansUsed,
       isPro,
       limit,
+      prepaidCredits,
+      scansRemaining,
       deviceScansUsed,
       deviceFreeScanLimit: FREE_SCAN_LIMIT,
       blockedByDevice,
