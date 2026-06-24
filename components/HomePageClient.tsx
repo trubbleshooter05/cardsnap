@@ -60,6 +60,8 @@ type ScanResponse = ScanResultPayload & {
   scansUsedThisMonth: number;
   freeScansUsed?: number;
   freeScanLimit: number;
+  prepaidCredits?: number;
+  scansRemaining?: number;
   isPro: boolean;
 };
 
@@ -570,14 +572,20 @@ export function HomePageClient() {
       // Fresh entitlement before gating; uses return value (React state is async).
       const preUsage = await refreshUsage(scanUserId);
       if (preUsage !== null) {
+        const scansLeftBeforeScan =
+          typeof preUsage.scansRemaining === "number"
+            ? preUsage.scansRemaining
+            : Math.max(0, preUsage.limit - preUsage.count);
         if (
           !preUsage.isPro &&
-          (preUsage.count >= preUsage.limit || preUsage.blockedByDevice)
+          (scansLeftBeforeScan <= 0 || preUsage.blockedByDevice)
         ) {
-          console.log(LOG, "paywall: pre-scan (free limit)", {
+          console.log(LOG, "paywall: pre-scan (no scans remaining)", {
             isPro: preUsage.isPro,
             used: preUsage.count,
             limit: preUsage.limit,
+            scansRemaining: preUsage.scansRemaining,
+            prepaidCredits: preUsage.prepaidCredits,
           });
           setGateOpen(true);
           return;
@@ -678,6 +686,12 @@ export function HomePageClient() {
       const lim = data.freeScanLimit ?? FREE_SCAN_LIMIT;
       setUsageCount(used);
       setFreeLimit(lim);
+      if (typeof data.prepaidCredits === "number") {
+        setPrepaidCredits(data.prepaidCredits);
+      }
+      if (typeof data.scansRemaining === "number") {
+        setScansRemaining(data.scansRemaining);
+      }
       setIsPro(Boolean(user?.id && data.isPro));
       persistAnonymousId(scanUserId);
 

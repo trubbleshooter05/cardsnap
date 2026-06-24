@@ -9,7 +9,7 @@ import { mergeScanResults } from "@/lib/merge-scan";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
-import { isScanBlocked, scanBlockedReason, shouldConsumePrepaidCredit } from "@/lib/scan-enforcement";
+import { isScanBlocked, scanBlockedReason, scansRemainingNonPro, shouldConsumePrepaidCredit } from "@/lib/scan-enforcement";
 import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
 import type {
@@ -307,6 +307,10 @@ export async function POST(req: NextRequest) {
     scansUsedThisMonth: freeScansUsed,
     freeScansUsed,
     freeScanLimit: tierScanLimit,
+    prepaidCredits: isProResponse ? 0 : prepaidForLimit,
+    scansRemaining: isProResponse
+      ? null
+      : scansRemainingNonPro(freeScansUsed, prepaidForLimit),
     deviceScansUsed: deviceId ? deviceScansUsed + 1 : deviceScansUsed,
     deviceFreeScanLimit: FREE_SCAN_LIMIT,
     isPro: isProResponse,
