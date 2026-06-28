@@ -4,6 +4,8 @@ import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
 import { hashClientIp } from "@/lib/ip-hash";
 import { getIpFreeScansUsed } from "@/lib/ip-scan-usage";
+import { deriveDeviceFingerprint } from "@/lib/device-fingerprint";
+import { getFingerprintScopedScanCount, syncFingerprintLinks } from "@/lib/fingerprint-usage";
 import { isScanBlocked, scansRemainingNonPro } from "@/lib/scan-enforcement";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +15,7 @@ export async function GET(req: NextRequest) {
   const deviceId = resolveOrMintDeviceId(req);
   const ipHash = hashClientIp(req);
   const privateSession = req.nextUrl.searchParams.get("privateSession") === "1";
+  const deviceFingerprint = deriveDeviceFingerprint(req);
 
   // Support both authenticated requests and legacy anonymous requests
   const authHeader = req.headers.get("authorization");
@@ -103,7 +106,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const userScansUsed = count ?? 0;
+  let userScansUsed = count ?? 0;
+  if (!isAuthenticated) {
+    await syncFingerprintLinks(supabase, deviceFingerprint, userId, deviceId, ipHash);
+    const fpScoped = await getFingerprintScopedScanCount(supabase, deviceFingerprint);
+    if (fpScoped == null) {
+      console.error("usage fingerprint count unavailable");
+    } else {
+      userScansUsed = Math.max(userScansUsed, fpScoped);
+      deviceScansUsed = Math.max(deviceScansUsed, fpScoped);
+    }
+  }
+
   const blockedByDevice = isScanBlocked({
     isPro,
     prepaidCredits,

@@ -1,13 +1,12 @@
-/** Best-effort private/incognito detection (Safari Private Relay, Chrome, Firefox). */
+/** Best-effort private/incognito detection. Server-side fingerprint is the primary guard. */
 export async function detectPrivateSession(): Promise<boolean> {
   if (typeof window === "undefined") return false;
 
   try {
-    if (navigator.storage?.estimate) {
-      const { quota } = await navigator.storage.estimate();
-      if (typeof quota === "number" && quota > 0 && quota < 120_000_000) {
-        return true;
-      }
+    const estimate = await navigator.storage?.estimate?.();
+    const quota = estimate?.quota;
+    if (typeof quota === "number" && quota > 0 && quota < 120_000_000) {
+      return true;
     }
   } catch {
     /* ignore */
@@ -23,12 +22,29 @@ export async function detectPrivateSession(): Promise<boolean> {
       ) => void;
     };
     if (w.webkitRequestFileSystem) {
-      return await new Promise<boolean>((resolve) => {
+      const webkitPrivate = await new Promise<boolean>((resolve) => {
         w.webkitRequestFileSystem!(0, 1, () => resolve(false), () => resolve(true));
       });
+      if (webkitPrivate) return true;
     }
   } catch {
     /* ignore */
+  }
+
+  try {
+    const dbName = `__cs_priv_${Date.now()}__`;
+    const blocked = await new Promise<boolean>((resolve) => {
+      const req = indexedDB.open(dbName, 1);
+      req.onerror = () => resolve(true);
+      req.onsuccess = () => {
+        req.result.close();
+        indexedDB.deleteDatabase(dbName);
+        resolve(false);
+      };
+    });
+    if (blocked) return true;
+  } catch {
+    return true;
   }
 
   try {

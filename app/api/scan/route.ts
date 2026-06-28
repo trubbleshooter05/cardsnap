@@ -11,6 +11,8 @@ import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
 import { hashClientIp } from "@/lib/ip-hash";
 import { getIpFreeScansUsed, recordIpFreeScanUsage } from "@/lib/ip-scan-usage";
+import { deriveDeviceFingerprint } from "@/lib/device-fingerprint";
+import { getFingerprintScopedScanCount, syncFingerprintLinks } from "@/lib/fingerprint-usage";
 import { isScanBlocked, scanBlockedReason, scansRemainingNonPro, shouldConsumePrepaidCredit } from "@/lib/scan-enforcement";
 import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
@@ -70,6 +72,7 @@ export async function POST(req: NextRequest) {
   const bodyUserId = parsed.data.userId;
   const deviceId = resolveOrMintDeviceId(req, parsed.data.deviceId);
   const ipHash = hashClientIp(req);
+  const deviceFingerprint = deriveDeviceFingerprint(req);
   const privateSession = parsed.data.privateSession === true;
 
   // First try to get user from auth token
@@ -131,7 +134,7 @@ export async function POST(req: NextRequest) {
     EMPTY_HEAD_COUNT,
     "scan.db.usedcount"
   );
-  const userScansUsed = usedResult.count;
+  let userScansUsed = usedResult.count;
   if (userScansUsed == null) {
     console.error("[scan] user scan count unavailable — blocking (fail closed)");
     return NextResponse.json({ error: "usage_check_failed" }, { status: 503 });
@@ -154,6 +157,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "usage_check_failed" }, { status: 503 });
     }
     deviceScansUsed = rawDeviceCount;
+  }
+
+  if (!isAuthenticated) {
+    await syncFingerprintLinks(supabase, deviceFingerprint, userId, deviceId, ipHash);
+    const fpScoped = await withTimeout(
+      getFingerprintScopedScanCount(supabase, deviceFingerprint),
+      3000,
+      null,
+      "scan.db.fingerprintcount"
+    );
+    if (fpScoped == null) {
+      console.error("[scan] fingerprint scan count unavailable — blocking (fail closed)");
+      return NextResponse.json({ error: "usage_check_failed" }, { status: 503 });
+    }
+    userScansUsed = Math.max(userScansUsed, fpScoped);
+    deviceScansUsed = Math.max(deviceScansUsed, fpScoped);
   }
 
   let ipScansUsed = 0;
@@ -231,6 +250,7 @@ export async function POST(req: NextRequest) {
     result: typeof merged;
     device_id?: string;
     ip_hash?: string;
+    device_fingerprint?: string;
   } = {
     user_id: userId,
     card_name: cardName,
@@ -241,6 +261,9 @@ export async function POST(req: NextRequest) {
   }
   if (ipHash) {
     insertPayload.ip_hash = ipHash;
+  }
+  if (deviceFingerprint) {
+    insertPayload.device_fingerprint = deviceFingerprint;
   }
 
   const insertResult = await withTimeout(

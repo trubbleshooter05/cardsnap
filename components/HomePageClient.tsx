@@ -190,7 +190,8 @@ export function HomePageClient() {
   const usageAbortRef = useRef<AbortController | null>(null);
   /** If a recent successful scan said `isPro: true`, do not let a stale /api/usage response clear Pro. */
   const lastProFromScanRef = useRef<{ pro: boolean; t: number } | null>(null);
-  const privateSessionRef = useRef(false);
+  const privateSessionRef = useRef(true);
+  const [privateSessionReady, setPrivateSessionReady] = useState(false);
   const scanInFlightRef = useRef(false);
   const pendingPaywallCheckoutRef = useRef<ProductCheckoutPayload | null>(null);
   const checkoutInFlightRef = useRef(false);
@@ -325,14 +326,18 @@ export function HomePageClient() {
   );
 
   useEffect(() => {
+    let cancelled = false;
     void detectPrivateSession().then((isPrivate) => {
+      if (cancelled) return;
       privateSessionRef.current = isPrivate;
-      if (isPrivate) {
-        console.log(LOG, "private session detected — guest free scans disabled");
-        const uid = user?.id ?? getOrCreateAnonymousId();
-        if (uid) void refreshUsage(uid);
-      }
+      setPrivateSessionReady(true);
+      console.log(LOG, "private session check complete", { isPrivate });
+      const uid = user?.id ?? getOrCreateAnonymousId();
+      if (uid) void refreshUsage(uid);
     });
+    return () => {
+      cancelled = true;
+    };
   }, [refreshUsage, user?.id]);
 
   // Signup/login must not reset free scan usage from the same browser profile.
@@ -408,9 +413,9 @@ export function HomePageClient() {
 
   // Fetch initial usage
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !privateSessionReady) return;
     void refreshUsage(userId);
-  }, [userId, refreshUsage]);
+  }, [userId, refreshUsage, privateSessionReady]);
 
   // On checkout return: fulfill via Stripe session (webhook fallback) then refresh usage.
   useEffect(() => {
@@ -815,7 +820,7 @@ export function HomePageClient() {
     scansRemaining ?? Math.max(0, freeLimit - usageCount);
   /** Pro UI only when signed in — never show Pro from stale anonymous browser ids. */
   const showProUi = Boolean(user?.id && isPro);
-  const scanDisabled = loading || checkoutSyncing;
+  const scanDisabled = loading || checkoutSyncing || !privateSessionReady;
   const progressMessage = ANALYSIS_PROGRESS_MESSAGES[progressIndex];
 
   return (
