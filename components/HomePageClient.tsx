@@ -17,6 +17,7 @@ import {
 import { waitForAccessToken } from "@/lib/wait-for-access-token";
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import { getOrCreateDeviceId, persistDeviceId } from "@/lib/device-id";
+import { detectPrivateSession } from "@/lib/detect-private-session";
 import { mergeAnonymousScansToAuthUser } from "@/lib/merge-anonymous-client";
 import { readStoredAttribution } from "@/lib/client-attribution";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
@@ -74,6 +75,7 @@ type UsagePayload = {
   deviceScansUsed?: number;
   deviceFreeScanLimit?: number;
   blockedByDevice?: boolean;
+  blockedByPrivateSession?: boolean;
 };
 
 const LOG = "[cardsnap]";
@@ -188,6 +190,7 @@ export function HomePageClient() {
   const usageAbortRef = useRef<AbortController | null>(null);
   /** If a recent successful scan said `isPro: true`, do not let a stale /api/usage response clear Pro. */
   const lastProFromScanRef = useRef<{ pro: boolean; t: number } | null>(null);
+  const privateSessionRef = useRef(false);
   const scanInFlightRef = useRef(false);
   const pendingPaywallCheckoutRef = useRef<ProductCheckoutPayload | null>(null);
   const checkoutInFlightRef = useRef(false);
@@ -267,6 +270,7 @@ export function HomePageClient() {
         const deviceId = getOrCreateDeviceId();
         const usageQuery = new URLSearchParams({ userId: uid });
         if (deviceId) usageQuery.set("deviceId", deviceId);
+        if (privateSessionRef.current) usageQuery.set("privateSession", "1");
         res = await fetch(
           `/api/usage?${usageQuery.toString()}`,
           { cache: "no-store", credentials: "include", headers, signal }
@@ -319,6 +323,17 @@ export function HomePageClient() {
     },
     [user?.id]
   );
+
+  useEffect(() => {
+    void detectPrivateSession().then((isPrivate) => {
+      privateSessionRef.current = isPrivate;
+      if (isPrivate) {
+        console.log(LOG, "private session detected — guest free scans disabled");
+        const uid = user?.id ?? getOrCreateAnonymousId();
+        if (uid) void refreshUsage(uid);
+      }
+    });
+  }, [refreshUsage, user?.id]);
 
   // Signup/login must not reset free scan usage from the same browser profile.
   useEffect(() => {
@@ -578,7 +593,7 @@ export function HomePageClient() {
             : Math.max(0, preUsage.limit - preUsage.count);
         if (
           !preUsage.isPro &&
-          (scansLeftBeforeScan <= 0 || preUsage.blockedByDevice)
+          (scansLeftBeforeScan <= 0 || preUsage.blockedByDevice || preUsage.blockedByPrivateSession)
         ) {
           console.log(LOG, "paywall: pre-scan (no scans remaining)", {
             isPro: preUsage.isPro,
@@ -634,6 +649,7 @@ export function HomePageClient() {
           condition: payload.condition,
           userId: scanUserId,
           deviceId: getOrCreateDeviceId(),
+          privateSession: privateSessionRef.current,
         }),
         signal: controller.signal,
       });

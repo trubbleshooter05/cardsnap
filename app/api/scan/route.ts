@@ -10,6 +10,7 @@ import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
 import { hashClientIp } from "@/lib/ip-hash";
+import { getIpFreeScansUsed, recordIpFreeScanUsage } from "@/lib/ip-scan-usage";
 import { isScanBlocked, scanBlockedReason, scansRemainingNonPro, shouldConsumePrepaidCredit } from "@/lib/scan-enforcement";
 import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
@@ -46,6 +47,7 @@ const bodySchema = z.object({
   condition: z.string().min(1).max(120),
   userId: z.string().uuid(),
   deviceId: z.string().uuid().optional(),
+  privateSession: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -63,10 +65,12 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServerSupabase();
   let userId: string | null = null;
+  let isAuthenticated = false;
   const cookieRaw = cookies().get(CARDSNAP_USER_COOKIE)?.value;
   const bodyUserId = parsed.data.userId;
   const deviceId = resolveOrMintDeviceId(req, parsed.data.deviceId);
   const ipHash = hashClientIp(req);
+  const privateSession = parsed.data.privateSession === true;
 
   // First try to get user from auth token
   const authHeader = req.headers.get("authorization");
@@ -75,6 +79,7 @@ export async function POST(req: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (!authError && user?.id) {
       userId = user.id;
+      isAuthenticated = true;
     }
   }
 
@@ -153,16 +158,12 @@ export async function POST(req: NextRequest) {
 
   let ipScansUsed = 0;
   if (ipHash) {
-    const ipUsedResult = await withTimeout(
-      supabase
-        .from("scans")
-        .select("*", { count: "exact", head: true })
-        .eq("ip_hash", ipHash),
+    const rawIpCount = await withTimeout(
+      getIpFreeScansUsed(supabase, ipHash),
       3000,
-      EMPTY_HEAD_COUNT,
+      null,
       "scan.db.ipusedcount"
     );
-    const rawIpCount = ipUsedResult.count;
     if (rawIpCount == null) {
       console.error("[scan] ip scan count unavailable — blocking (fail closed)");
       return NextResponse.json({ error: "usage_check_failed" }, { status: 503 });
@@ -176,6 +177,8 @@ export async function POST(req: NextRequest) {
     userScansUsed,
     deviceScansUsed,
     ipScansUsed,
+    isAuthenticated,
+    privateSession,
   };
 
   if (isScanBlocked(entitlement)) {
@@ -276,8 +279,19 @@ export async function POST(req: NextRequest) {
 
   if (
     !isPro &&
+    ipHash &&
+    !shouldConsumePrepaidCredit(userScansUsed, deviceScansUsed, ipScansUsed, {
+      isAuthenticated,
+      privateSession,
+    })
+  ) {
+    await recordIpFreeScanUsage(supabase, ipHash);
+  }
+
+  if (
+    !isPro &&
     prepaidCredits > 0 &&
-    shouldConsumePrepaidCredit(userScansUsed, deviceScansUsed, ipScansUsed)
+    shouldConsumePrepaidCredit(userScansUsed, deviceScansUsed, ipScansUsed, { isAuthenticated, privateSession })
   ) {
     const nextCredits = Math.max(0, prepaidCredits - 1);
     const { error: creditErr } = await supabase
@@ -336,7 +350,7 @@ export async function POST(req: NextRequest) {
     prepaidCredits: isProResponse ? 0 : prepaidForLimit,
     scansRemaining: isProResponse
       ? null
-      : scansRemainingNonPro(freeScansUsed, prepaidForLimit, deviceScansUsed, ipScansUsed),
+      : scansRemainingNonPro(freeScansUsed, prepaidForLimit, deviceScansUsed, ipScansUsed, { isAuthenticated, privateSession }),
     deviceScansUsed: deviceId ? deviceScansUsed + 1 : deviceScansUsed,
     deviceFreeScanLimit: FREE_SCAN_LIMIT,
     isPro: isProResponse,

@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
 import { hashClientIp } from "@/lib/ip-hash";
+import { getIpFreeScansUsed } from "@/lib/ip-scan-usage";
 import { isScanBlocked, scansRemainingNonPro } from "@/lib/scan-enforcement";
 
 export const dynamic = "force-dynamic";
@@ -11,16 +12,19 @@ export async function GET(req: NextRequest) {
   const supabase = createServerSupabase();
   const deviceId = resolveOrMintDeviceId(req);
   const ipHash = hashClientIp(req);
+  const privateSession = req.nextUrl.searchParams.get("privateSession") === "1";
 
   // Support both authenticated requests and legacy anonymous requests
   const authHeader = req.headers.get("authorization");
   let userId: string | null = null;
+  let isAuthenticated = false;
 
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (!authError && user?.id) {
       userId = user.id;
+      isAuthenticated = true;
     }
   } else {
     // Fall back to query parameter for backwards compatibility with anonymous users
@@ -91,14 +95,11 @@ export async function GET(req: NextRequest) {
 
   let ipScansUsed = 0;
   if (ipHash) {
-    const { count: ipCount, error: ipError } = await supabase
-      .from("scans")
-      .select("*", { count: "exact", head: true })
-      .eq("ip_hash", ipHash);
-    if (ipError) {
-      console.error("usage ip count error", ipError);
+    const ipCount = await getIpFreeScansUsed(supabase, ipHash);
+    if (ipCount == null) {
+      console.error("usage ip count unavailable");
     } else {
-      ipScansUsed = ipCount ?? 0;
+      ipScansUsed = ipCount;
     }
   }
 
@@ -109,11 +110,13 @@ export async function GET(req: NextRequest) {
     userScansUsed,
     deviceScansUsed,
     ipScansUsed,
-  }) && !isPro && prepaidCredits === 0 && userScansUsed < limit;
+    isAuthenticated,
+    privateSession,
+  }) && !isPro && prepaidCredits === 0;
 
   const scansRemaining = isPro
     ? null
-    : scansRemainingNonPro(userScansUsed, prepaidCredits, deviceScansUsed, ipScansUsed);
+    : scansRemainingNonPro(userScansUsed, prepaidCredits, deviceScansUsed, ipScansUsed, { isAuthenticated, privateSession });
 
   return NextResponse.json(
     {
@@ -125,7 +128,9 @@ export async function GET(req: NextRequest) {
       deviceScansUsed,
       deviceFreeScanLimit: FREE_SCAN_LIMIT,
       ipScansUsed,
+      privateSession,
       blockedByDevice,
+      blockedByPrivateSession: privateSession && !isAuthenticated && !isPro && prepaidCredits === 0,
     },
     {
       headers: {

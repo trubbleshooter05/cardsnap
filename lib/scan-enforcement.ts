@@ -6,6 +6,8 @@ export type ScanEntitlement = {
   userScansUsed: number;
   deviceScansUsed: number;
   ipScansUsed: number;
+  isAuthenticated: boolean;
+  privateSession: boolean;
 };
 
 export function freeScansRemaining(userScansUsed: number): number {
@@ -28,8 +30,12 @@ export function scansRemainingNonPro(
   userScansUsed: number,
   prepaidCredits: number,
   deviceScansUsed = 0,
-  ipScansUsed = 0
+  ipScansUsed = 0,
+  opts?: { isAuthenticated?: boolean; privateSession?: boolean }
 ): number {
+  if (opts?.privateSession && !opts?.isAuthenticated) {
+    return 0;
+  }
   const freeLeft = Math.min(
     freeScansRemaining(userScansUsed),
     Math.max(0, FREE_SCAN_LIMIT - deviceScansUsed),
@@ -41,15 +47,29 @@ export function scansRemainingNonPro(
 export function shouldConsumePrepaidCredit(
   userScansUsed: number,
   deviceScansUsed: number,
-  ipScansUsed: number
+  ipScansUsed: number,
+  opts?: { isAuthenticated?: boolean; privateSession?: boolean }
 ): boolean {
+  if (opts?.privateSession && !opts?.isAuthenticated) {
+    return true;
+  }
   return !hasFreeScanAvailable(userScansUsed, deviceScansUsed, ipScansUsed);
 }
 
 export function isScanBlocked(entitlement: ScanEntitlement): boolean {
-  const { isPro, prepaidCredits, userScansUsed, deviceScansUsed, ipScansUsed } =
-    entitlement;
+  const {
+    isPro,
+    prepaidCredits,
+    userScansUsed,
+    deviceScansUsed,
+    ipScansUsed,
+    isAuthenticated,
+    privateSession,
+  } = entitlement;
   if (isPro) return false;
+  if (privateSession && !isAuthenticated) {
+    return prepaidCredits <= 0;
+  }
   if (hasFreeScanAvailable(userScansUsed, deviceScansUsed, ipScansUsed)) {
     return false;
   }
@@ -59,9 +79,16 @@ export function isScanBlocked(entitlement: ScanEntitlement): boolean {
 
 export function scanBlockedReason(
   entitlement: ScanEntitlement
-): "user_limit" | "device_limit" | "ip_limit" | null {
+): "user_limit" | "device_limit" | "ip_limit" | "private_session" | null {
   if (!isScanBlocked(entitlement)) return null;
-  const { userScansUsed, deviceScansUsed, ipScansUsed } = entitlement;
+  const {
+    userScansUsed,
+    deviceScansUsed,
+    ipScansUsed,
+    isAuthenticated,
+    privateSession,
+  } = entitlement;
+  if (privateSession && !isAuthenticated) return "private_session";
   if (userScansUsed >= FREE_SCAN_LIMIT) return "user_limit";
   if (deviceScansUsed >= FREE_SCAN_LIMIT) return "device_limit";
   if (ipScansUsed >= FREE_SCAN_LIMIT) return "ip_limit";
