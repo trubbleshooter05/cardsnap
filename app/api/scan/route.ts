@@ -9,6 +9,7 @@ import { mergeScanResults } from "@/lib/merge-scan";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
+import { hashClientIp } from "@/lib/ip-hash";
 import { isScanBlocked, scanBlockedReason, scansRemainingNonPro, shouldConsumePrepaidCredit } from "@/lib/scan-enforcement";
 import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest) {
   const cookieRaw = cookies().get(CARDSNAP_USER_COOKIE)?.value;
   const bodyUserId = parsed.data.userId;
   const deviceId = resolveOrMintDeviceId(req, parsed.data.deviceId);
+  const ipHash = hashClientIp(req);
 
   // First try to get user from auth token
   const authHeader = req.headers.get("authorization");
@@ -149,11 +151,31 @@ export async function POST(req: NextRequest) {
     deviceScansUsed = rawDeviceCount;
   }
 
+  let ipScansUsed = 0;
+  if (ipHash) {
+    const ipUsedResult = await withTimeout(
+      supabase
+        .from("scans")
+        .select("*", { count: "exact", head: true })
+        .eq("ip_hash", ipHash),
+      3000,
+      EMPTY_HEAD_COUNT,
+      "scan.db.ipusedcount"
+    );
+    const rawIpCount = ipUsedResult.count;
+    if (rawIpCount == null) {
+      console.error("[scan] ip scan count unavailable — blocking (fail closed)");
+      return NextResponse.json({ error: "usage_check_failed" }, { status: 503 });
+    }
+    ipScansUsed = rawIpCount;
+  }
+
   const entitlement = {
     isPro,
     prepaidCredits,
     userScansUsed,
     deviceScansUsed,
+    ipScansUsed,
   };
 
   if (isScanBlocked(entitlement)) {
@@ -205,6 +227,7 @@ export async function POST(req: NextRequest) {
     card_name: string;
     result: typeof merged;
     device_id?: string;
+    ip_hash?: string;
   } = {
     user_id: userId,
     card_name: cardName,
@@ -212,6 +235,9 @@ export async function POST(req: NextRequest) {
   };
   if (deviceId) {
     insertPayload.device_id = deviceId;
+  }
+  if (ipHash) {
+    insertPayload.ip_hash = ipHash;
   }
 
   const insertResult = await withTimeout(
@@ -251,7 +277,7 @@ export async function POST(req: NextRequest) {
   if (
     !isPro &&
     prepaidCredits > 0 &&
-    shouldConsumePrepaidCredit(userScansUsed, deviceScansUsed)
+    shouldConsumePrepaidCredit(userScansUsed, deviceScansUsed, ipScansUsed)
   ) {
     const nextCredits = Math.max(0, prepaidCredits - 1);
     const { error: creditErr } = await supabase
@@ -310,7 +336,7 @@ export async function POST(req: NextRequest) {
     prepaidCredits: isProResponse ? 0 : prepaidForLimit,
     scansRemaining: isProResponse
       ? null
-      : scansRemainingNonPro(freeScansUsed, prepaidForLimit),
+      : scansRemainingNonPro(freeScansUsed, prepaidForLimit, deviceScansUsed, ipScansUsed),
     deviceScansUsed: deviceId ? deviceScansUsed + 1 : deviceScansUsed,
     deviceFreeScanLimit: FREE_SCAN_LIMIT,
     isPro: isProResponse,

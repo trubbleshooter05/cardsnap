@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
+import { hashClientIp } from "@/lib/ip-hash";
 import { isScanBlocked, scansRemainingNonPro } from "@/lib/scan-enforcement";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const supabase = createServerSupabase();
   const deviceId = resolveOrMintDeviceId(req);
+  const ipHash = hashClientIp(req);
 
   // Support both authenticated requests and legacy anonymous requests
   const authHeader = req.headers.get("authorization");
@@ -86,17 +88,32 @@ export async function GET(req: NextRequest) {
     }
   }
 
+
+  let ipScansUsed = 0;
+  if (ipHash) {
+    const { count: ipCount, error: ipError } = await supabase
+      .from("scans")
+      .select("*", { count: "exact", head: true })
+      .eq("ip_hash", ipHash);
+    if (ipError) {
+      console.error("usage ip count error", ipError);
+    } else {
+      ipScansUsed = ipCount ?? 0;
+    }
+  }
+
   const userScansUsed = count ?? 0;
   const blockedByDevice = isScanBlocked({
     isPro,
     prepaidCredits,
     userScansUsed,
     deviceScansUsed,
+    ipScansUsed,
   }) && !isPro && prepaidCredits === 0 && userScansUsed < limit;
 
   const scansRemaining = isPro
     ? null
-    : scansRemainingNonPro(userScansUsed, prepaidCredits);
+    : scansRemainingNonPro(userScansUsed, prepaidCredits, deviceScansUsed, ipScansUsed);
 
   return NextResponse.json(
     {
@@ -107,6 +124,7 @@ export async function GET(req: NextRequest) {
       scansRemaining,
       deviceScansUsed,
       deviceFreeScanLimit: FREE_SCAN_LIMIT,
+      ipScansUsed,
       blockedByDevice,
     },
     {

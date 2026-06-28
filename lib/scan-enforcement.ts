@@ -5,6 +5,7 @@ export type ScanEntitlement = {
   prepaidCredits: number;
   userScansUsed: number;
   deviceScansUsed: number;
+  ipScansUsed: number;
 };
 
 export function freeScansRemaining(userScansUsed: number): number {
@@ -13,41 +14,56 @@ export function freeScansRemaining(userScansUsed: number): number {
 
 export function hasFreeScanAvailable(
   userScansUsed: number,
-  deviceScansUsed: number
+  deviceScansUsed: number,
+  ipScansUsed: number
 ): boolean {
   return (
-    userScansUsed < FREE_SCAN_LIMIT && deviceScansUsed < FREE_SCAN_LIMIT
+    userScansUsed < FREE_SCAN_LIMIT &&
+    deviceScansUsed < FREE_SCAN_LIMIT &&
+    ipScansUsed < FREE_SCAN_LIMIT
   );
 }
 
 export function scansRemainingNonPro(
   userScansUsed: number,
-  prepaidCredits: number
+  prepaidCredits: number,
+  deviceScansUsed = 0,
+  ipScansUsed = 0
 ): number {
-  return freeScansRemaining(userScansUsed) + Math.max(0, prepaidCredits);
+  const freeLeft = Math.min(
+    freeScansRemaining(userScansUsed),
+    Math.max(0, FREE_SCAN_LIMIT - deviceScansUsed),
+    Math.max(0, FREE_SCAN_LIMIT - ipScansUsed)
+  );
+  return freeLeft + Math.max(0, prepaidCredits);
 }
 
 export function shouldConsumePrepaidCredit(
   userScansUsed: number,
-  deviceScansUsed: number
+  deviceScansUsed: number,
+  ipScansUsed: number
 ): boolean {
-  return !hasFreeScanAvailable(userScansUsed, deviceScansUsed);
+  return !hasFreeScanAvailable(userScansUsed, deviceScansUsed, ipScansUsed);
 }
 
 export function isScanBlocked(entitlement: ScanEntitlement): boolean {
-  const { isPro, prepaidCredits, userScansUsed, deviceScansUsed } = entitlement;
+  const { isPro, prepaidCredits, userScansUsed, deviceScansUsed, ipScansUsed } =
+    entitlement;
   if (isPro) return false;
-  if (hasFreeScanAvailable(userScansUsed, deviceScansUsed)) return false;
+  if (hasFreeScanAvailable(userScansUsed, deviceScansUsed, ipScansUsed)) {
+    return false;
+  }
   if (prepaidCredits > 0) return false;
   return true;
 }
 
 export function scanBlockedReason(
   entitlement: ScanEntitlement
-): "user_limit" | "device_limit" | null {
+): "user_limit" | "device_limit" | "ip_limit" | null {
   if (!isScanBlocked(entitlement)) return null;
-  const { userScansUsed, deviceScansUsed } = entitlement;
+  const { userScansUsed, deviceScansUsed, ipScansUsed } = entitlement;
   if (userScansUsed >= FREE_SCAN_LIMIT) return "user_limit";
   if (deviceScansUsed >= FREE_SCAN_LIMIT) return "device_limit";
+  if (ipScansUsed >= FREE_SCAN_LIMIT) return "ip_limit";
   return "user_limit";
 }
