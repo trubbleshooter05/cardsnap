@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase";
-import { fulfillCheckoutSession } from "@/lib/stripe-fulfillment";
+import { fulfillCheckoutSession, fulfillGuestReportCheckout } from "@/lib/stripe-fulfillment";
 import { logCheckoutFunnelEvent } from "@/lib/checkout-funnel-log";
 import { reconcileProForStripeCustomer } from "@/lib/stripe-pro-reconcile";
 import { handleChargeRefunded } from "@/lib/stripe-revoke";
@@ -37,7 +37,10 @@ export async function POST(req: Request) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         try {
-          const result = await fulfillCheckoutSession(supabase, session);
+          const isGuestReport = session.metadata?.source === "single_report";
+          const result = isGuestReport
+            ? await fulfillGuestReportCheckout(supabase, session)
+            : await fulfillCheckoutSession(supabase, session);
           const event =
             result.status === "fulfilled" || result.status === "already_fulfilled"
               ? "fulfill_success"

@@ -6,8 +6,8 @@ import {
 } from "@/lib/stripe-scan-packs";
 
 export type FulfillmentResult =
-  | { status: "fulfilled"; kind: "subscription" | "pack"; packCredits?: number }
-  | { status: "already_fulfilled"; kind: "subscription" | "pack" }
+  | { status: "fulfilled"; kind: "subscription" | "pack" | "guest_report"; packCredits?: number }
+  | { status: "already_fulfilled"; kind: "subscription" | "pack" | "guest_report" }
   | { status: "skipped"; reason: string };
 
 function sessionUserId(session: Stripe.Checkout.Session): string | null {
@@ -61,13 +61,58 @@ async function markSessionFulfilled(
   }
 }
 
+export async function fulfillGuestReportCheckout(
+  supabase: SupabaseClient,
+  session: Stripe.Checkout.Session
+): Promise<FulfillmentResult> {
+  // Idempotency — safe to call multiple times for the same session
+  const { data: existing } = await supabase
+    .from("guest_report_purchases")
+    .select("checkout_session_id")
+    .eq("checkout_session_id", session.id)
+    .maybeSingle();
+
+  if (existing) {
+    return { status: "already_fulfilled", kind: "guest_report" };
+  }
+
+  const customerEmail =
+    session.customer_email ??
+    (session.customer_details as { email?: string } | null)?.email ??
+    null;
+  const scanId = session.metadata?.scanId ?? null;
+
+  const { error } = await supabase.from("guest_report_purchases").insert({
+    checkout_session_id: session.id,
+    customer_email: customerEmail,
+    scan_id: scanId,
+    amount_total: session.amount_total ?? 0,
+    currency: session.currency ?? "usd",
+    payment_status: session.payment_status,
+    fulfilled_at: new Date().toISOString(),
+  });
+
+  if (error) {
+    console.error("guest report fulfillment insert failed", { session_id: session.id, error });
+    throw error;  // loud failure — Stripe will retry
+  }
+
+  return { status: "fulfilled", kind: "guest_report" };
+}
+
 export async function fulfillCheckoutSession(
   supabase: SupabaseClient,
   session: Stripe.Checkout.Session
 ): Promise<FulfillmentResult> {
   const userId = sessionUserId(session);
   if (!userId) {
-    return { status: "skipped", reason: "missing_user_id" };
+    // Non-guest sessions must always have a userId — throw so Stripe retries
+    // and Hermes logs a visible failure rather than a silent skip.
+    const err = new Error(
+      `fulfillCheckoutSession: missing userId for session ${session.id} (mode=${session.mode})`
+    );
+    console.error(err);
+    throw err;
   }
 
   if (session.payment_status !== "paid" && session.status !== "complete") {
