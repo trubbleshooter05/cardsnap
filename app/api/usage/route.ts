@@ -6,6 +6,7 @@ import { hashClientIp } from "@/lib/ip-hash";
 import { getIpFreeScansUsed } from "@/lib/ip-scan-usage";
 import { deriveDeviceFingerprint } from "@/lib/device-fingerprint";
 import { getFingerprintScopedScanCount, syncFingerprintLinks } from "@/lib/fingerprint-usage";
+import { isAdminEmail } from "@/lib/admin-access";
 import { isScanBlocked, scansRemainingNonPro } from "@/lib/scan-enforcement";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   let userId: string | null = null;
   let isAuthenticated = false;
+  let authEmail: string | null = null;
 
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
@@ -28,6 +30,7 @@ export async function GET(req: NextRequest) {
     if (!authError && user?.id) {
       userId = user.id;
       isAuthenticated = true;
+      authEmail = user.email ?? null;
     }
   } else {
     // Fall back to query parameter for backwards compatibility with anonymous users
@@ -59,12 +62,14 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   const isPro = Boolean(userRow?.is_pro);
+  const isAdmin = isAuthenticated && isAdminEmail(authEmail);
+  const unlimitedScans = isPro || isAdmin;
   const prepaidCredits =
     typeof userRow?.scan_credits === "number" &&
     Number.isFinite(userRow.scan_credits)
       ? Math.max(0, userRow.scan_credits)
       : 0;
-  const limit = isPro ? FREE_SCAN_LIMIT : FREE_SCAN_LIMIT + prepaidCredits;
+  const limit = unlimitedScans ? FREE_SCAN_LIMIT : FREE_SCAN_LIMIT + prepaidCredits;
 
   const { count, error } = await supabase
     .from("scans")
@@ -120,22 +125,24 @@ export async function GET(req: NextRequest) {
 
   const blockedByDevice = isScanBlocked({
     isPro,
+    isAdmin,
     prepaidCredits,
     userScansUsed,
     deviceScansUsed,
     ipScansUsed,
     isAuthenticated,
     privateSession,
-  }) && !isPro && prepaidCredits === 0;
+  }) && !unlimitedScans && prepaidCredits === 0;
 
-  const scansRemaining = isPro
+  const scansRemaining = unlimitedScans
     ? null
     : scansRemainingNonPro(userScansUsed, prepaidCredits, deviceScansUsed, ipScansUsed, { isAuthenticated, privateSession });
 
   return NextResponse.json(
     {
       count: userScansUsed,
-      isPro,
+      isPro: unlimitedScans,
+      isAdmin,
       limit,
       prepaidCredits,
       scansRemaining,
@@ -144,7 +151,7 @@ export async function GET(req: NextRequest) {
       ipScansUsed,
       privateSession,
       blockedByDevice,
-      blockedByPrivateSession: privateSession && !isAuthenticated && !isPro && prepaidCredits === 0,
+      blockedByPrivateSession: privateSession && !isAuthenticated && !unlimitedScans && prepaidCredits === 0,
     },
     {
       headers: {

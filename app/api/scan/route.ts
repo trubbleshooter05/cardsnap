@@ -6,6 +6,7 @@ import { analyzeCardWithOpenAI } from "@/lib/openai";
 import { searchEbayItemPrices } from "@/lib/ebay";
 import { fetchPsaPopulation } from "@/lib/psa";
 import { mergeScanResults } from "@/lib/merge-scan";
+import { insertScanRecord } from "@/lib/insert-scan-record";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import { CARDSNAP_USER_COOKIE, isValidUserId } from "@/lib/cardsnap-user-id";
 import { resolveOrMintDeviceId } from "@/lib/server-device-id";
@@ -13,6 +14,7 @@ import { hashClientIp } from "@/lib/ip-hash";
 import { getIpFreeScansUsed, recordIpFreeScanUsage } from "@/lib/ip-scan-usage";
 import { deriveDeviceFingerprint } from "@/lib/device-fingerprint";
 import { getFingerprintScopedScanCount, syncFingerprintLinks } from "@/lib/fingerprint-usage";
+import { isAdminEmail } from "@/lib/admin-access";
 import { isScanBlocked, scanBlockedReason, scansRemainingNonPro, shouldConsumePrepaidCredit } from "@/lib/scan-enforcement";
 import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
@@ -68,6 +70,7 @@ export async function POST(req: NextRequest) {
   const supabase = createServerSupabase();
   let userId: string | null = null;
   let isAuthenticated = false;
+  let authEmail: string | null = null;
   const cookieRaw = cookies().get(CARDSNAP_USER_COOKIE)?.value;
   const bodyUserId = parsed.data.userId;
   const deviceId = resolveOrMintDeviceId(req, parsed.data.deviceId);
@@ -83,6 +86,7 @@ export async function POST(req: NextRequest) {
     if (!authError && user?.id) {
       userId = user.id;
       isAuthenticated = true;
+      authEmail = user.email ?? null;
     }
   }
 
@@ -120,6 +124,7 @@ export async function POST(req: NextRequest) {
   );
   const { data: userRow } = userResult;
   const isPro = Boolean(userRow?.is_pro);
+  const isAdmin = isAuthenticated && isAdminEmail(authEmail);
   const prepaidCredits =
     typeof userRow?.scan_credits === "number" && Number.isFinite(userRow.scan_credits)
       ? Math.max(0, userRow.scan_credits)
@@ -192,6 +197,7 @@ export async function POST(req: NextRequest) {
 
   const entitlement = {
     isPro,
+    isAdmin,
     prepaidCredits,
     userScansUsed,
     deviceScansUsed,
@@ -223,7 +229,7 @@ export async function POST(req: NextRequest) {
     ]);
 
     ai = results[0]?.status === "fulfilled" ? results[0].value : { confirmedName: cardName, year: "", player: "", set: "", sport: "", rawValueLow: 0, rawValueMid: 0, rawValueHigh: 0, gradedPSA9Value: 0, gradedPSA10Value: 0, worthGrading: false, verdictReason: "Analysis unavailable." };
-    ebay = results[1]?.status === "fulfilled" ? results[1].value : { avgSoldPrice: null, minSoldPrice: null, maxSoldPrice: null, recentSales: [] };
+    ebay = results[1]?.status === "fulfilled" ? results[1].value : { avgSoldPrice: null, minSoldPrice: null, maxSoldPrice: null, recentSales: [], compSource: "none" };
     psa = results[2]?.status === "fulfilled" ? results[2].value : null;
 
     if (results[0]?.status === "rejected") {
@@ -267,11 +273,7 @@ export async function POST(req: NextRequest) {
   }
 
   const insertResult = await withTimeout(
-    supabase
-      .from("scans")
-      .insert(insertPayload)
-      .select("id")
-      .single(),
+    insertScanRecord(supabase, insertPayload),
     5000,
     null,
     "scan.db.insert"
@@ -302,6 +304,7 @@ export async function POST(req: NextRequest) {
 
   if (
     !isPro &&
+    !isAdmin &&
     ipHash &&
     !shouldConsumePrepaidCredit(userScansUsed, deviceScansUsed, ipScansUsed, {
       isAuthenticated,
@@ -313,6 +316,7 @@ export async function POST(req: NextRequest) {
 
   if (
     !isPro &&
+    !isAdmin &&
     prepaidCredits > 0 &&
     shouldConsumePrepaidCredit(userScansUsed, deviceScansUsed, ipScansUsed, { isAuthenticated, privateSession })
   ) {
@@ -353,6 +357,7 @@ export async function POST(req: NextRequest) {
   );
   const { data: proRow } = proResult;
   const isProResponse = Boolean(proRow?.is_pro);
+  const unlimitedScans = isProResponse || isAdmin;
   const prepaidForLimit =
     typeof proRow?.scan_credits === "number" &&
     Number.isFinite(proRow.scan_credits)
@@ -360,7 +365,7 @@ export async function POST(req: NextRequest) {
       : 0;
   /** Total non-Pro scan allowance (included free scans + prepaid pack credits). */
   const tierScanLimit =
-    FREE_SCAN_LIMIT + (isProResponse ? 0 : prepaidForLimit);
+    FREE_SCAN_LIMIT + (unlimitedScans ? 0 : prepaidForLimit);
 
   console.log("[scan] returning response with merged data");
   const response = NextResponse.json({
@@ -370,13 +375,14 @@ export async function POST(req: NextRequest) {
     scansUsedThisMonth: freeScansUsed,
     freeScansUsed,
     freeScanLimit: tierScanLimit,
-    prepaidCredits: isProResponse ? 0 : prepaidForLimit,
-    scansRemaining: isProResponse
+    prepaidCredits: unlimitedScans ? 0 : prepaidForLimit,
+    scansRemaining: unlimitedScans
       ? null
       : scansRemainingNonPro(freeScansUsed, prepaidForLimit, deviceScansUsed, ipScansUsed, { isAuthenticated, privateSession }),
     deviceScansUsed: deviceId ? deviceScansUsed + 1 : deviceScansUsed,
     deviceFreeScanLimit: FREE_SCAN_LIMIT,
-    isPro: isProResponse,
+    isPro: unlimitedScans,
+    isAdmin,
   });
   // Always refresh sticky ids so Safari keeps the same bucket across scans.
   if (isValidUserId(userId)) {

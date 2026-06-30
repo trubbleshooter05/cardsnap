@@ -2,6 +2,7 @@ import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 
 export type ScanEntitlement = {
   isPro: boolean;
+  isAdmin?: boolean;
   prepaidCredits: number;
   userScansUsed: number;
   deviceScansUsed: number;
@@ -56,6 +57,10 @@ export function shouldConsumePrepaidCredit(
   return !hasFreeScanAvailable(userScansUsed, deviceScansUsed, ipScansUsed);
 }
 
+export function hasUnlimitedScans(entitlement: ScanEntitlement): boolean {
+  return entitlement.isPro || Boolean(entitlement.isAdmin);
+}
+
 export function isScanBlocked(entitlement: ScanEntitlement): boolean {
   const {
     isPro,
@@ -66,7 +71,7 @@ export function isScanBlocked(entitlement: ScanEntitlement): boolean {
     isAuthenticated,
     privateSession,
   } = entitlement;
-  if (isPro) return false;
+  if (hasUnlimitedScans(entitlement)) return false;
   if (privateSession && !isAuthenticated) {
     return prepaidCredits <= 0;
   }

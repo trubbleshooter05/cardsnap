@@ -6,7 +6,8 @@ export function mergeScanResults(
   ebay: EbayComp,
   psa: PsaPop | null
 ): ScanResultPayload {
-  const roi = computeGradingRoi(ai);
+  const draft = { ...ai, ebay, psa };
+  const roi = computeGradingRoi(ai, undefined, draft);
   return {
     ...ai,
     worthGrading: roi.headlineVerdict === "grade",

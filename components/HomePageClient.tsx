@@ -64,11 +64,13 @@ type ScanResponse = ScanResultPayload & {
   prepaidCredits?: number;
   scansRemaining?: number;
   isPro: boolean;
+  isAdmin?: boolean;
 };
 
 type UsagePayload = {
   count: number;
   isPro: boolean;
+  isAdmin?: boolean;
   limit: number;
   prepaidCredits?: number;
   scansRemaining?: number | null;
@@ -176,6 +178,7 @@ export function HomePageClient() {
   const [scansRemaining, setScansRemaining] = useState<number | null>(null);
   const [packPurchaseBanner, setPackPurchaseBanner] = useState<string | null>(null);
   const [isPro, setIsPro] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResponse | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
@@ -293,6 +296,7 @@ export function HomePageClient() {
       if (signal.aborted) return null;
 
       let isPro = data.isPro;
+      const isAdminFlag = Boolean(data.isAdmin);
       const recent = lastProFromScanRef.current;
       if (
         user?.id &&
@@ -314,13 +318,14 @@ export function HomePageClient() {
       setScansRemaining(
         typeof data.scansRemaining === "number" ? data.scansRemaining : null
       );
-      setIsPro(Boolean(user?.id && isPro));
+      setIsAdmin(Boolean(user?.id && isAdminFlag));
+      setIsPro(Boolean(user?.id && (isPro || isAdminFlag)));
       console.log(LOG, "subscription/pro resolved (usage API)", {
         isPro,
         count: data.count,
         limit: data.limit,
       });
-      return { ...data, isPro };
+      return { ...data, isPro: isPro || isAdminFlag, isAdmin: isAdminFlag };
     },
     [user?.id]
   );
@@ -598,6 +603,7 @@ export function HomePageClient() {
             : Math.max(0, preUsage.limit - preUsage.count);
         if (
           !preUsage.isPro &&
+          !preUsage.isAdmin &&
           (scansLeftBeforeScan <= 0 || preUsage.blockedByDevice || preUsage.blockedByPrivateSession)
         ) {
           console.log(LOG, "paywall: pre-scan (no scans remaining)", {
@@ -699,7 +705,7 @@ export function HomePageClient() {
         );
       }
 
-      lastProFromScanRef.current = { pro: Boolean(user?.id && data.isPro), t: Date.now() };
+      lastProFromScanRef.current = { pro: Boolean(user?.id && (data.isPro || data.isAdmin)), t: Date.now() };
       console.log(LOG, "scan: setResult(data) — calling", { scanId: data?.scanId });
       setResult(data);
       console.log(LOG, "scan: setResult dispatched");
@@ -713,7 +719,8 @@ export function HomePageClient() {
       if (typeof data.scansRemaining === "number") {
         setScansRemaining(data.scansRemaining);
       }
-      setIsPro(Boolean(user?.id && data.isPro));
+      setIsAdmin(Boolean(user?.id && data.isAdmin));
+      setIsPro(Boolean(user?.id && (data.isPro || data.isAdmin)));
       persistAnonymousId(scanUserId);
 
       // Any successful persisted scan (200 + scanId) must dismiss the paywall. Do not gate this on
@@ -819,7 +826,7 @@ export function HomePageClient() {
   const scansLeft =
     scansRemaining ?? Math.max(0, freeLimit - usageCount);
   /** Pro UI only when signed in — never show Pro from stale anonymous browser ids. */
-  const showProUi = Boolean(user?.id && isPro);
+  const showProUi = Boolean(user?.id && (isPro || isAdmin));
   const scanDisabled = loading || checkoutSyncing || !privateSessionReady;
   const progressMessage = ANALYSIS_PROGRESS_MESSAGES[progressIndex];
 
@@ -846,7 +853,7 @@ export function HomePageClient() {
                   : "border-zinc-700 bg-zinc-900 text-zinc-400"
               }`}
             >
-              {showProUi ? "⚡ Pro" : prepaidCredits > 0 && scansLeft > 0 ? `${scansLeft} scans` : `${scansLeft} scans left`}
+              {isAdmin ? "Admin" : showProUi ? "⚡ Pro" : prepaidCredits > 0 && scansLeft > 0 ? `${scansLeft} scans` : `${scansLeft} scans left`}
             </span>
           ) : null
         }

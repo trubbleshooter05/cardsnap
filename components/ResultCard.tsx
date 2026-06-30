@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import type { ScanResultPayload } from "@/lib/types";
+import type { MinGradeTarget, ScanResultPayload } from "@/lib/types";
 import { formatUsd, formatUsdSigned } from "@/lib/format-currency";
 import { computeGradingRoi } from "@/lib/roi";
+import { formatPasteVerdict } from "@/lib/paste-verdict";
+import { describeCompSource } from "@/lib/source-confidence";
 
 type Props = {
   data: ScanResultPayload;
@@ -16,20 +19,41 @@ function hasEbayPrice(avg: number | null | undefined): boolean {
   return avg != null && !Number.isNaN(avg);
 }
 
+function minGradeLabel(grade: MinGradeTarget): string {
+  if (grade === "psa9") return "PSA 9";
+  if (grade === "psa10") return "PSA 10";
+  return "Does not break even at modeled grades";
+}
+
 const ESTIMATE_UPDATED_LABEL = "April 11, 2026";
 
 export function ResultCard({ data, scanId, onNewScan }: Props) {
-  const roi = data.roi ?? computeGradingRoi(data);
+  const [copied, setCopied] = useState(false);
+  const roi = data.roi ?? computeGradingRoi(data, undefined, data);
   const worth = roi.headlineVerdict === "grade";
   const psa = data.psa;
   const ebayOk = hasEbayPrice(data.ebay.avgSoldPrice);
-  const confidenceLevel =
-    ebayOk && psa ? "High" : ebayOk || psa ? "Medium" : "Directional";
+  const comp = describeCompSource(data);
+  const loseReasons =
+    roi.loseMoneyReasons.length > 0
+      ? roi.loseMoneyReasons
+      : computeGradingRoi(data, undefined, data).loseMoneyReasons;
   const headlineCardValue = Math.max(
     data.rawValueHigh,
     data.gradedPSA9Value,
     data.gradedPSA10Value
   );
+
+  async function copyPasteReply() {
+    const text = formatPasteVerdict({ ...data, roi });
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
 
   return (
     <div className="w-full max-w-md">
@@ -53,6 +77,12 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             {[data.year, data.player, data.set].filter(Boolean).join(" · ")}
           </p>
 
+          <div className="mt-4 flex flex-wrap gap-2">
+            <SourceBadge label="Raw" value={comp.rawLabel} />
+            <SourceBadge label="Graded" value={comp.gradedLabel} />
+            <SourceBadge label="Confidence" value={comp.overall} />
+          </div>
+
           <div className="mt-5 rounded-2xl border border-amber-500/25 bg-amber-500/[0.08] px-4 py-3 text-center">
             <p className="text-sm font-semibold leading-snug text-amber-200">
               You could be sitting on a{" "}
@@ -73,7 +103,6 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             />
           </div>
 
-          {/* ROI headline — screenshot-focused */}
           <div
             className={`mt-6 rounded-2xl border p-4 sm:p-5 ${
               worth
@@ -95,8 +124,14 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               Expected net if PSA 10 vs selling raw, after PSA fee &amp; est.
               shipping
             </p>
+            {roi.psa9PainCase ? (
+              <p className="mt-2 text-center text-xs leading-snug text-amber-300/90">
+                PSA 9 pain case: a 9 nets {formatUsdSigned(roi.netIfPSA9)} — headline
+                assumes a 10.
+              </p>
+            ) : null}
             <p className="mt-2 text-center text-xs leading-snug text-zinc-400">
-              Based on recent market comps and grading outcomes
+              Break-even (net ≥ $0): {minGradeLabel(roi.minGradeToBreakEven)}
             </p>
           </div>
 
@@ -125,6 +160,19 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               {data.verdictReason}
             </p>
           </div>
+
+          {loseReasons.length > 0 ? (
+            <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/[0.05] px-3.5 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300/90">
+                Why this could lose money
+              </p>
+              <ul className="mt-2 list-disc space-y-1.5 pl-4 text-sm leading-relaxed text-zinc-300">
+                {loseReasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           <div className="mt-7 space-y-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
@@ -185,9 +233,13 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
                 highlight
               />
               <StatCell
-                label="eBay comps"
+                label="eBay market"
                 value={ebayOk ? formatUsd(data.ebay.avgSoldPrice) : "—"}
-                sub={ebayOk ? "Recent sold listings avg" : "Using model estimate"}
+                sub={
+                  ebayOk
+                    ? comp.rawLabel
+                    : "Using model estimate"
+                }
                 muted={!ebayOk}
               />
               <StatCell
@@ -211,10 +263,12 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             </p>
             <div className="mt-2 space-y-1">
               <div className="flex justify-between gap-3">
-                <span className="text-zinc-500">Source type</span>
-                <span className="text-right text-zinc-300">
-                  {ebayOk ? "Live comps" : "Estimated comps"}
-                </span>
+                <span className="text-zinc-500">Raw source</span>
+                <span className="text-right text-zinc-300">{comp.rawLabel}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-zinc-500">Graded source</span>
+                <span className="text-right text-zinc-300">{comp.gradedLabel}</span>
               </div>
               <div className="flex justify-between gap-3">
                 <span className="text-zinc-500">Last updated</span>
@@ -224,21 +278,22 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               </div>
               <div className="flex justify-between gap-3">
                 <span className="text-zinc-500">Confidence level</span>
+                <span className="text-right text-zinc-300">{comp.overall}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-zinc-500">Grade call bar</span>
                 <span className="text-right text-zinc-300">
-                  {confidenceLevel}
+                  {minGradeLabel(roi.minGradeToRecommend)}
                 </span>
               </div>
             </div>
-            {!ebayOk ? (
-              <p className="mt-2 text-zinc-500">
-                Values use CardSnap&apos;s model estimate and PSA population data when
-                available.{" "}
-                <Link href="/methodology" className="text-amber-400/90 underline-offset-2 hover:underline">
-                  See methodology
-                </Link>
-                .
-              </p>
-            ) : null}
+            <p className="mt-2 text-zinc-500">
+              {" "}
+              <Link href="/methodology" className="text-amber-400/90 underline-offset-2 hover:underline">
+                See methodology
+              </Link>
+              .
+            </p>
           </div>
 
           <div className="mt-5 rounded-xl border border-zinc-700/80 bg-zinc-900/50 px-3.5 py-3 text-sm leading-snug text-zinc-400">
@@ -260,7 +315,15 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             )}
           </div>
 
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:gap-3">
+          <button
+            type="button"
+            onClick={copyPasteReply}
+            className="mt-5 flex h-12 w-full items-center justify-center rounded-xl border border-amber-500/40 bg-amber-500/10 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/15"
+          >
+            {copied ? "Copied — paste in thread" : "Copy community reply (no link)"}
+          </button>
+
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:gap-3">
             <Link
               href={`/results/${scanId}`}
               className="flex h-12 flex-1 items-center justify-center rounded-xl bg-white text-sm font-semibold text-zinc-950 shadow-sm transition hover:bg-zinc-100"
@@ -287,6 +350,15 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
         </div>
       </div>
     </div>
+  );
+}
+
+function SourceBadge({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700/80 bg-zinc-900/80 px-2.5 py-1 text-[10px] text-zinc-400">
+      <span className="font-semibold uppercase tracking-wider text-zinc-500">{label}</span>
+      <span className="text-zinc-200">{value}</span>
+    </span>
   );
 }
 

@@ -88,10 +88,15 @@ export async function getFingerprintScopedScanCount(
     .select("*", { count: "exact", head: true })
     .eq("device_fingerprint", fingerprint);
   if (fpError) {
-    console.error("[fingerprint] fingerprint count failed", fpError);
-    return null;
+    if (/device_fingerprint|schema cache|PGRST204/i.test(fpError.message)) {
+      console.warn("[fingerprint] device_fingerprint column missing — skipping fp count");
+    } else {
+      console.error("[fingerprint] fingerprint count failed", fpError);
+      return null;
+    }
+  } else {
+    maxCount = Math.max(maxCount, fpCount ?? 0);
   }
-  maxCount = Math.max(maxCount, fpCount ?? 0);
 
   if (deviceIds.length) {
     const { count, error } = await supabase

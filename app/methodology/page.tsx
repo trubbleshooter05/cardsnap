@@ -121,6 +121,37 @@ export default function MethodologyPage() {
 
         <section className="mt-10 space-y-4 text-zinc-300">
           <h2 className="text-xl font-semibold text-white">
+            Source limitations (read this before grading)
+          </h2>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <span className="text-zinc-200">eBay Browse data:</span> when live
+              eBay prices appear, they come from active fixed-price listings — asking
+              prices, not confirmed sold results. Realizable raw value can differ.
+            </li>
+            <li>
+              <span className="text-zinc-200">Model estimates:</span> when comps are
+              thin or missing, raw and graded bands lean on language-model pricing
+              knowledge. Rare, misidentified, or cross-grade cards (CGC→PSA) can be
+              wrong.
+            </li>
+            <li>
+              <span className="text-zinc-200">PSA 9 vs 10:</span> the headline
+              recommendation uses the PSA 10 net path. If a PSA 9 nets negative or
+              below our grade bar, the scanner surfaces a &quot;PSA 9 pain case&quot; —
+              grading can still lose money on a 9 even when a 10 looks good.
+            </li>
+            <li>
+              <span className="text-zinc-200">Break-even grade:</span> we show the
+              lowest modeled grade where net return turns positive and the grade
+              needed to clear our ~$25 recommendation threshold after PSA fees and
+              estimated shipping.
+            </li>
+          </ul>
+        </section>
+
+        <section className="mt-10 space-y-4 text-zinc-300">
+          <h2 className="text-xl font-semibold text-white">
             How often we update content and descriptions
           </h2>
           <p>

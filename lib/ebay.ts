@@ -62,11 +62,13 @@ function emptyComp(): EbayComp {
     minSoldPrice: null,
     maxSoldPrice: null,
     recentSales: [],
+    compSource: "none",
   };
 }
 
 /**
- * eBay Browse search returns active fixed-price listings; prices are used as recent market comps.
+ * eBay Browse search returns active fixed-price listings (asking prices), not sold comps.
+ * We label them honestly in the UI — do not treat as confirmed sales.
  */
 export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> {
   const token = await getEbayAccessToken();
@@ -129,5 +131,6 @@ export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> 
     minSoldPrice: Math.min(...prices),
     maxSoldPrice: Math.max(...prices),
     recentSales: prices.slice(0, 10),
+    compSource: "ebay_active_listings",
   };
 }
