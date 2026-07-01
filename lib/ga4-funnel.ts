@@ -68,13 +68,66 @@ export function trackUpgradeClicked(
   });
 }
 
+function trackBeginCheckout(params: {
+  value: number;
+  item_id: string;
+  item_name: string;
+}) {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  window.gtag("event", "begin_checkout", {
+    currency: "USD",
+    value: params.value,
+    items: [
+      {
+        item_id: params.item_id,
+        item_name: params.item_name,
+        quantity: 1,
+      },
+    ],
+  });
+}
+
+function checkoutItemForPayload(payload: ProductCheckoutPayload) {
+  if (payload.kind === "subscription") {
+    return {
+      item_id: `cardsnap_pro_${payload.plan}`,
+      item_name: `CardSnap Pro ${payload.plan}`,
+      value: payload.plan === "monthly" ? 9.99 : 99,
+    };
+  }
+  return {
+    item_id: `cardsnap_scan_pack_${payload.credits}`,
+    item_name: `CardSnap ${payload.credits} scan pack`,
+    value: PACK_VALUES[payload.credits],
+  };
+}
+
 export function trackCheckoutStarted(
   payload: ProductCheckoutPayload,
   source: Ga4CheckoutSource
 ) {
+  const gaParams = checkoutPayloadToGaParams(payload);
   trackGa4FunnelEvent("checkout_started", {
     source,
-    ...checkoutPayloadToGaParams(payload),
+    ...gaParams,
+  });
+  trackBeginCheckout(checkoutItemForPayload(payload));
+}
+
+const REPORT_CHECKOUT_VALUE = 4.99;
+
+export function trackReportCheckoutStarted(
+  source: Ga4CheckoutSource = "paywall"
+) {
+  trackGa4FunnelEvent("checkout_started", {
+    source,
+    product_type: "report",
+    value: REPORT_CHECKOUT_VALUE,
+  });
+  trackBeginCheckout({
+    value: REPORT_CHECKOUT_VALUE,
+    item_id: "cardsnap_single_report",
+    item_name: "CardSnap single grading report",
   });
 }
 

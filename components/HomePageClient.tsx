@@ -26,6 +26,7 @@ import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import {
   trackCheckoutStarted,
   trackPaywallShown,
+  trackReportCheckoutStarted,
   trackResultViewed,
   trackUpgradeClicked,
   type Ga4CheckoutSource,
@@ -817,6 +818,7 @@ export function HomePageClient() {
         return;
       }
       const { url } = (await res.json()) as { url: string };
+      trackReportCheckoutStarted("paywall");
       window.location.href = url;
     } finally {
       setReportCheckouting(false);
