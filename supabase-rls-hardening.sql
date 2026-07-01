@@ -12,20 +12,20 @@ DROP POLICY IF EXISTS "Users can delete their own scans" ON public.scans;
 
 CREATE POLICY "Users can view their own scans"
   ON public.scans FOR SELECT
-  USING (auth.uid()::text = user_id);
+  USING ((auth.uid())::text = (user_id)::text);
 
 CREATE POLICY "Users can insert their own scans"
   ON public.scans FOR INSERT
-  WITH CHECK (auth.uid()::text = user_id);
+  WITH CHECK ((auth.uid())::text = (user_id)::text);
 
 CREATE POLICY "Users can update their own scans"
   ON public.scans FOR UPDATE
-  USING (auth.uid()::text = user_id)
-  WITH CHECK (auth.uid()::text = user_id);
+  USING ((auth.uid())::text = (user_id)::text)
+  WITH CHECK ((auth.uid())::text = (user_id)::text);
 
 CREATE POLICY "Users can delete their own scans"
   ON public.scans FOR DELETE
-  USING (auth.uid()::text = user_id);
+  USING ((auth.uid())::text = (user_id)::text);
 
 -- ── users ────────────────────────────────────────────────────────────────────
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -37,16 +37,16 @@ DROP POLICY IF EXISTS "Users can insert their own user record" ON public.users;
 
 CREATE POLICY "Users can view their own user record"
   ON public.users FOR SELECT
-  USING (auth.uid()::text = id);
+  USING ((auth.uid())::text = (id)::text);
 
 CREATE POLICY "Users can update their own user record"
   ON public.users FOR UPDATE
-  USING (auth.uid()::text = id)
-  WITH CHECK (auth.uid()::text = id);
+  USING ((auth.uid())::text = (id)::text)
+  WITH CHECK ((auth.uid())::text = (id)::text);
 
 CREATE POLICY "Users can insert their own user record"
   ON public.users FOR INSERT
-  WITH CHECK (auth.uid()::text = id);
+  WITH CHECK ((auth.uid())::text = (id)::text);
 
 -- ── server-only tables (RLS on, no anon/authenticated policies) ─────────────
 ALTER TABLE IF EXISTS public.free_scan_ip_usage ENABLE ROW LEVEL SECURITY;
