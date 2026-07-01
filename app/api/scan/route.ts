@@ -18,6 +18,11 @@ import { isAdminEmail } from "@/lib/admin-access";
 import { isScanBlocked, scanBlockedReason, scansRemainingNonPro, shouldConsumePrepaidCredit } from "@/lib/scan-enforcement";
 import { applyDeviceCookie, applyUserCookie } from "@/lib/scan-cookies";
 import { withTimeout } from "@/lib/timeout";
+import {
+  applyCardMatchWarnings,
+  parseCardIdentity,
+  validateCardPricing,
+} from "@/lib/card-identity";
 import type {
   PostgrestMaybeSingleResponse,
   PostgrestSingleResponse,
@@ -214,7 +219,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  console.log("[scan] starting analysis for card:", cardName, "condition:", condition);
+  const cardIdentity = parseCardIdentity(cardName);
+  console.log("[scan] starting analysis for card:", cardName, "condition:", condition, "ebayQuery:", cardIdentity.ebayQuery);
 
   let ai: Awaited<ReturnType<typeof analyzeCardWithOpenAI>>;
   let ebay: Awaited<ReturnType<typeof searchEbayItemPrices>>;
@@ -223,8 +229,8 @@ export async function POST(req: NextRequest) {
   try {
     // Use allSettled so one slow/failed provider doesn't block the others
     const results = await Promise.allSettled([
-      analyzeCardWithOpenAI(cardName, condition),
-      searchEbayItemPrices(cardName),
+      analyzeCardWithOpenAI(cardName, condition, cardIdentity),
+      searchEbayItemPrices(cardIdentity.ebayQuery),
       fetchPsaPopulation(cardName),
     ]);
 
@@ -248,7 +254,12 @@ export async function POST(req: NextRequest) {
 
   console.log("[scan] analysis complete, merging results");
 
-  const merged = mergeScanResults(ai, ebay, psa);
+  let merged = mergeScanResults(ai, ebay, psa);
+  const matchValidation = validateCardPricing(cardName, merged, ebay.avgSoldPrice);
+  if (!matchValidation.ok) {
+    console.warn("[scan] card match warnings", matchValidation.warnings);
+    merged = applyCardMatchWarnings(merged, matchValidation);
+  }
 
   const insertPayload: {
     user_id: string;

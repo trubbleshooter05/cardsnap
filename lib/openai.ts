@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import type { CardAnalysis } from "@/lib/types";
 import { withTimeout } from "@/lib/timeout";
+import type { ParsedCardIdentity } from "@/lib/card-identity";
+import { openAiCardContext } from "@/lib/card-identity";
 
 function num(v: unknown, fallback = 0): number {
   if (typeof v === "number" && !Number.isNaN(v)) return v;
@@ -34,7 +36,8 @@ function defaultAnalysis(cardName: string): CardAnalysis {
 
 export async function analyzeCardWithOpenAI(
   cardName: string,
-  condition: string
+  condition: string,
+  identity?: ParsedCardIdentity
 ): Promise<CardAnalysis> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -64,7 +67,9 @@ Using your knowledge of recent eBay market comps and hobby pricing for this card
   "verdictReason": string (2–3 short sentences: key value drivers, risk if the card grades below a 10, and whether upside likely beats typical PSA fees + shipping)
 }
 
-Estimate raw value range for the stated condition. If the exact card is unknown, infer the best match and say so in verdictReason.
+Estimate raw value range for the stated condition.
+If the exact card is unknown, set numeric values to 0 and explain in verdictReason — do NOT substitute a similar card number.
+${openAiCardContext(identity ?? { searchText: cardName, setNumber: null, anchor: null, ebayQuery: cardName })}
 Return ONLY valid JSON. No markdown, no code fences.`;
 
   console.log("[openai] starting analysis for", cardName);

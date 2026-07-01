@@ -32,6 +32,11 @@ export function formatPasteVerdict(data: ScanResultPayload): string {
     );
   }
 
+  const cardMatchLine = roi.loseMoneyReasons.find((r) => r.startsWith("Card match:"));
+  if (cardMatchLine) {
+    lines.push(cardMatchLine.replace(/^Card match:\s*/, "⚠️ "));
+  }
+
   if (comp.rawLabel.includes("Active listings")) {
     lines.push("Raw comp uses active asking prices, not confirmed solds.");
   }
