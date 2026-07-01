@@ -32,6 +32,7 @@ export async function insertScanRecord(
   console.warn(
     "[scan] device_fingerprint column missing — retrying insert without it (run supabase-device-fingerprint.sql)"
   );
-  const { device_fingerprint: _omit, ...rest } = payload;
+  const rest = { ...payload };
+  delete rest.device_fingerprint;
   return supabase.from("scans").insert(rest).select("id").single();
 }

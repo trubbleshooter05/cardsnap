@@ -63,7 +63,6 @@ export function hasUnlimitedScans(entitlement: ScanEntitlement): boolean {
 
 export function isScanBlocked(entitlement: ScanEntitlement): boolean {
   const {
-    isPro,
     prepaidCredits,
     userScansUsed,
     deviceScansUsed,

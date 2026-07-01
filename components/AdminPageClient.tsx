@@ -101,7 +101,7 @@ export function AdminPageClient() {
         </Link>
       </div>
 
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} initialMode="signin" />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} initialMode="signin" redirectPath="/admin" />
     </div>
   );
 }
