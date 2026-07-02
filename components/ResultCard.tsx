@@ -5,7 +5,10 @@ import Link from "next/link";
 import type { MinGradeTarget, ScanResultPayload } from "@/lib/types";
 import { formatUsd, formatUsdSigned } from "@/lib/format-currency";
 import { computeGradingRoi } from "@/lib/roi";
-import { formatPasteVerdict } from "@/lib/paste-verdict";
+import {
+  assessCommunityPasteReadiness,
+  formatPasteVerdict,
+} from "@/lib/paste-verdict";
 import { describeCompSource } from "@/lib/source-confidence";
 
 type Props = {
@@ -34,6 +37,7 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
   const psa = data.psa;
   const ebayOk = hasEbayPrice(data.ebay.avgSoldPrice);
   const comp = describeCompSource(data);
+  const pasteReady = assessCommunityPasteReadiness({ ...data, roi });
   const loseReasons =
     roi.loseMoneyReasons.length > 0
       ? roi.loseMoneyReasons
@@ -45,6 +49,7 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
   );
 
   async function copyPasteReply() {
+    if (!pasteReady.ok) return;
     const text = formatPasteVerdict({ ...data, roi });
     try {
       await navigator.clipboard.writeText(text);
@@ -315,12 +320,40 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             )}
           </div>
 
+          {!pasteReady.ok ? (
+            <div className="mt-5 rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100/90">
+              <p className="font-semibold text-rose-200">Not ready for Reddit paste</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-rose-100/80">
+                {pasteReady.reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+              {pasteReady.fixHints.length > 0 ? (
+                <p className="mt-2 text-rose-100/70">
+                  Try: {pasteReady.fixHints.join(" ")}
+                </p>
+              ) : null}
+              <p className="mt-2 text-xs text-rose-100/60">
+                For threads like this, reply with questions or point to 130point — not model guesses.
+              </p>
+            </div>
+          ) : null}
+
           <button
             type="button"
             onClick={copyPasteReply}
-            className="mt-5 flex h-12 w-full items-center justify-center rounded-xl border border-amber-500/40 bg-amber-500/10 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/15"
+            disabled={!pasteReady.ok}
+            className={`mt-5 flex h-12 w-full items-center justify-center rounded-xl border text-sm font-semibold transition ${
+              pasteReady.ok
+                ? "border-amber-500/40 bg-amber-500/10 text-amber-100 hover:bg-amber-500/15"
+                : "cursor-not-allowed border-zinc-700 bg-zinc-900/50 text-zinc-500"
+            }`}
           >
-            {copied ? "Copied — paste in thread" : "Copy community reply (no link)"}
+            {copied
+              ? "Copied — paste in thread"
+              : pasteReady.ok
+                ? "Copy community reply (no link)"
+                : "Fix search, then copy reply"}
           </button>
 
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:gap-3">

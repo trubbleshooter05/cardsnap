@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 
 type AuthModalProps = {
@@ -27,6 +27,12 @@ export function AuthModal({
   redirectPath,
 }: AuthModalProps) {
   const [mode, setMode] = useState<"signin" | "signup" | "reset">(initialMode);
+
+  // The modal mounts once (in SiteNav) and is reused; re-sync the mode each
+  // time it opens so purchase CTAs can land on "Create Account".
+  useEffect(() => {
+    if (open) setMode(initialMode);
+  }, [open, initialMode]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

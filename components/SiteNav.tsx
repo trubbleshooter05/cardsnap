@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/components/useAuth";
 import { AuthModal } from "@/components/AuthModal";
 import { useEffect, useRef, useState } from "react";
-import { notifyAuthModalDismissed, OPEN_AUTH_EVENT } from "@/lib/auth-events";
+import { notifyAuthModalDismissed, OPEN_AUTH_EVENT, type AuthModalMode } from "@/lib/auth-events";
 import { resetGuestSession } from "@/lib/reset-guest-session";
 
 const GUIDE_LINKS: { href: string; label: string }[] = [
@@ -43,12 +43,17 @@ type SiteNavProps = {
 export function SiteNav({ trailing, className = "" }: SiteNavProps) {
   const { user, signOut, loading: authLoading } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<AuthModalMode>("signin");
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Listen for auth modal events from upgrade flow
   useEffect(() => {
-    const openAuth = () => setAuthModalOpen(true);
+    const openAuth = (e: Event) => {
+      const mode = (e as CustomEvent<{ mode?: AuthModalMode }>).detail?.mode;
+      setAuthModalMode(mode === "signup" ? "signup" : "signin");
+      setAuthModalOpen(true);
+    };
     window.addEventListener(OPEN_AUTH_EVENT, openAuth);
     return () => window.removeEventListener(OPEN_AUTH_EVENT, openAuth);
   }, []);
@@ -216,8 +221,10 @@ export function SiteNav({ trailing, className = "" }: SiteNavProps) {
 
       <AuthModal
         open={authModalOpen}
+        initialMode={authModalMode}
         onClose={() => {
           setAuthModalOpen(false);
+          setAuthModalMode("signin");
           notifyAuthModalDismissed();
         }}
       />

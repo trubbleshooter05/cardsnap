@@ -102,7 +102,7 @@ export function useProductCheckout(options: Options = {}) {
       if (!user?.id) {
         pendingCheckoutRef.current = payload;
         setPendingCheckoutFromCta(payload);
-        requestOpenAuthModal();
+        requestOpenAuthModal("signup");
         return;
       }
       void executeCheckout("cta", payload);

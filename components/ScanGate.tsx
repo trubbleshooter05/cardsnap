@@ -105,7 +105,7 @@ export function ScanGate({
             "See exact PSA 9 vs PSA 10 ROI before you pay",
             "Know the break-even grade before submitting",
             "Avoid the #1 grading mistake: only works at PSA 10",
-            "Start with 5 free scans — upgrade when you're convinced",
+            "No subscription needed — scan packs from $9.99 or a single report for $4.99 below",
           ].map((b) => (
             <li key={b} className="flex items-start gap-2.5 text-sm text-zinc-300">
               <span className="mt-0.5 font-bold text-amber-400">✓</span>

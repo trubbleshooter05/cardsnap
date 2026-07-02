@@ -4,7 +4,7 @@ import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Sample Analysis — See What CardSnap Gives You | CardSnap",
+  title: "Sample Analysis — See What CardSnap Gives You",
   description:
     "See exactly what a CardSnap grading analysis looks like before you use your free analysis. Raw value, PSA 9, PSA 10, pop data, and a grade-or-skip verdict.",
   alternates: { canonical: `${getSiteUrl()}/sample-scan` },

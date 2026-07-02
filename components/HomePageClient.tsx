@@ -773,8 +773,8 @@ export function HomePageClient() {
     if (!user?.id) {
       pendingPaywallCheckoutRef.current = payload;
       setPendingCheckoutFromCta(payload);
-      console.log(AUTH_LOG, "auth: opening sign-in (pending checkout after login)");
-      requestOpenAuthModal();
+      console.log(AUTH_LOG, "auth: opening sign-up (pending checkout after auth)");
+      requestOpenAuthModal("signup");
       return;
     }
     setGateOpen(false);
@@ -792,7 +792,7 @@ export function HomePageClient() {
       if (!user?.id) {
         pendingPaywallCheckoutRef.current = payload;
         setPendingCheckoutFromCta(payload);
-        requestOpenAuthModal();
+        requestOpenAuthModal("signup");
         return;
       }
       setGateOpen(false);
@@ -1007,7 +1007,7 @@ export function HomePageClient() {
                     ))}
                   </div>
                   <span className="text-xs text-zinc-500">
-                    {usageCount} of {freeLimit} free{" "}
+                    {Math.min(usageCount, freeLimit)} of {freeLimit} free{" "}
                     {freeLimit === 1 ? "analysis" : "analyses"} used
                   </span>
                 </div>
