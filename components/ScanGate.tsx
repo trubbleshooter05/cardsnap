@@ -127,6 +127,19 @@ export function ScanGate({
             One unlocked scan pays for a full year of CardSnap.
           </p>
 
+          {onReportCheckout ? (
+            <button
+              type="button"
+              disabled={reportCheckouting}
+              onClick={onReportCheckout}
+              className="w-full text-center text-xs text-zinc-500 underline underline-offset-2 transition-colors hover:text-zinc-300 disabled:opacity-60"
+            >
+              {reportCheckouting
+                ? "Redirecting…"
+                : "Just need this one? Get a single report for $4.99 — no account needed."}
+            </button>
+          ) : null}
+
           <div className="mt-5 border-t border-zinc-700/80 pt-5">
             <p className="text-center text-xs font-bold uppercase tracking-wider text-zinc-500">
               Or buy scans only (no subscription)
@@ -162,16 +175,6 @@ export function ScanGate({
             </div>
           </div>
 
-          {onReportCheckout ? (
-            <button
-              type="button"
-              disabled={reportCheckouting}
-              onClick={onReportCheckout}
-              className="flex h-11 w-full items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900 text-sm font-semibold text-zinc-200 transition-colors hover:border-amber-500/50 hover:text-amber-300 disabled:opacity-60"
-            >
-              {reportCheckouting ? "Redirecting…" : "Buy one report — $4.99"}
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={onClose}
