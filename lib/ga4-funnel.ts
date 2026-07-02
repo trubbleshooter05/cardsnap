@@ -6,14 +6,17 @@ export type Ga4FunnelEvent =
   | "checkout_started"
   | "checkout_completed"
   | "pricing_page_view"
-  | "result_viewed";
+  | "result_viewed"
+  | "report_upsell_viewed"
+  | "report_upsell_clicked";
 
 export type Ga4CheckoutSource =
   | "paywall"
   | "result_cta"
   | "pricing"
   | "account"
-  | "post_login";
+  | "post_login"
+  | "report_upsell";
 
 declare global {
   interface Window {
@@ -140,6 +143,14 @@ export function trackPaywallShown() {
 
 export function trackPricingPageView() {
   trackGa4FunnelEvent("pricing_page_view", { page_path: "/pricing" });
+}
+
+export function trackReportUpsellViewed() {
+  trackGa4FunnelEvent("report_upsell_viewed");
+}
+
+export function trackReportUpsellClicked() {
+  trackGa4FunnelEvent("report_upsell_clicked");
 }
 
 export function trackResultViewed(params: {

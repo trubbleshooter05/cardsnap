@@ -27,6 +27,8 @@ import {
   trackCheckoutStarted,
   trackPaywallShown,
   trackReportCheckoutStarted,
+  trackReportUpsellClicked,
+  trackReportUpsellViewed,
   trackResultViewed,
   trackUpgradeClicked,
   type Ga4CheckoutSource,
@@ -188,6 +190,7 @@ export function HomePageClient() {
     Partial<Record<10 | 50 | 200, boolean>>
   >({});
   const [reportCheckouting, setReportCheckouting] = useState(false);
+  const [showReportUpsell, setShowReportUpsell] = useState(false);
   const [checkoutSyncing, setCheckoutSyncing] = useState(false);
   const [progressIndex, setProgressIndex] = useState(0);
 
@@ -202,6 +205,7 @@ export function HomePageClient() {
   const resultRef = useRef<HTMLDivElement>(null);
   const lastResultTrackedRef = useRef<string | null>(null);
   const mergedForUserRef = useRef<string | null>(null);
+  const reportUpsellTrackedRef = useRef(false);
 
   // IDs for /api/usage and /api/scan. Never wait for auth init: anonymous ID must be ready
   // before getSession() finishes so the first free scan works with no login (limits are enforced on the server, not with a login wall).
@@ -507,6 +511,21 @@ export function HomePageClient() {
     if (!gateOpen) return;
     trackPaywallShown();
   }, [gateOpen]);
+
+  // Guest $4.99 single-report checkout lands back on "/?report=success…" — upsell to Pro here.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("report") !== "success") return;
+    setShowReportUpsell(true);
+  }, []);
+
+  useEffect(() => {
+    if (!showReportUpsell) return;
+    if (reportUpsellTrackedRef.current) return;
+    reportUpsellTrackedRef.current = true;
+    trackReportUpsellViewed();
+  }, [showReportUpsell]);
 
   useEffect(() => {
     if (!result?.scanId) return;
@@ -1078,6 +1097,29 @@ export function HomePageClient() {
                 <EmailCapture scanId={result.scanId} />
               </div>
             )}
+          </div>
+        )}
+
+        {showReportUpsell && !isPro && (
+          <div className="mt-10 w-full max-w-xl rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 text-center sm:p-8">
+            <h2 className="text-lg font-bold tracking-tight text-white sm:text-xl">
+              You just paid $4.99 for one report.
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+              A CardSnap Pro membership is $9.99/mo for unlimited reports — that&apos;s
+              your 3rd report already paying for itself.
+            </p>
+            <button
+              type="button"
+              disabled={upgrading}
+              onClick={() => {
+                trackReportUpsellClicked();
+                handleSubscribe("monthly", "report_upsell");
+              }}
+              className="btn-amber mt-5 flex h-12 w-full items-center justify-center rounded-xl text-sm font-bold shadow-lg shadow-amber-500/20 disabled:opacity-60"
+            >
+              {upgrading ? "Redirecting…" : "Upgrade to Pro — unlimited scans"}
+            </button>
           </div>
         )}
         <HomeTrustSection />
