@@ -1100,7 +1100,7 @@ export function HomePageClient() {
           </div>
         )}
 
-        {showReportUpsell && !isPro && (
+        {showReportUpsell && result && !loading && !isPro && (
           <div className="mt-10 w-full max-w-xl rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 text-center sm:p-8">
             <h2 className="text-lg font-bold tracking-tight text-white sm:text-xl">
               You just paid $4.99 for one report.
