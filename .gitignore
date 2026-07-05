@@ -46,3 +46,5 @@ logs/
 /public/audio/*.mp3
 /public/audio/daily/
 .venv/
+.browser-profiles/
+.browser-profiles/facebook-cardsnap/

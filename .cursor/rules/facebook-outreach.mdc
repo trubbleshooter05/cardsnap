@@ -1,0 +1,15 @@
+---
+description: CardSnap Facebook outreach via isolated Chrome profile
+alwaysApply: true
+---
+
+# CardSnap Facebook outreach
+
+Use isolated Chrome profile for Facebook group comments (not Glass browser).
+
+Setup once:
+`/Users/openclaw/venv/bin/python3 /Users/openclaw/projects/cardsnap/scripts/facebook_login_once.py`
+
+Profile: `cardsnap/.browser-profiles/facebook-cardsnap`
+
+Target groups from CardSnap tracker (sportscards, Pokémon Hub, etc.). Reply with helpful fee math and getcardsnap.com. No dash or asterisk symbols in copy.

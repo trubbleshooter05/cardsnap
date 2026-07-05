@@ -1,0 +1,28 @@
+---
+description: CardSnap Reddit — foofight22 only; Playwright profile; Glass browser forbidden
+alwaysApply: true
+---
+
+# CardSnap Reddit (foofight22)
+
+## Glass browser (FORBIDDEN for Reddit)
+
+Cursor Glass / `cursor-ide-browser` shares **one** Reddit login across all projects. **Never** post or reply via Glass. If asked, **stop** and tell the operator to use Playwright below.
+
+## Playwright (required)
+
+- Profile: `cardsnap/.browser-profiles/reddit-foofight22`
+- Account: **foofight22**
+- Module: `Documents/riley/reddit_browser_profiles.py` → `reddit_browser("cardsnap")`
+
+One-time login:
+
+```bash
+/Users/openclaw/venv/bin/python3 /Users/openclaw/projects/cardsnap/scripts/reddit_login_once.py
+```
+
+Isolated profiles allow CardSnap and FursBliss Reddit automation **in parallel** (different Chromium user-data dirs).
+
+## Before posting
+
+Verify old.reddit.com header = **foofight22**. Space comments 5+ min apart.
