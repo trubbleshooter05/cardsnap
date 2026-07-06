@@ -10,6 +10,7 @@ import {
   formatPasteVerdict,
 } from "@/lib/paste-verdict";
 import { describeCompSource } from "@/lib/source-confidence";
+import { EbayAffiliateButton } from "@/components/EbayAffiliateButton";
 
 type Props = {
   data: ScanResultPayload;
@@ -258,6 +259,12 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             </div>
           </div>
 
+          <EbayAffiliateButton
+            query={data.confirmedName}
+            customId={`scan-${scanId}`}
+            className="mt-4"
+          />
+
           <p className="mt-4 text-[11px] leading-relaxed text-zinc-600">
             Estimates only; PSA prices and fees change. Not financial advice.
           </p>
@@ -336,6 +343,32 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               <p className="mt-2 text-xs text-rose-100/60">
                 For threads like this, reply with questions or point to 130point — not model guesses.
               </p>
+            </div>
+          ) : null}
+
+          {process.env.NODE_ENV === "development" && data.ebay.debug ? (
+            <div className="mt-5 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 font-mono text-[11px] leading-relaxed text-amber-100/90">
+              <p className="font-semibold text-amber-200">eBay debug (dev only)</p>
+              <p className="mt-1">Reason: {data.ebay.debug.fallbackReason}</p>
+              <p>Query: {data.ebay.debug.query}</p>
+              <p>Token: {data.ebay.debug.tokenStatus}</p>
+              <p>
+                Env: appId={String(data.ebay.debug.env.hasAppId)} certId=
+                {String(data.ebay.debug.env.hasCertId)} staticToken=
+                {String(data.ebay.debug.env.hasStaticOAuthToken)}
+              </p>
+              {data.ebay.debug.browseHttpStatus != null ? (
+                <p>Browse HTTP: {data.ebay.debug.browseHttpStatus}</p>
+              ) : null}
+              {data.ebay.debug.itemSummaryCount != null ? (
+                <p>itemSummaries: {data.ebay.debug.itemSummaryCount}</p>
+              ) : null}
+              {data.ebay.debug.browseError ? (
+                <p className="break-all">Browse error: {data.ebay.debug.browseError}</p>
+              ) : null}
+              {data.ebay.debug.tokenError ? (
+                <p className="break-all">Token error: {data.ebay.debug.tokenError}</p>
+              ) : null}
             </div>
           ) : null}
 

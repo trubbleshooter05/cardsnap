@@ -15,6 +15,30 @@ export type CardAnalysis = {
 
 export type EbayCompSource = "ebay_active_listings" | "none";
 
+/** Dev-only diagnostics for why eBay comps did or did not load. Never persist to DB. */
+export type EbayCompDebug = {
+  fallbackReason: string;
+  query: string;
+  queriesAttempted: string[];
+  env: {
+    hasAppId: boolean;
+    hasCertId: boolean;
+    hasStaticOAuthToken: boolean;
+  };
+  tokenStatus:
+    | "ok"
+    | "missing_env"
+    | "static_token"
+    | "oauth_error"
+    | "oauth_timeout";
+  tokenHttpStatus?: number;
+  tokenError?: string;
+  browseHttpStatus?: number;
+  browseError?: string;
+  itemSummaryCount?: number;
+  filterUsed?: string;
+};
+
 export type EbayComp = {
   avgSoldPrice: number | null;
   minSoldPrice: number | null;
@@ -22,6 +46,8 @@ export type EbayComp = {
   recentSales: number[];
   /** Browse API returns active fixed-price listings, not sold results. */
   compSource: EbayCompSource;
+  /** Attached in development API responses only — not stored in Supabase. */
+  debug?: EbayCompDebug;
 };
 
 export type PsaPop = {

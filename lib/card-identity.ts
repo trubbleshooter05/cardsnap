@@ -104,10 +104,60 @@ export function buildEbaySearchQuery(
   if (anchor?.id === "umbreon-v-189") {
     return "Pokemon Umbreon V Alternate Art Evolving Skies 189";
   }
-  if (setNumber) {
-    return `${cardName} ${setNumber}`.replace(/\s+/g, " ").trim();
+
+  const raw = cardName.trim();
+  const yearMatch = raw.match(/\b(19|20)\d{2}\b/);
+  const year = yearMatch?.[0] ?? null;
+  const num = setNumber ?? parseSetNumber(raw);
+
+  const gradingNoise =
+    /\b(psa|bgs|sgc|cgc|hga|tags)\s*[\d.]+\b|\b(psa|bgs|sgc|cgc)\b|\b(raw|ungraded|gem\s*mint|near\s*mint|nm-m?|mint)\b/gi;
+  let core = raw.replace(gradingNoise, " ").replace(/\s+/g, " ").trim();
+
+  const parallelPatterns = [
+    /\bsilver\s+prizm\b/i,
+    /\bgold\s+prizm\b/i,
+    /\b(blue|green|red|purple|black|white|orange|pink|teal)\s+(prizm|wave|mosaic|refractor|velocity|holo)\b/i,
+    /\bprizm\b/i,
+    /\brefractor\b/i,
+    /\b(alternate|alt)\s+art\b/i,
+    /\bvmax\b|\bvstar\b|\bex\b/i,
+    /\b\d+\s*\/\s*\d+\b/,
+  ];
+  const parallelParts: string[] = [];
+  for (const pattern of parallelPatterns) {
+    const hit = core.match(pattern);
+    if (hit && !parallelParts.includes(hit[0])) {
+      parallelParts.push(hit[0].replace(/\s+/g, " ").trim());
+    }
   }
-  return cardName.trim();
+
+  if (year) {
+    core = core.replace(new RegExp(`\\b${year}\\b`), "").trim();
+  }
+  if (num) {
+    core = core
+      .replace(new RegExp(`#\\s*${num}\\b`, "i"), "")
+      .replace(new RegExp(`\\b${num}\\s*\\/\\s*\\d+\\b`), "")
+      .trim();
+  }
+
+  const parts: string[] = [];
+  if (year) parts.push(year);
+  if (core) parts.push(core);
+  for (const p of parallelParts) {
+    if (!parts.join(" ").toLowerCase().includes(p.toLowerCase())) {
+      parts.push(p);
+    }
+  }
+  if (num && !parts.some((p) => p.includes(num))) {
+    parts.push(`#${num}`);
+  }
+
+  const query = parts.join(" ").replace(/\s+/g, " ").trim();
+  if (query.length > 0) return query.slice(0, 120);
+  if (num) return `${raw} ${num}`.replace(/\s+/g, " ").trim();
+  return raw;
 }
 
 function rawMid(

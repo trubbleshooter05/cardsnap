@@ -29,6 +29,14 @@ describe("buildEbaySearchQuery", () => {
     expect(buildEbaySearchQuery("Umbreon VMAX AA #215")).toContain("215");
     expect(buildEbaySearchQuery("Umbreon VMAX AA #215")).toContain("VMAX");
   });
+
+  it("builds structured sports query with year and card number", () => {
+    const q = buildEbaySearchQuery("2020 Prizm Joe Burrow PSA 10 #307");
+    expect(q).toMatch(/2020/);
+    expect(q).toContain("307");
+    expect(q.toLowerCase()).toContain("prizm");
+    expect(q.toLowerCase()).not.toContain("psa");
+  });
 });
 
 describe("validateCardPricing", () => {

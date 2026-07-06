@@ -9,6 +9,10 @@ export function SiteFooter() {
         <p className="text-zinc-600">
           © {new Date().getUTCFullYear()} CardSnap
         </p>
+        <p className="text-xs text-zinc-600 sm:max-w-md">
+          As an eBay Partner, CardSnap may earn commission from qualifying eBay
+          purchases.
+        </p>
         <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Legal and policies">
           <Link href="/cards" className="hover:text-zinc-300">
             Card values

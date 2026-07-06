@@ -48,3 +48,7 @@ logs/
 .venv/
 .browser-profiles/
 .browser-profiles/facebook-cardsnap/
+
+# Secret backups — never commit
+.env.local.save
+.env*.save

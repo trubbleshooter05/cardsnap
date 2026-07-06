@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { createServerSupabase } from "@/lib/supabase";
 import { analyzeCardWithOpenAI } from "@/lib/openai";
-import { searchEbayItemPrices } from "@/lib/ebay";
+import { searchEbayItemPrices, stripEbayDebug, withEbayDebug } from "@/lib/ebay";
+import type { EbayCompDebug } from "@/lib/types";
 import { fetchPsaPopulation } from "@/lib/psa";
 import { mergeScanResults } from "@/lib/merge-scan";
 import { insertScanRecord } from "@/lib/insert-scan-record";
@@ -224,6 +225,7 @@ export async function POST(req: NextRequest) {
 
   let ai: Awaited<ReturnType<typeof analyzeCardWithOpenAI>>;
   let ebay: Awaited<ReturnType<typeof searchEbayItemPrices>>;
+  let ebayDebug: EbayCompDebug | undefined;
   let psa: Awaited<ReturnType<typeof fetchPsaPopulation>>;
 
   try {
@@ -235,8 +237,20 @@ export async function POST(req: NextRequest) {
     ]);
 
     ai = results[0]?.status === "fulfilled" ? results[0].value : { confirmedName: cardName, year: "", player: "", set: "", sport: "", rawValueLow: 0, rawValueMid: 0, rawValueHigh: 0, gradedPSA9Value: 0, gradedPSA10Value: 0, worthGrading: false, verdictReason: "Analysis unavailable." };
-    ebay = results[1]?.status === "fulfilled" ? results[1].value : { avgSoldPrice: null, minSoldPrice: null, maxSoldPrice: null, recentSales: [], compSource: "none" };
+    const ebayRaw = results[1]?.status === "fulfilled" ? results[1].value : { avgSoldPrice: null, minSoldPrice: null, maxSoldPrice: null, recentSales: [], compSource: "none" as const };
+    ebayDebug = ebayRaw.debug;
+    ebay = stripEbayDebug(ebayRaw);
     psa = results[2]?.status === "fulfilled" ? results[2].value : null;
+
+    console.log("[scan] ebay result", {
+      compSource: ebay.compSource,
+      avgSoldPrice: ebay.avgSoldPrice,
+      query: cardIdentity.ebayQuery,
+      fallbackReason: ebayDebug?.fallbackReason,
+      tokenStatus: ebayDebug?.tokenStatus,
+      browseHttpStatus: ebayDebug?.browseHttpStatus,
+      itemSummaryCount: ebayDebug?.itemSummaryCount,
+    });
 
     if (results[0]?.status === "rejected") {
       console.error("[scan] OpenAI failed:", results[0].reason);
@@ -381,6 +395,7 @@ export async function POST(req: NextRequest) {
   console.log("[scan] returning response with merged data");
   const response = NextResponse.json({
     ...merged,
+    ebay: withEbayDebug(merged.ebay, ebayDebug),
     scanId: inserted.id,
     /** @deprecated use freeScansUsed — kept for older clients */
     scansUsedThisMonth: freeScansUsed,

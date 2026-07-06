@@ -15,7 +15,10 @@
     "growth:intel": "node --import tsx scripts/growth-intel.ts",
     "ugc:daily": "node --import tsx scripts/daily-ugc-workflow.ts",
     "generate-card-content": "tsx scripts/generate-card-content.ts",
-    "add-cards": "tsx scripts/add-cards.ts"
+    "add-cards": "tsx scripts/add-cards.ts",
+    "test:ebay": "tsx scripts/test-ebay-browse.ts",
+    "test:ebay:oauth": "tsx scripts/test-ebay-oauth-curl.ts",
+    "proof:paste-scan": "node --import tsx scripts/proof-paste-scan.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.0",
