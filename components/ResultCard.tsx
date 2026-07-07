@@ -11,6 +11,7 @@ import {
 } from "@/lib/paste-verdict";
 import { describeCompSource } from "@/lib/source-confidence";
 import { EbayAffiliateButton } from "@/components/EbayAffiliateButton";
+import { GradingAffiliateLinks } from "@/components/GradingAffiliateLinks";
 
 type Props = {
   data: ScanResultPayload;
@@ -140,6 +141,8 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
               Break-even (net ≥ $0): {minGradeLabel(roi.minGradeToBreakEven)}
             </p>
           </div>
+
+          <GradingAffiliateLinks className="mt-5" />
 
           <p className="mt-3 text-center text-xs text-amber-300/80">
             Card values fluctuate — this estimate may change

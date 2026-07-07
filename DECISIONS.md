@@ -39,3 +39,33 @@ The Browse API (`/buy/browse/v1/item_summary/search`) returns live fixed-price l
 
 ### Manual step required
 Run `supabase-card-prices.sql` in the Supabase dashboard before deploying to production.
+
+## 130point.com Bridge — Skipped (July 2026)
+
+### Investigation
+- `https://130point.com/api` returns Cloudflare 403 — no public developer API.
+- 130point's consumer product is a free web/app comps checker; official developer API does not exist.
+- Third-party wrappers (e.g. Parse.bot) charge $30–100/month — not a free tier from 130point itself.
+
+### Existing code (not wired to production scan)
+- `lib/card-comps.ts` scrapes 130point sales HTML server-side (fragile, no SLA, may break on Cloudflare).
+- `app/api/card-comps/route.ts` exposes it for dev testing only (`CardCompsTest.tsx`).
+
+### Decision: skip new integration
+eBay Browse API (approved July 2026) already provides live listing prices on every scan. Building a paid third-party wrapper or brittle HTML scraper into the production ROI flow adds cost and failure modes without reliable sold-history data. Users who need deep sold comps are directed to the eBay sold-search affiliate link and 130point manually via community paste guidance.
+
+### If revisited later
+- Apply for eBay Marketplace Insights API (true sold history) when scope is approved.
+- Or negotiate official 130point data partnership — do not scrape production pages.
+
+## PSA + BGS Grading Affiliate Links (July 2026)
+
+### What was added
+- `components/GradingAffiliateLinks.tsx` — two outbound links below the ROI verdict block:
+  - "Submit to PSA" → https://www.psacard.com
+  - "Submit to Beckett" → https://www.beckett.com/grading
+- Wired into `components/ResultCard.tsx` immediately after the grade/skip verdict, before other CTAs.
+- Styled as a 2-column button row matching CardSnap dark theme (red/blue accent borders).
+- Zero new API calls — passive revenue on existing ROI calculator traffic.
+
+
