@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EbayComp, EbayCompDebug } from "@/lib/types";
 import { withTimeout } from "@/lib/timeout";
 
@@ -265,9 +266,19 @@ function buildAttempts(primaryQuery: string): BrowseAttempt[] {
 /**
  * eBay Browse search returns active listings (asking prices), not sold comps.
  * We label them honestly in the UI — do not treat as confirmed sales.
+ *
+ * Pass a supabase client to enable 24hr card_prices caching.
  */
-export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> {
+export async function searchEbayItemPrices(cardName: string, supabase?: SupabaseClient): Promise<EbayComp> {
   const query = cardName.trim();
+
+  if (supabase) {
+    const cached = await readPriceCache(supabase, query);
+    if (cached) {
+      console.log("[ebay] cache hit", { query });
+      return cached;
+    }
+  }
   const queriesAttempted: string[] = [];
   const env = envSnapshot();
 
@@ -306,7 +317,7 @@ export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> 
     }
 
     if (browse.prices.length > 0) {
-      return successComp(browse.prices, {
+      const result = successComp(browse.prices, {
         fallbackReason: "live_comps_found",
         query,
         queriesAttempted,
@@ -316,6 +327,10 @@ export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> 
         itemSummaryCount: browse.itemSummaryCount,
         filterUsed: attempt.filter,
       });
+      if (supabase) {
+        void writePriceCache(supabase, query, stripEbayDebug(result));
+      }
+      return result;
     }
   }
 
@@ -345,6 +360,54 @@ export async function searchEbayItemPrices(cardName: string): Promise<EbayComp> 
     itemSummaryCount: browse?.itemSummaryCount ?? 0,
     filterUsed: lastFilter,
   });
+}
+
+async function readPriceCache(
+  supabase: SupabaseClient,
+  cardQuery: string
+): Promise<EbayComp | null> {
+  try {
+    const { data, error } = await supabase
+      .from("card_prices")
+      .select("avg_price,min_price,max_price,recent_sales,comp_source")
+      .eq("card_query", cardQuery)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+    if (error || !data) return null;
+    return {
+      avgSoldPrice: data.avg_price ?? null,
+      minSoldPrice: data.min_price ?? null,
+      maxSoldPrice: data.max_price ?? null,
+      recentSales: Array.isArray(data.recent_sales) ? (data.recent_sales as number[]) : [],
+      compSource: (data.comp_source as EbayComp["compSource"]) ?? "none",
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function writePriceCache(
+  supabase: SupabaseClient,
+  cardQuery: string,
+  comp: EbayComp
+): Promise<void> {
+  try {
+    await supabase.from("card_prices").upsert(
+      {
+        card_query: cardQuery,
+        avg_price: comp.avgSoldPrice,
+        min_price: comp.minSoldPrice,
+        max_price: comp.maxSoldPrice,
+        recent_sales: comp.recentSales,
+        comp_source: comp.compSource,
+        fetched_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      },
+      { onConflict: "card_query" }
+    );
+  } catch {
+    // Cache write failure is non-fatal
+  }
 }
 
 /** Strip dev debug before persisting scan rows. */

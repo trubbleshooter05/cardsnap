@@ -259,6 +259,8 @@ export function ResultCard({ data, scanId, onNewScan }: Props) {
             </div>
           </div>
 
+          <RecentSalesSection recentSales={data.ebay.recentSales} hasAvg={ebayOk} />
+
           <EbayAffiliateButton
             query={data.confirmedName}
             customId={`scan-${scanId}`}
@@ -458,6 +460,44 @@ function ValueStep({
         }`}
       >
         {value}
+      </p>
+    </div>
+  );
+}
+
+function RecentSalesSection({
+  recentSales,
+  hasAvg,
+}: {
+  recentSales: number[];
+  hasAvg: boolean;
+}) {
+  if (!hasAvg && recentSales.length === 0) {
+    return (
+      <div className="mt-5 rounded-xl border border-zinc-700/60 bg-zinc-900/50 px-3.5 py-3 text-xs text-zinc-500">
+        <p className="font-semibold uppercase tracking-[0.18em] text-zinc-500">Recent Sales</p>
+        <p className="mt-1">Price data temporarily unavailable — using model estimate.</p>
+      </div>
+    );
+  }
+  if (recentSales.length === 0) return null;
+  return (
+    <div className="mt-5 space-y-2">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+        Recent listings (eBay active)
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {recentSales.map((price, i) => (
+          <span
+            key={i}
+            className="rounded-lg bg-zinc-900/80 px-2.5 py-1 text-xs font-medium tabular-nums text-zinc-300 ring-1 ring-zinc-700/60"
+          >
+            {formatUsd(price)}
+          </span>
+        ))}
+      </div>
+      <p className="text-[10px] text-zinc-600">
+        Active fixed-price listings — not confirmed sold prices.
       </p>
     </div>
   );

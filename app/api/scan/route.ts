@@ -232,7 +232,7 @@ export async function POST(req: NextRequest) {
     // Use allSettled so one slow/failed provider doesn't block the others
     const results = await Promise.allSettled([
       analyzeCardWithOpenAI(cardName, condition, cardIdentity),
-      searchEbayItemPrices(cardIdentity.ebayQuery),
+      searchEbayItemPrices(cardIdentity.ebayQuery, supabase),
       fetchPsaPopulation(cardName),
     ]);
 
