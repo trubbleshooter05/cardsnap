@@ -19,6 +19,8 @@ CREATE INDEX IF NOT EXISTS guest_report_purchases_email_idx
 CREATE INDEX IF NOT EXISTS guest_report_purchases_scan_id_idx
   ON public.guest_report_purchases (scan_id);
 
+ALTER TABLE public.guest_report_purchases ENABLE ROW LEVEL SECURITY;
+
 -- ── Backfill: Sarah Robbins ───────────────────────────────────────────────────
 -- Her payment succeeded but webhook silently skipped (missing_user_id).
 -- Steps:

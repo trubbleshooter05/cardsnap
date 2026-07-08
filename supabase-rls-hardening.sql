@@ -57,6 +57,7 @@ ALTER TABLE IF EXISTS public.email_delivery_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.stripe_checkout_fulfillments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.guest_report_purchases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.email_leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.card_prices ENABLE ROW LEVEL SECURITY;
 
 -- Verify:
 -- SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename;
