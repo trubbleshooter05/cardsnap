@@ -1,3 +1,4 @@
+import { whenGtagReady } from "@/lib/gtag-ready";
 import type { ProductCheckoutPayload } from "@/lib/product-checkout-client";
 
 export type Ga4FunnelEvent =
@@ -38,12 +39,43 @@ function stripUndefined(
   ) as Record<string, string | number | boolean>;
 }
 
+type QueuedGaEvent = {
+  eventName: Ga4FunnelEvent;
+  params?: Record<string, string | number | boolean | undefined>;
+};
+
+const gaEventQueue: QueuedGaEvent[] = [];
+let gaFlushScheduled = false;
+
+function flushGaEventQueue() {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  while (gaEventQueue.length > 0) {
+    const item = gaEventQueue.shift();
+    if (!item) continue;
+    window.gtag("event", item.eventName, stripUndefined(item.params ?? {}));
+  }
+}
+
+function scheduleGaFlush() {
+  if (gaFlushScheduled || typeof window === "undefined") return;
+  gaFlushScheduled = true;
+  whenGtagReady(() => {
+    gaFlushScheduled = false;
+    flushGaEventQueue();
+  });
+}
+
 export function trackGa4FunnelEvent(
   eventName: Ga4FunnelEvent,
   params?: Record<string, string | number | boolean | undefined>
 ) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
-  window.gtag("event", eventName, stripUndefined(params ?? {}));
+  if (typeof window === "undefined") return;
+  if (typeof window.gtag === "function") {
+    window.gtag("event", eventName, stripUndefined(params ?? {}));
+    return;
+  }
+  gaEventQueue.push({ eventName, params });
+  scheduleGaFlush();
 }
 
 export function checkoutPayloadToGaParams(payload: ProductCheckoutPayload) {
@@ -76,8 +108,8 @@ function trackBeginCheckout(params: {
   item_id: string;
   item_name: string;
 }) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
-  window.gtag("event", "begin_checkout", {
+  if (typeof window === "undefined") return;
+  const payload = {
     currency: "USD",
     value: params.value,
     items: [
@@ -87,6 +119,13 @@ function trackBeginCheckout(params: {
         quantity: 1,
       },
     ],
+  };
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "begin_checkout", payload);
+    return;
+  }
+  whenGtagReady(() => {
+    window.gtag?.("event", "begin_checkout", payload);
   });
 }
 

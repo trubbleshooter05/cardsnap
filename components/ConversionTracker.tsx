@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { trackCheckoutCompleted } from "@/lib/ga4-funnel";
+import { whenGtagReady } from "@/lib/gtag-ready";
 
 declare global {
   interface Window {
@@ -72,36 +73,44 @@ function conversionFromSearch(search: string): ConversionEvent | null {
   return null;
 }
 
+function fireConversion(conversion: ConversionEvent) {
+  const storageKey = `cardsnap:ga4:conversion:${conversion.transactionId}`;
+  if (window.sessionStorage.getItem(storageKey)) return;
+  window.sessionStorage.setItem(storageKey, "1");
+
+  window.gtag?.("event", conversion.eventName, {
+    transaction_id: conversion.transactionId,
+    value: conversion.value,
+    currency: CURRENCY,
+    items: [
+      {
+        item_name: conversion.itemName,
+        item_id: conversion.itemId,
+        quantity: 1,
+      },
+    ],
+  });
+
+  trackCheckoutCompleted({
+    transaction_id: conversion.transactionId,
+    value: conversion.value,
+    product_type: conversion.productType,
+    plan: conversion.plan,
+    pack_credits: conversion.packCredits,
+  });
+}
+
 export function ConversionTracker() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const conversion = conversionFromSearch(window.location.search);
-    if (!conversion || typeof window.gtag !== "function") return;
+    if (!conversion) return;
 
-    const storageKey = `cardsnap:ga4:conversion:${conversion.transactionId}`;
-    if (window.sessionStorage.getItem(storageKey)) return;
-    window.sessionStorage.setItem(storageKey, "1");
-
-    window.gtag("event", conversion.eventName, {
-      transaction_id: conversion.transactionId,
-      value: conversion.value,
-      currency: CURRENCY,
-      items: [
-        {
-          item_name: conversion.itemName,
-          item_id: conversion.itemId,
-          quantity: 1,
-        },
-      ],
-    });
-
-    trackCheckoutCompleted({
-      transaction_id: conversion.transactionId,
-      value: conversion.value,
-      product_type: conversion.productType,
-      plan: conversion.plan,
-      pack_credits: conversion.packCredits,
-    });
+    if (typeof window.gtag === "function") {
+      fireConversion(conversion);
+      return;
+    }
+    whenGtagReady(() => fireConversion(conversion));
   }, []);
 
   return null;

@@ -11,11 +11,13 @@ from facebook_browser_profiles import facebook_browser, verify_session
 
 GROUPS = [
     ("FB Pokémon Hub", "4042133712737949"),
+    ("FB Sports Cards Nonsense", "405077410476933"),
+    ("FB Sports Card Collectors forum", "1412409369011598"),
     ("FB Sports Cards & Collectibles", "6585675648140607"),
 ]
 
 SEARCH = "worth grading"
-MAX_POSTS = 2
+MAX_POSTS = 1
 
 REPLY = (
     "Before you pay fees compare raw sold vs PSA 9 vs PSA 10 on the exact card. "

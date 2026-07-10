@@ -21,14 +21,13 @@ DATE="$(date +%Y-%m-%d)"
 LOG_FILE="${LOG_DIR}/ugc-daily-${TIMESTAMP}.log"
 
 mkdir -p "${LOG_DIR}"
-exec > >(tee -a "${LOG_FILE}") 2>&1
-
-echo "[$(date)] === CardSnap UGC Daily Start ==="
+touch "${LOG_FILE}"
+printf '[%s] === CardSnap UGC Daily Start ===\n' "$(date)" >> "${LOG_FILE}"
 
 # ── Lock file ─────────────────────────────────────────────────────────────────
 LOCK="${CARDSNAP_DIR}/.ugc-daily.lock"
 if ! mkdir "${LOCK}" 2>/dev/null; then
-  echo "Another UGC daily run is active. Exiting."
+  echo "CardSnap UGC approval pack skipped for ${DATE} | reason=lock_active | log=${LOG_FILE}"
   exit 0
 fi
 trap 'rmdir "${LOCK}" 2>/dev/null || true' EXIT
@@ -43,19 +42,18 @@ if [[ -f ".env.local" ]]; then
 fi
 
 # ── Run UGC pipeline ──────────────────────────────────────────────────────────
-echo "[$(date)] Running ugc:daily..."
-npm run ugc:daily -- --date="${DATE}"
+printf '[%s] Running ugc:daily...\n' "$(date)" >> "${LOG_FILE}"
+set +e
+RUN_OUTPUT="$(npm run ugc:daily -- --date="${DATE}" 2>&1)"
+RUN_STATUS=$?
+set -e
 
-# ── Summary to stdout (Hermes routes to Telegram via deliver:telegram) ────────
-VIDEO_COUNT=$(ls -1 "${CARDSNAP_DIR}/out/"*"-${DATE}.mp4" 2>/dev/null | wc -l | tr -d ' ')
-echo "=== CardSnap UGC Daily Done ==="
-echo "Date: ${DATE}"
-echo "Videos rendered: ${VIDEO_COUNT}/3"
-echo "Copy pack: docs/growth/ugc-daily-pack-${DATE}.md"
-echo ""
-ls -1 "${CARDSNAP_DIR}/out/"*"-${DATE}.mp4" 2>/dev/null | sed 's|.*/|  |' || echo "  (no videos found)"
-echo ""
-echo "=== POST TODAY (TikTok + YouTube Shorts + Reels) ==="
-echo "Captions: docs/growth/ugc-daily-pack-${DATE}.md"
-echo "Post all 3 MP4s. Bio link: getcardsnap.com"
-echo "Log: ${LOG_FILE}"
+printf '%s\n' "${RUN_OUTPUT}" >> "${LOG_FILE}"
+SUMMARY_LINE="$(printf '%s\n' "${RUN_OUTPUT}" | tail -n 1)"
+
+if [[ -z "${SUMMARY_LINE}" ]]; then
+  SUMMARY_LINE="CardSnap UGC approval pack failed for ${DATE} | error=no stdout summary emitted | log=${LOG_FILE}"
+fi
+
+echo "${SUMMARY_LINE}"
+exit "${RUN_STATUS}"

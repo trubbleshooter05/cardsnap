@@ -41,6 +41,11 @@ import {
   setPendingCheckoutFromCta,
   type ProductCheckoutPayload,
 } from "@/lib/product-checkout-client";
+import {
+  clearPendingReportScan,
+  persistPendingReportScan,
+  readPendingReportScan,
+} from "@/lib/pending-report-scan";
 import { EmailCapture } from "@/components/EmailCapture";
 import { ScanResultRevenueCta } from "@/components/ScanResultRevenueCta";
 import { HomeTrustSection } from "@/components/HomeTrustSection";
@@ -517,15 +522,22 @@ export function HomePageClient() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("report") !== "success") return;
+
+    const restored = readPendingReportScan();
+    if (restored) {
+      setResult(restored as ScanResponse);
+      setIsPro(Boolean(restored.isPro));
+    }
     setShowReportUpsell(true);
+    window.history.replaceState({}, "", "/");
   }, []);
 
   useEffect(() => {
-    if (!showReportUpsell) return;
+    if (!showReportUpsell || !result) return;
     if (reportUpsellTrackedRef.current) return;
     reportUpsellTrackedRef.current = true;
     trackReportUpsellViewed();
-  }, [showReportUpsell]);
+  }, [showReportUpsell, result]);
 
   useEffect(() => {
     if (!result?.scanId) return;
@@ -727,6 +739,7 @@ export function HomePageClient() {
 
       lastProFromScanRef.current = { pro: Boolean(user?.id && (data.isPro || data.isAdmin)), t: Date.now() };
       console.log(LOG, "scan: setResult(data) — calling", { scanId: data?.scanId });
+      clearPendingReportScan();
       setResult(data);
       console.log(LOG, "scan: setResult dispatched");
       const used = data.freeScansUsed ?? data.scansUsedThisMonth;
@@ -824,6 +837,9 @@ export function HomePageClient() {
     if (reportCheckouting) return;
     setReportCheckouting(true);
     try {
+      if (result?.scanId) {
+        persistPendingReportScan(result);
+      }
       const res = await fetch("/api/create-report-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
