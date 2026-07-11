@@ -1,0 +1,28 @@
+---
+description: Prevent Vercel double-deploys — GitHub auto-deploy only
+alwaysApply: true
+---
+
+# Vercel deploy policy (Build CPU cost control)
+
+**Single deploy path:** GitHub → Vercel Production (push to `main`).
+
+## Do
+
+1. Commit + `git push origin main`
+2. Wait for the Vercel Git deployment to finish
+3. Verify on the live domain
+
+## Do not
+
+1. Do **not** run `vercel --prod` / `vercel deploy --prod` after a push to `main`
+2. Do **not** redeploy from the Vercel dashboard right after a git deploy
+3. Do **not** deploy on every small commit — batch work, push once per session when possible
+
+## Exception
+
+Use `vercel --prod` **only** when Git is disconnected, or the user explicitly asks for a CLI deploy **without** a matching git push.
+
+## Why
+
+Double Production deploys (git + CLI ~5s apart) double Build CPU Minutes — the main driver of Pro overage on greg's projects.
