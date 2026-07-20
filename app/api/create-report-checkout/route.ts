@@ -60,5 +60,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "no_session_url" }, { status: 500 });
   }
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ url: session.url, sessionId: session.id });
 }

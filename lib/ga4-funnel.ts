@@ -39,10 +39,19 @@ function stripUndefined(
   ) as Record<string, string | number | boolean>;
 }
 
-type QueuedGaEvent = {
+type QueuedCustomEvent = {
+  kind: "custom";
   eventName: Ga4FunnelEvent;
   params?: Record<string, string | number | boolean | undefined>;
 };
+
+type QueuedStandardEvent = {
+  kind: "standard";
+  eventName: string;
+  params?: Record<string, unknown>;
+};
+
+type QueuedGaEvent = QueuedCustomEvent | QueuedStandardEvent;
 
 const gaEventQueue: QueuedGaEvent[] = [];
 let gaFlushScheduled = false;
@@ -52,7 +61,11 @@ function flushGaEventQueue() {
   while (gaEventQueue.length > 0) {
     const item = gaEventQueue.shift();
     if (!item) continue;
-    window.gtag("event", item.eventName, stripUndefined(item.params ?? {}));
+    if (item.kind === "custom") {
+      window.gtag("event", item.eventName, stripUndefined(item.params ?? {}));
+    } else {
+      window.gtag("event", item.eventName, item.params ?? {});
+    }
   }
 }
 
@@ -65,6 +78,19 @@ function scheduleGaFlush() {
   });
 }
 
+function queueStandardEvent(
+  eventName: string,
+  params?: Record<string, unknown>
+) {
+  if (typeof window === "undefined") return;
+  if (typeof window.gtag === "function") {
+    window.gtag("event", eventName, params ?? {});
+    return;
+  }
+  gaEventQueue.push({ kind: "standard", eventName, params });
+  scheduleGaFlush();
+}
+
 export function trackGa4FunnelEvent(
   eventName: Ga4FunnelEvent,
   params?: Record<string, string | number | boolean | undefined>
@@ -74,8 +100,48 @@ export function trackGa4FunnelEvent(
     window.gtag("event", eventName, stripUndefined(params ?? {}));
     return;
   }
-  gaEventQueue.push({ eventName, params });
+  gaEventQueue.push({ kind: "custom", eventName, params });
   scheduleGaFlush();
+}
+
+/** Allow gtag to send before Stripe redirect (fixes under-counted begin_checkout). */
+export function flushGaEventsBeforeNavigation(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  return new Promise((resolve) => {
+    whenGtagReady(() => {
+      flushGaEventQueue();
+      window.setTimeout(resolve, 250);
+    });
+  });
+}
+
+export function signupDedupeKey(userId: string) {
+  return `cardsnap:ga4:sign_up:${userId}`;
+}
+
+export function markPendingSignUp(method: "email" | "google") {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem("cardsnap:pending_sign_up_method", method);
+}
+
+export function trackSignUp(method: "email" | "google", userId?: string) {
+  if (typeof window === "undefined") return;
+  if (userId) {
+    const key = signupDedupeKey(userId);
+    if (window.sessionStorage.getItem(key)) return;
+    window.sessionStorage.setItem(key, "1");
+  }
+  window.sessionStorage.removeItem("cardsnap:pending_sign_up_method");
+  queueStandardEvent("sign_up", { method });
+}
+
+export function trackCardCreated(params: {
+  scan_id: string;
+  verdict: "grade" | "skip";
+  is_pro: boolean;
+  card_name?: string;
+}) {
+  queueStandardEvent("card_created", params);
 }
 
 export function checkoutPayloadToGaParams(payload: ProductCheckoutPayload) {
@@ -103,13 +169,15 @@ export function trackUpgradeClicked(
   });
 }
 
-function trackBeginCheckout(params: {
-  value: number;
-  item_id: string;
-  item_name: string;
-}) {
-  if (typeof window === "undefined") return;
-  const payload = {
+function trackBeginCheckout(
+  params: {
+    value: number;
+    item_id: string;
+    item_name: string;
+  },
+  transactionId?: string
+) {
+  const payload: Record<string, unknown> = {
     currency: "USD",
     value: params.value,
     items: [
@@ -120,13 +188,8 @@ function trackBeginCheckout(params: {
       },
     ],
   };
-  if (typeof window.gtag === "function") {
-    window.gtag("event", "begin_checkout", payload);
-    return;
-  }
-  whenGtagReady(() => {
-    window.gtag?.("event", "begin_checkout", payload);
-  });
+  if (transactionId) payload.transaction_id = transactionId;
+  queueStandardEvent("begin_checkout", payload);
 }
 
 function checkoutItemForPayload(payload: ProductCheckoutPayload) {
@@ -146,31 +209,36 @@ function checkoutItemForPayload(payload: ProductCheckoutPayload) {
 
 export function trackCheckoutStarted(
   payload: ProductCheckoutPayload,
-  source: Ga4CheckoutSource
+  source: Ga4CheckoutSource,
+  sessionId?: string
 ) {
   const gaParams = checkoutPayloadToGaParams(payload);
   trackGa4FunnelEvent("checkout_started", {
     source,
     ...gaParams,
   });
-  trackBeginCheckout(checkoutItemForPayload(payload));
+  trackBeginCheckout(checkoutItemForPayload(payload), sessionId);
 }
 
 const REPORT_CHECKOUT_VALUE = 4.99;
 
 export function trackReportCheckoutStarted(
-  source: Ga4CheckoutSource = "paywall"
+  source: Ga4CheckoutSource = "paywall",
+  sessionId?: string
 ) {
   trackGa4FunnelEvent("checkout_started", {
     source,
     product_type: "report",
     value: REPORT_CHECKOUT_VALUE,
   });
-  trackBeginCheckout({
-    value: REPORT_CHECKOUT_VALUE,
-    item_id: "cardsnap_single_report",
-    item_name: "CardSnap single grading report",
-  });
+  trackBeginCheckout(
+    {
+      value: REPORT_CHECKOUT_VALUE,
+      item_id: "cardsnap_single_report",
+      item_name: "CardSnap single grading report",
+    },
+    sessionId
+  );
 }
 
 export function trackPaywallShown() {

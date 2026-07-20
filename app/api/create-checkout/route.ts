@@ -182,7 +182,7 @@ export async function POST(req: Request) {
       source: "create-checkout",
       payload: { kind: "pack", packCredits: packCredits },
     });
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url, sessionId: session.id });
   }
 
   const subPlan = subscriptionPlan ?? "annual";

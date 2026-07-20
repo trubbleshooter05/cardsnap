@@ -10,6 +10,7 @@ import { readStoredAttribution } from "@/lib/client-attribution";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import { waitForAccessToken } from "@/lib/wait-for-access-token";
 import {
+  flushGaEventsBeforeNavigation,
   trackCheckoutStarted,
   trackUpgradeClicked,
 } from "@/lib/ga4-funnel";
@@ -191,8 +192,9 @@ export function AccountPageClient() {
         alert("Checkout unavailable. Check Stripe configuration.");
         return;
       }
-      const { url } = (await res.json()) as { url: string };
-      trackCheckoutStarted(payload, "account");
+      const { url, sessionId } = (await res.json()) as { url: string; sessionId: string };
+      trackCheckoutStarted(payload, "account", sessionId);
+      await flushGaEventsBeforeNavigation();
       window.location.href = url;
     } finally {
       setCheckoutLoading(false);

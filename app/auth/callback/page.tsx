@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
+import { trackSignUp } from "@/lib/ga4-funnel";
 
 function safeNextPath(raw: string | null): string {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
@@ -39,6 +40,16 @@ export default function AuthCallbackPage() {
             setStatus("error");
             return;
           }
+        }
+        // Detect new user: created_at === updated_at is true exactly once,
+        // at the moment the account is first created. updated_at advances on
+        // every profile change (email confirm, password reset, metadata update),
+        // so returning users and password-reset flows are safely excluded.
+        const { data: sessionData } = await supabase.auth.getSession();
+        const u = sessionData?.session?.user;
+        if (u?.created_at && u?.updated_at && u.created_at === u.updated_at) {
+          const isGoogle = u.app_metadata?.provider === "google";
+          trackSignUp(isGoogle ? "google" : "email");
         }
         setStatus("ok");
         setTimeout(() => router.replace(next), 800);

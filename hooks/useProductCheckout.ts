@@ -9,6 +9,7 @@ import {
 import { getOrCreateAnonymousId, persistAnonymousId } from "@/lib/anonymous-id";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import {
+  flushGaEventsBeforeNavigation,
   trackCheckoutStarted,
   trackUpgradeClicked,
   type Ga4CheckoutSource,
@@ -82,8 +83,10 @@ export function useProductCheckout(options: Options = {}) {
         }
         trackCheckoutStarted(
           payload,
-          source === "post_login" ? "post_login" : analyticsSource
+          source === "post_login" ? "post_login" : analyticsSource,
+          result.sessionId
         );
+        await flushGaEventsBeforeNavigation();
         window.location.href = result.url;
       } finally {
         if (isSub) setSubscriptionLoading(null);

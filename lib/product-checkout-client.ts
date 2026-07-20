@@ -102,7 +102,7 @@ export function clearPendingCheckout() {
 export async function runProductCheckoutSession(
   userId: string,
   payload: ProductCheckoutPayload
-): Promise<{ ok: true; url: string } | { ok: false; reason: "no_token" | "checkout_failed" }> {
+): Promise<{ ok: true; url: string; sessionId: string } | { ok: false; reason: "no_token" | "checkout_failed" }> {
   persistAnonymousId(userId);
   const supabase = createSupabaseBrowserClient();
   const token = await waitForAccessToken(supabase, {
@@ -137,6 +137,6 @@ export async function runProductCheckoutSession(
     return { ok: false, reason: "checkout_failed" };
   }
 
-  const { url } = (await res.json()) as { url: string };
-  return { ok: true, url };
+  const { url, sessionId } = (await res.json()) as { url: string; sessionId: string };
+  return { ok: true, url, sessionId };
 }

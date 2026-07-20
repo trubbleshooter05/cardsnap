@@ -24,11 +24,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { ScanResultPayload } from "@/lib/types";
 import { FREE_SCAN_LIMIT } from "@/lib/usage-limits";
 import {
+  flushGaEventsBeforeNavigation,
   trackCheckoutStarted,
   trackPaywallShown,
   trackReportCheckoutStarted,
   trackReportUpsellClicked,
   trackReportUpsellViewed,
+  trackCardCreated,
   trackResultViewed,
   trackUpgradeClicked,
   type Ga4CheckoutSource,
@@ -413,8 +415,10 @@ export function HomePageClient() {
         console.log(AUTH_LOG, "upgrade: redirecting to Stripe", { source });
         trackCheckoutStarted(
           payload,
-          source === "post_login" ? "post_login" : analyticsSource
+          source === "post_login" ? "post_login" : analyticsSource,
+          result.sessionId
         );
+        await flushGaEventsBeforeNavigation();
         window.location.href = result.url;
       } finally {
         if (isSub) setUpgrading(false);
@@ -547,6 +551,12 @@ export function HomePageClient() {
       scan_id: result.scanId,
       verdict: isGradeVerdict(result) ? "grade" : "skip",
       is_pro: isPro,
+    });
+    trackCardCreated({
+      scan_id: result.scanId,
+      verdict: isGradeVerdict(result) ? "grade" : "skip",
+      is_pro: isPro,
+      card_name: result.confirmedName,
     });
   }, [result, isPro]);
 
@@ -852,8 +862,9 @@ export function HomePageClient() {
         alert("Single report checkout is unavailable right now.");
         return;
       }
-      const { url } = (await res.json()) as { url: string };
-      trackReportCheckoutStarted("paywall");
+      const { url, sessionId } = (await res.json()) as { url: string; sessionId: string };
+      trackReportCheckoutStarted("paywall", sessionId);
+      await flushGaEventsBeforeNavigation();
       window.location.href = url;
     } finally {
       setReportCheckouting(false);

@@ -7,6 +7,7 @@ export type AttributionPayload = {
   landing_page?: string;
   referrer?: string;
   ga_client_id?: string;
+  ga_session_id?: string;
 };
 
 const ATTRIBUTION_KEYS = [
@@ -16,6 +17,7 @@ const ATTRIBUTION_KEYS = [
   "landing_page",
   "referrer",
   "ga_client_id",
+  "ga_session_id",
 ] as const;
 
 const MAX_ATTRIBUTION_VALUE_LENGTH = 500;

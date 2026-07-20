@@ -1,8 +1,38 @@
 "use client";
 
 import { createContext, useEffect, useRef, useState } from "react";
+import { signupDedupeKey, trackSignUp } from "@/lib/ga4-funnel";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 import type { User } from "@supabase/supabase-js";
+
+
+const NEW_ACCOUNT_MS = 120_000;
+
+function maybeTrackSignUp(event: string, user: User | undefined) {
+  if (event !== "SIGNED_IN" || !user?.id || typeof window === "undefined") return;
+
+  const dedupeKey = signupDedupeKey(user.id);
+  if (window.sessionStorage.getItem(dedupeKey)) return;
+
+  const pendingMethod = window.sessionStorage.getItem(
+    "cardsnap:pending_sign_up_method"
+  );
+  const createdMs = user.created_at ? new Date(user.created_at).getTime() : 0;
+  const isNewAccount = createdMs > 0 && Date.now() - createdMs < NEW_ACCOUNT_MS;
+
+  if (!isNewAccount && !pendingMethod) return;
+
+  const provider = user.app_metadata?.provider;
+  const method = (
+    pendingMethod === "email" || pendingMethod === "google"
+      ? pendingMethod
+      : provider === "google"
+        ? "google"
+        : "email"
+  ) as "email" | "google";
+
+  trackSignUp(method, user.id);
+}
 
 type AuthContextType = {
   user: User | null;
@@ -52,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasSession: Boolean(session),
         userId: session?.user?.id,
       });
+      maybeTrackSignUp(event, session?.user ?? undefined);
       setUser(session?.user ?? null);
       setLoading(false);
     });

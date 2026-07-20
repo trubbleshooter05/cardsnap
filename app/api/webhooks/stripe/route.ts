@@ -5,6 +5,7 @@ import { fulfillCheckoutSession, fulfillGuestReportCheckout } from "@/lib/stripe
 import { logCheckoutFunnelEvent } from "@/lib/checkout-funnel-log";
 import { reconcileProForStripeCustomer } from "@/lib/stripe-pro-reconcile";
 import { handleChargeRefunded } from "@/lib/stripe-revoke";
+import { sendMeasurementProtocolPurchase } from "@/lib/ga4-measurement-protocol";
 
 export const dynamic = "force-dynamic";
 
@@ -41,16 +42,43 @@ export async function POST(req: Request) {
           const result = isGuestReport
             ? await fulfillGuestReportCheckout(supabase, session)
             : await fulfillCheckoutSession(supabase, session);
-          const event =
+
+          const funnelEvent =
             result.status === "fulfilled" || result.status === "already_fulfilled"
               ? "fulfill_success"
               : "fulfill_skipped";
-          void logCheckoutFunnelEvent(supabase, event, {
+          void logCheckoutFunnelEvent(supabase, funnelEvent, {
             userId: session.metadata?.userId ?? session.client_reference_id,
             checkoutSessionId: session.id,
             source: "webhook",
             payload: { result: result.status, reason: "reason" in result ? result.reason : null },
           });
+
+          // GA4 Measurement Protocol — fires only on fresh fulfillment.
+          // already_fulfilled means this is a Stripe webhook retry for a session
+          // that was already processed; the idempotency index would also block a
+          // second send, but we skip the attempt entirely for clarity.
+          if (result.status === "fulfilled") {
+            const userId =
+              session.metadata?.userId ?? session.client_reference_id ?? "";
+            try {
+              const mpResult = await sendMeasurementProtocolPurchase(
+                supabase,
+                session,
+                userId,
+                result.kind
+              );
+              if (!mpResult.sent) {
+                console.log("[ga4-mp] not sent", {
+                  reason: mpResult.reason,
+                  session: session.id,
+                });
+              }
+            } catch (mpErr) {
+              // Never let a GA4 failure cause Stripe to retry the webhook.
+              console.error("[ga4-mp] unexpected error — suppressed", mpErr);
+            }
+          }
         } catch (e) {
           void logCheckoutFunnelEvent(supabase, "fulfill_failed", {
             userId: session.metadata?.userId ?? session.client_reference_id,

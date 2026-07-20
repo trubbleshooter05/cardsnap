@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { markPendingSignUp } from "@/lib/ga4-funnel";
 import { createSupabaseBrowserClient } from "@/lib/supabase-client";
 
 type AuthModalProps = {
@@ -57,6 +58,7 @@ export function AuthModal({
     setGoogleLoading(true);
     try {
       const supabase = getSupabase();
+      if (mode === "signup") markPendingSignUp("google");
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -104,6 +106,7 @@ export function AuthModal({
           return;
         }
       } else {
+        markPendingSignUp("email");
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,

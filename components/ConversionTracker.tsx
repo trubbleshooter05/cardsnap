@@ -1,32 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import { trackCheckoutCompleted } from "@/lib/ga4-funnel";
-import { whenGtagReady } from "@/lib/gtag-ready";
 
-declare global {
-  interface Window {
-    gtag?: (...args: unknown[]) => void;
-  }
-}
-
+// ConversionEvent retains the full shape so future UI (success toast, redirect
+// logic) can read productType, plan, packCredits without changes to this file.
 type ConversionEvent = {
-  eventName: "purchase" | "subscription_started";
-  transactionId: string;
-  value: number;
-  itemName: string;
-  itemId: string;
   productType: "subscription" | "scan_pack" | "report";
+  transactionId: string;
   plan?: string;
   packCredits?: number;
-};
-
-const CURRENCY = "USD";
-
-const PACK_VALUES: Record<string, number> = {
-  "10": 9.99,
-  "50": 29,
-  "200": 79,
 };
 
 function conversionFromSearch(search: string): ConversionEvent | null {
@@ -36,12 +18,8 @@ function conversionFromSearch(search: string): ConversionEvent | null {
   if (params.get("upgraded") === "1") {
     const plan = params.get("plan") === "monthly" ? "monthly" : "annual";
     return {
-      eventName: "subscription_started",
-      transactionId: sessionId || `subscription-${plan}`,
-      value: plan === "monthly" ? 9.99 : 99,
-      itemName: `CardSnap Pro ${plan}`,
-      itemId: `cardsnap_pro_${plan}`,
       productType: "subscription",
+      transactionId: sessionId || `subscription-${plan}`,
       plan,
     };
   }
@@ -49,68 +27,45 @@ function conversionFromSearch(search: string): ConversionEvent | null {
   if (params.get("pack_purchase") === "1") {
     const credits = params.get("credits") ?? "10";
     return {
-      eventName: "purchase",
-      transactionId: sessionId || `scan-pack-${credits}`,
-      value: PACK_VALUES[credits] ?? 0,
-      itemName: `CardSnap ${credits} scan pack`,
-      itemId: `cardsnap_scan_pack_${credits}`,
       productType: "scan_pack",
+      transactionId: sessionId || `scan-pack-${credits}`,
       packCredits: Number(credits),
     };
   }
 
   if (params.get("report") === "success") {
     return {
-      eventName: "purchase",
-      transactionId: sessionId || "single-report",
-      value: 4.99,
-      itemName: "CardSnap single grading report",
-      itemId: "cardsnap_single_report",
       productType: "report",
+      transactionId: sessionId || "single-report",
     };
   }
 
   return null;
 }
 
-function fireConversion(conversion: ConversionEvent) {
-  const storageKey = `cardsnap:ga4:conversion:${conversion.transactionId}`;
-  if (window.sessionStorage.getItem(storageKey)) return;
-  window.sessionStorage.setItem(storageKey, "1");
-
-  window.gtag?.("event", conversion.eventName, {
-    transaction_id: conversion.transactionId,
-    value: conversion.value,
-    currency: CURRENCY,
-    items: [
-      {
-        item_name: conversion.itemName,
-        item_id: conversion.itemId,
-        quantity: 1,
-      },
-    ],
-  });
-
-  trackCheckoutCompleted({
-    transaction_id: conversion.transactionId,
-    value: conversion.value,
-    product_type: conversion.productType,
-    plan: conversion.plan,
-    pack_credits: conversion.packCredits,
-  });
-}
-
+/**
+ * Detects Stripe success return URLs.
+ *
+ * GA4 purchase, subscription_started, and checkout_completed events are sent
+ * exclusively by the Stripe webhook via GA4 Measurement Protocol
+ * (lib/ga4-measurement-protocol.ts). This component deliberately does NOT fire
+ * any GA4 revenue events to prevent double-counting.
+ *
+ * The conversion detection and ConversionEvent shape are retained so that
+ * future UI work (success toasts, redirects, post-purchase flows) can hook
+ * in here without touching the analytics layer.
+ */
 export function ConversionTracker() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const conversion = conversionFromSearch(window.location.search);
     if (!conversion) return;
-
-    if (typeof window.gtag === "function") {
-      fireConversion(conversion);
-      return;
-    }
-    whenGtagReady(() => fireConversion(conversion));
+    // Conversion return detected. UI work (toasts, redirects) goes here.
+    // Do NOT fire window.gtag purchase events — those are sent server-side.
+    console.log("[cardsnap:conversion] success return", {
+      productType: conversion.productType,
+      transactionId: conversion.transactionId,
+    });
   }, []);
 
   return null;
