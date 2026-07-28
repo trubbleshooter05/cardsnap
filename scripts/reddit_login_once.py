@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""One-time Reddit login for cardsnap — saves isolated Playwright profile."""
+"""CardSnap Reddit login disabled — all outreach accounts shadowbanned Jul 2026."""
 import sys
-from pathlib import Path
-
-sys.path.insert(0, "/Users/openclaw/Documents/riley")
-from reddit_browser_profiles import login_once
 
 if __name__ == "__main__":
-    login_once("cardsnap")
+    raise SystemExit(
+        "All CardSnap Reddit accounts are shadowbanned (foofight22, psa_chaser). "
+        "Reddit outreach is off until a fresh account is warmed manually."
+    )

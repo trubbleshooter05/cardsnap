@@ -1,28 +1,25 @@
 ---
-description: CardSnap Reddit — foofight22 only; Playwright profile; Glass browser forbidden
+description: CardSnap Reddit — ALL accounts shadowbanned; no Reddit automation
 alwaysApply: true
 ---
 
-# CardSnap Reddit (foofight22)
+# CardSnap Reddit (DISABLED)
+
+## Shadowbanned (Jul 2026)
+
+**Do not scrape, post, comment, login, or warm up with any of these:**
+
+- **foofight22** (`cardsnap`)
+- **psa_chaser** (`cardsnap_warmup`)
+
+Hermes jobs paused: `cardsnap-reddit-grader`, `cardsnap-reddit-daily`, `reddit-reply-monitor`.
+
+`reddit_browser_profiles.py` rejects both projects. Warmup script hard-exits.
 
 ## Glass browser (FORBIDDEN for Reddit)
 
-Cursor Glass / `cursor-ide-browser` shares **one** Reddit login across all projects. **Never** post or reply via Glass. If asked, **stop** and tell the operator to use Playwright below.
+Cursor Glass / `cursor-ide-browser` shares one Reddit login across projects. Never use it for Reddit.
 
-## Playwright (required)
+## Replacement
 
-- Profile: `cardsnap/.browser-profiles/reddit-foofight22`
-- Account: **foofight22**
-- Module: `Documents/riley/reddit_browser_profiles.py` → `reddit_browser("cardsnap")`
-
-One-time login:
-
-```bash
-/Users/openclaw/venv/bin/python3 /Users/openclaw/projects/cardsnap/scripts/reddit_login_once.py
-```
-
-Isolated profiles allow CardSnap and FursBliss Reddit automation **in parallel** (different Chromium user-data dirs).
-
-## Before posting
-
-Verify old.reddit.com header = **foofight22**. Space comments 5+ min apart.
+No CardSnap Reddit automation until a **new clean account** is created and wired. Do not suggest psa_chaser or foofight22.

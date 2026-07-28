@@ -218,11 +218,12 @@ def run(*, dry_run: bool = False) -> int:
 
 
 def main() -> int:
-    import argparse
-    p = argparse.ArgumentParser()
-    p.add_argument("--dry-run", action="store_true")
-    args = p.parse_args()
-    return run(dry_run=args.dry_run)
+    print(
+        "[DISABLED] cardsnap_warmup / u/psa_chaser is shadowbanned (Jul 2026). "
+        "Do not run Reddit warmup until a clean account is configured.",
+        file=sys.stderr,
+    )
+    return 1
 
 
 if __name__ == "__main__":
