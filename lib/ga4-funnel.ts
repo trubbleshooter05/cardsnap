@@ -9,7 +9,8 @@ export type Ga4FunnelEvent =
   | "pricing_page_view"
   | "result_viewed"
   | "report_upsell_viewed"
-  | "report_upsell_clicked";
+  | "report_upsell_clicked"
+  | "calculator_click";
 
 export type Ga4CheckoutSource =
   | "paywall"
@@ -258,6 +259,10 @@ export function trackReportUpsellViewed() {
 
 export function trackReportUpsellClicked() {
   trackGa4FunnelEvent("report_upsell_clicked");
+}
+
+export function trackCalculatorClick(source: string = "homepage_hero") {
+  trackGa4FunnelEvent("calculator_click", { source });
 }
 
 export function trackResultViewed(params: {
