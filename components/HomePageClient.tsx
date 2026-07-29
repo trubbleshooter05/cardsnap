@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ScanForm } from "@/components/ScanForm";
 import { ScanGate, type SubscriptionPlanToggle } from "@/components/ScanGate";
@@ -33,6 +34,7 @@ import {
   trackCardCreated,
   trackResultViewed,
   trackUpgradeClicked,
+  trackCalculatorClick,
   type Ga4CheckoutSource,
 } from "@/lib/ga4-funnel";
 import {
@@ -180,6 +182,7 @@ async function getAccessTokenRaced(
 }
 
 export function HomePageClient() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [userId, setUserId] = useState<string | null>(null);
   const [usageCount, setUsageCount] = useState(0);
@@ -950,12 +953,16 @@ export function HomePageClient() {
               Enter the card and get the math that matters: should you grade, sell raw, or wait? No spreadsheet math required.
             </p>
 
-            <Link
-              href="/psa-grading-calculator"
+            <button
+              onClick={async () => {
+                trackCalculatorClick("homepage_hero");
+                await flushGaEventsBeforeNavigation();
+                router.push("/psa-grading-calculator");
+              }}
               className="mt-6 inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-8 font-semibold text-black shadow-lg shadow-amber-500/30 transition-all hover:shadow-amber-500/50 hover:scale-105"
             >
               Check if grading pays off
-            </Link>
+            </button>
 
             <ul className="mt-6 grid w-full max-w-xl gap-2.5 text-left text-sm text-zinc-300 sm:grid-cols-3 lg:grid-cols-1">
               {[
