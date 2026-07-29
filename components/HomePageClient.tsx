@@ -938,20 +938,24 @@ export function HomePageClient() {
             </div>
 
             <h1 className="mt-5 max-w-2xl text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Know if your card is worth grading{" "}
-              <span className="gradient-text">before you pay PSA fees.</span>
+              Most cards aren&apos;t worth grading{" "}
+              <span className="gradient-text">— check yours in 30 seconds.</span>
             </h1>
 
             <p className="mt-5 max-w-xl text-lg font-semibold leading-snug text-amber-300">
-              CardSnap answers the collector question directly: should I grade
-              this card, sell it raw, or wait?
+              Find out before paying PSA fees. Know your card&apos;s raw value, PSA 9 downside, PSA 10 upside, and grading ROI.
             </p>
 
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
-              Enter the card name and compare raw value, PSA 9 downside, PSA 10
-              upside, and grading cost in seconds. No marketplace spreadsheet,
-              no guessing from one PSA 10 comp.
+              Enter the card and get the math that matters: should you grade, sell raw, or wait? No spreadsheet math required.
             </p>
+
+            <Link
+              href="/psa-grading-calculator"
+              className="mt-6 inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-8 font-semibold text-black shadow-lg shadow-amber-500/30 transition-all hover:shadow-amber-500/50 hover:scale-105"
+            >
+              Check if grading pays off
+            </Link>
 
             <ul className="mt-6 grid w-full max-w-xl gap-2.5 text-left text-sm text-zinc-300 sm:grid-cols-3 lg:grid-cols-1">
               {[
