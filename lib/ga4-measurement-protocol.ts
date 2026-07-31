@@ -99,6 +99,41 @@ function resolveItemName(
   return "CardSnap single grading report";
 }
 
+
+function resolveProductType(
+  kind: FulfillmentKind
+): "subscription" | "scan_pack" | "report" {
+  if (kind === "subscription") return "subscription";
+  if (kind === "pack") return "scan_pack";
+  return "report";
+}
+
+function checkoutCompletedParams(
+  kind: FulfillmentKind,
+  session: Stripe.Checkout.Session,
+  params: {
+    currency: string;
+    value: number;
+    gaSessionId?: string;
+  }
+): Record<string, string | number> {
+  const base: Record<string, string | number> = {
+    currency: params.currency,
+    transaction_id: session.id,
+    value: params.value,
+    product_type: resolveProductType(kind),
+    source: "webhook",
+  };
+  if (params.gaSessionId) base.session_id = params.gaSessionId;
+  if (kind === "subscription") {
+    base.plan = session.metadata?.subscriptionPlan ?? "annual";
+  }
+  if (kind === "pack") {
+    base.pack_credits = Number(session.metadata?.packCredits ?? 0);
+  }
+  return base;
+}
+
 // ─── Main export ─────────────────────────────────────────────────────────────
 
 /**
@@ -170,7 +205,6 @@ export async function sendMeasurementProtocolPurchase(
           transaction_id: session.id,
           value,
           source: "webhook",
-          // session_id scopes the hit to the correct GA4 session for attribution.
           ...(gaSessionId ? { session_id: gaSessionId } : {}),
           items: [
             {
@@ -181,6 +215,14 @@ export async function sendMeasurementProtocolPurchase(
             },
           ],
         },
+      },
+      {
+        name: "checkout_completed",
+        params: checkoutCompletedParams(kind, session, {
+          currency,
+          value,
+          gaSessionId,
+        }),
       },
     ],
   };
@@ -207,6 +249,7 @@ export async function sendMeasurementProtocolPurchase(
     }
 
     console.log("[ga4-mp] sent successfully", {
+      events: [eventName, "checkout_completed"],
       event: eventName,
       session: session.id,
       value,
