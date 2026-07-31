@@ -10,14 +10,14 @@ import { CONTENT_LAST_REVIEWED_ISO } from "@/lib/site-constants";
 export async function generateMetadata(): Promise<Metadata> {
   const base = getSiteUrl();
   return {
-    title: "Sports Card Grading Calculator — PSA Fees & ROI | CardSnap",
+    title: "PSA Grading Calculator — Is It Worth It? | CardSnap",
     description:
-      "Free sports card grading calculator for PSA: model raw vs PSA 9 vs PSA 10 value, add fees and selling costs, and see when grading pays—or when fees eat your upside.",
+      "Free PSA grading calculator: see if grading is worth it before you pay fees. Compare raw vs PSA 9 vs PSA 10 value, ROI, and break-even for your card.",
     alternates: {
       canonical: `${base}/psa-grading-calculator`,
     },
     openGraph: {
-      title: "Sports Card Grading Calculator — PSA Fees & ROI",
+      title: "PSA Grading Calculator — Is It Worth It?",
       description:
         "Model PSA grading ROI before you ship: comps, PSA 9/10 lift, grading fees and selling friction.",
       type: "article",
@@ -522,6 +522,18 @@ export default function PsaGradingCalculatorPage() {
               → Browse sports card values &amp; verdicts
             </Link>
           </nav>
+
+          <section className="mt-10 rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+            <h2 className="text-lg font-semibold text-white">Popular should-I-grade guides</h2>
+            <p className="mt-2 text-sm text-zinc-400">Card-specific PSA ROI before you ship — same math as the calculator above.</p>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li><Link href="/should-i-grade/michael-jordan-1986-fleer-57-value" className="text-amber-400 hover:text-amber-300 underline">Should I grade Jordan 1986 Fleer #57?</Link></li>
+              <li><Link href="/should-i-grade/lebron-james-2003-topps-chrome-111-value" className="text-amber-400 hover:text-amber-300 underline">Should I grade LeBron 2003 Topps Chrome?</Link></li>
+              <li><Link href="/should-i-grade/mike-trout-2011-topps-update-us175-value" className="text-amber-400 hover:text-amber-300 underline">Should I grade Mike Trout 2011 Update?</Link></li>
+              <li><Link href="/should-i-grade/luka-doncic-2018-panini-prizm-280-value" className="text-amber-400 hover:text-amber-300 underline">Should I grade Luka 2018 Prizm #280?</Link></li>
+              <li><Link href="/should-i-grade/zion-williamson-2019-panini-mosaic-209-value" className="text-amber-400 hover:text-amber-300 underline">Should I grade Zion 2019 Mosaic?</Link></li>
+            </ul>
+          </section>
         </section>
 
         <div className="mt-10">

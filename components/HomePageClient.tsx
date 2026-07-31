@@ -934,7 +934,7 @@ export function HomePageClient() {
         )}
 
         <section className="grid w-full items-start gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12">
-          <div className="order-2 flex flex-col items-center text-center lg:order-1 lg:items-start lg:text-left">
+          <div className="order-1 flex flex-col items-center text-center lg:order-1 lg:items-start lg:text-left">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
               Should I grade my card?
@@ -994,6 +994,23 @@ export function HomePageClient() {
                 (PSA ROI, hidden costs, PSA 9 vs 10). Pokémon, baseball, and
                 basketball shortcuts below.
               </p>
+              <div className="mt-4 w-full max-w-xl rounded-xl border border-zinc-800/80 bg-zinc-900/30 px-4 py-3 text-left">
+                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Popular grading guides</p>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1.5 text-xs">
+                  {[
+                    ["Jordan 1986 Fleer", "/should-i-grade/michael-jordan-1986-fleer-57-value"],
+                    ["LeBron rookie", "/should-i-grade/lebron-james-2003-topps-chrome-111-value"],
+                    ["Mike Trout rookie", "/should-i-grade/mike-trout-2011-topps-update-us175-value"],
+                    ["Luka Prizm", "/should-i-grade/luka-doncic-2018-panini-prizm-280-value"],
+                    ["Zion Mosaic", "/should-i-grade/zion-williamson-2019-panini-mosaic-209-value"],
+                  ].map(([label, href]) => (
+                    <Link key={href} href={href} className="text-amber-400/90 underline-offset-2 hover:text-amber-300 hover:underline">
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs lg:justify-start">
                 <Link
                   href="/pokemon-card-grading-calculator"
@@ -1028,7 +1045,7 @@ export function HomePageClient() {
             <PageAttribution className="mt-5 w-full justify-center text-center lg:justify-start lg:text-left" />
           </div>
 
-          <div className="order-1 flex w-full flex-col gap-5 lg:order-2">
+          <div className="order-2 flex w-full flex-col gap-5 lg:order-2">
             <div className="order-1 w-full rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-6 lg:order-2">
               {packPurchaseBanner && !checkoutSyncing && (
           <div
