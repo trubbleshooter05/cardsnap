@@ -18,7 +18,8 @@
     "add-cards": "tsx scripts/add-cards.ts",
     "test:ebay": "tsx scripts/test-ebay-browse.ts",
     "test:ebay:oauth": "tsx scripts/test-ebay-oauth-curl.ts",
-    "proof:paste-scan": "node --import tsx scripts/proof-paste-scan.ts"
+    "proof:paste-scan": "node --import tsx scripts/proof-paste-scan.ts",
+    "validate:blog-seo": "tsx scripts/validate-blog-seo.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.0",

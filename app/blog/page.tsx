@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import { getGeneratedBlogPosts } from "@/lib/generated-blog";
+import { formatBlogPublishDate } from "@/lib/blog-utils";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
@@ -36,6 +37,9 @@ export default function BlogIndexPage() {
                 <h2 className="text-xl font-semibold text-zinc-50 group-hover:text-amber-400">
                   {post.title}
                 </h2>
+                <p className="mt-1 text-xs text-zinc-500">
+                  {formatBlogPublishDate(post.publishedAt)}
+                </p>
                 <p className="mt-2 text-sm text-zinc-400">{post.description}</p>
               </Link>
             </li>

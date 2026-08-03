@@ -5,7 +5,7 @@ import { getAllSeoGuides, seoGuidePath } from "@/lib/seo-guides-data";
 import { SEO_GUIDE_DEFINITIONS_POKEMON } from "@/lib/seo-guides-data-pokemon";
 import { TIER1_SEO_PAGES, tier1Path } from "@/lib/tier1-seo";
 import { getAllAcquisitionAssetSlugs } from "@/lib/acquisition-assets";
-import { getGeneratedBlogPosts } from "@/lib/generated-blog";
+import { getAllGeneratedBlogPosts } from "@/lib/generated-blog";
 
 /** ISO lastmod for each card; prefers updatedAt, then createdAt. */
 function lastModifiedForCard(c: CardPage): Date {
@@ -119,7 +119,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   );
 
 
-  const generatedBlogRoutes: MetadataRoute.Sitemap = getGeneratedBlogPosts().map((post) => ({
+  const generatedBlogRoutes: MetadataRoute.Sitemap = getAllGeneratedBlogPosts().map((post) => ({
     url: `${base}/blog/${encodeURIComponent(post.slug)}`,
     lastModified: new Date(post.publishedAt),
     changeFrequency: "weekly" as const,

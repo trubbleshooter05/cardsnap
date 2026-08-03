@@ -1,4 +1,5 @@
 import postsFile from "@/content/blog/generated-posts.json";
+import { dedupePostsForIndex } from "@/lib/blog-utils";
 
 export type GeneratedBlogPost = {
   slug: string;
@@ -12,23 +13,29 @@ export type GeneratedBlogPost = {
   internalLinks: { text: string; url: string }[];
   publishedAt: string;
   url: string;
+  topicKey?: string;
 };
 
 type PostsFile = { posts: GeneratedBlogPost[] };
 
 const data = postsFile as PostsFile;
 
-export function getGeneratedBlogPosts(): GeneratedBlogPost[] {
+export function getAllGeneratedBlogPosts(): GeneratedBlogPost[] {
   return [...(data.posts ?? [])].sort(
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   );
 }
 
+/** Index view: one entry per topic (newest wins). All URLs remain routable. */
+export function getGeneratedBlogPosts(): GeneratedBlogPost[] {
+  return dedupePostsForIndex(getAllGeneratedBlogPosts());
+}
+
 export function getGeneratedBlogPost(slug: string): GeneratedBlogPost | null {
-  return getGeneratedBlogPosts().find((p) => p.slug === slug) ?? null;
+  return getAllGeneratedBlogPosts().find((p) => p.slug === slug) ?? null;
 }
 
 export function getGeneratedBlogSlugs(): string[] {
-  return getGeneratedBlogPosts().map((p) => p.slug);
+  return getAllGeneratedBlogPosts().map((p) => p.slug);
 }

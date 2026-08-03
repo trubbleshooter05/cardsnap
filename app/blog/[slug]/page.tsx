@@ -4,9 +4,11 @@ import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { SeoSiteNav } from "@/components/SeoSiteNav";
 import {
+  getAllGeneratedBlogPosts,
   getGeneratedBlogPost,
   getGeneratedBlogSlugs,
 } from "@/lib/generated-blog";
+import { buildEnhancedInternalLinks, formatBlogPublishDate } from "@/lib/blog-utils";
 import { getSiteUrl } from "@/lib/site-url";
 
 type Props = { params: { slug: string } };
@@ -45,6 +47,9 @@ export default function GeneratedBlogPostPage({ params }: Props) {
   const post = getGeneratedBlogPost(params.slug);
   if (!post) notFound();
 
+  const allPosts = getAllGeneratedBlogPosts();
+  const internalLinks = buildEnhancedInternalLinks(post, allPosts);
+
   const siteUrl = getSiteUrl();
   const pageUrl = `${siteUrl}/blog/${post.slug}`;
 
@@ -72,6 +77,9 @@ export default function GeneratedBlogPostPage({ params }: Props) {
           {post.title}
         </h1>
         <p className="mt-3 text-zinc-400">{post.description}</p>
+        <p className="mt-2 text-sm text-zinc-500">
+          Published {formatBlogPublishDate(post.publishedAt)}
+        </p>
         <article
           className="blog-prose mt-8 space-y-4 text-zinc-300 [&_a]:text-amber-400 [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-zinc-100 [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-medium [&_li]:ml-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-zinc-700 [&_td]:p-2 [&_th]:border [&_th]:border-zinc-700 [&_th]:p-2 [&_th]:text-left [&_ul]:list-disc [&_ul]:pl-6"
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
@@ -81,11 +89,11 @@ export default function GeneratedBlogPostPage({ params }: Props) {
             {post.cta}
           </p>
         ) : null}
-        {post.internalLinks.length > 0 ? (
+        {internalLinks.length > 0 ? (
           <section className="mt-10 border-t border-zinc-800 pt-8">
             <h2 className="text-lg font-semibold text-zinc-100">Related</h2>
             <ul className="mt-3 space-y-2">
-              {post.internalLinks.map((link) => (
+              {internalLinks.map((link) => (
                 <li key={link.url}>
                   <Link href={link.url} className="text-amber-400 hover:underline">
                     {link.text}
