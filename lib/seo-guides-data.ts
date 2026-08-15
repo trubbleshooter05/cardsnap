@@ -193,97 +193,210 @@ const SEO_GUIDE_DEFINITIONS: SeoGuideDefinition[] = [
   },
   {
     slug: "should-i-grade-victor-wembanyama-rookie-card",
-    title: "Should I Grade a Victor Wembanyama Rookie Card? (2026 Guide)",
+    title: "Victor Wembanyama Rookie Card Value: Identify Your Card Before You Grade",
     description:
-      "See if grading a Victor Wembanyama rookie card is worth it. Compare PSA 9 vs PSA 10 upside and check the risk before you submit.",
-    h1: "Should You Grade a Victor Wembanyama Rookie Card?",
+      "Victor Wembanyama rookie card value depends on the exact set and parallel. Identify your version, then compare raw vs PSA 9 vs PSA 10 on your copy before you submit.",
+    h1: "Victor Wembanyama Rookie Card Value",
     articleDescription:
-      "PSA 9 vs PSA 10 economics for Victor Wembanyama rookie cards and when grading is justified.",
+      "How to identify which Victor Wembanyama rookie you have and decide whether grading that specific card is worth the fee.",
     intro: [
-      "Victor Wembanyama rookie cards have huge hype, which makes grading look tempting. On paper, a PSA 10 can look like easy profit.",
-      "But most raw cards do not gem. Even a small issue with centering, edges, or corners can turn a big win into a weak return or a loss.",
+      "A search for Victor Wembanyama rookie card value is not one card. 2023-24 licensed basketball releases include several rookies and many parallels, and those copies do not share one raw, PSA 9, or PSA 10 price.",
+      "CardSnap does not have a verified Wembanyama variation in its card database, so this page will not invent a card number, population count, or dollar figure. Identify the exact card first, then run your copy through the analyzer.",
     ],
     sections: [
       {
-        title: "Why Wembanyama Rookie Cards Are Tricky",
+        title: "Identify the exact Wembanyama rookie you hold",
         blocks: [
           {
             kind: "paragraph",
-            text: "Wembanyama cards are exciting because PSA 10 prices can be much higher than raw prices.",
+            text: "Read the back of the card and write down year, brand, set name, and card number. Those four fields are the variation. A base Prizm, a color parallel, a numbered insert, and an autograph are different products even if they all say Wembanyama.",
           },
-          {
-            kind: "paragraph",
-            text: "That said, the spread between PSA 9 and PSA 10 is what matters most.",
-          },
-          {
-            kind: "paragraph",
-            text: "If your card gets a 9 instead of a 10, your expected profit can shrink fast.",
-          },
-        ],
-      },
-      {
-        title: "PSA 9 vs PSA 10 Example",
-        blocks: [
-          { kind: "subhead", text: "Example:" },
-          {
-            kind: "paragraph",
-            text: "Raw price: around $8 to $15",
-          },
-          {
-            kind: "paragraph",
-            text: "PSA 9: small gain or break even after fees",
-          },
-          {
-            kind: "paragraph",
-            text: "PSA 10: much stronger upside",
-          },
-          {
-            kind: "paragraph",
-            text: "That means grading only makes sense if the card has a real shot at gemming.",
-          },
-        ],
-      },
-      {
-        title: "Should You Grade It?",
-        blocks: [
-          { kind: "subhead", text: "Grade it only if:" },
           {
             kind: "bullet",
             items: [
-              "The card looks extremely sharp",
-              "The PSA 10 premium is clearly worth the risk",
-              "You are comfortable with the downside if it gets a PSA 9",
+              "Year and brand on the back (example pattern: 2023-24 Panini)",
+              "Set name printed on the card or wrapper language (Prizm, Select, Donruss, Hoops, and others exist)",
+              "Card number on the back — do not guess it from memory",
+              "Parallel clues: silver chrome, color name, or a numbered stamp such as /99",
+              "Autograph, patch, or “Rated Rookie” style marks if present",
             ],
           },
           {
             kind: "paragraph",
-            text: "If not, selling raw is often the safer choice.",
+            text: "If two listings look similar but the card number or parallel differs, treat them as different comps. Mixing them is how collectors get a false raw value.",
+          },
+        ],
+      },
+      {
+        title: "Raw value, PSA 9, and PSA 10 — only after the variation is known",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "CardSnap has no stored raw, PSA 9, PSA 10, or population snapshot for a specific Wembanyama rookie. Any number you see on social posts or sold listings applies only to that exact set, number, and grade.",
+          },
+          {
+            kind: "paragraph",
+            text: "Once you have year, set, and number, compare three outcomes on that same card: what a raw copy like yours sells for, what a PSA 9 of that same variation sells for, and what a PSA 10 sells for. If PSA 9 does not clear grading fees plus shipping, you are betting on a 10.",
+          },
+        ],
+      },
+      {
+        title: "Grading cost and risk",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "PSA fee tiers move with declared value and service speed. CardSnap estimates all-in cost (service plus shipping) on the scan result. This page will not invent a current PSA price list.",
+          },
+          {
+            kind: "bullet",
+            items: [
+              "High-print modern rookies often have a thin PSA 9 premium after fees",
+              "Numbered or autograph versions can have a wider 9-to-10 spread — still confirm sold comps on that number",
+              "Centering, corners, edges, and surface decide the grade; hype does not",
+              "If you cannot name the set and number, do not submit yet",
+            ],
+          },
+        ],
+      },
+      {
+        title: "Should you grade this Wembanyama?",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Grade only after you can name the variation and the PSA 9 net still looks acceptable if the card misses a 10. Skip grading if the copy is off-center, soft-cornered, or you only have a PSA 10 sold listing and no PSA 9 check.",
           },
         ],
       },
     ],
     cta: {
-      title: "Check Before You Submit",
+      title: "Analyze your Wembanyama copy",
       blocks: [
         {
           kind: "paragraph",
-          text: "Before sending any Wembanyama rookie card to PSA, compare raw prices, PSA 9 values, and PSA 10 values first.",
+          text: "Type the exact card name, set, number, and condition into CardSnap. The analyzer is the source for raw vs PSA 9 vs PSA 10 math on your copy.",
         },
-        { kind: "toolLink", lead: "Use this free tool:" },
-        {
-          kind: "paragraph",
-          text: "It helps you see whether grading is actually worth it before you spend money.",
-        },
+        { kind: "toolLink", lead: "Open the CardSnap analyzer:" },
       ],
-      buttonText: "Check Your Card Now",
+      buttonText: "Analyze this card",
     },
     finalSection: {
-      title: "Final Takeaway",
+      title: "Conclusion",
       paragraphs: [
-        "Wembanyama rookie cards can look like easy grading wins, but the real question is whether the card will gem.",
-        "Always check the numbers first.",
+        "Victor Wembanyama rookie card value is variation-specific. CardSnap cannot quote a verified price here because no Wembanyama card record is in the app database.",
+        "Identify year, set, and number, then analyze that card. If PSA 9 net after fees is weak, sell raw or keep it.",
       ],
     },
+    relatedLinks: [
+      { href: "/caitlin-clark-rookie-card-value", label: "Caitlin Clark rookie card value" },
+      { href: "/should-i-grade/michael-jordan-1986-fleer-57-value", label: "1986 Fleer Michael Jordan #57 value and should I grade it" },
+      { href: "/should-i-grade/lebron-james-2003-topps-chrome-111-value", label: "2003 Topps Chrome LeBron James #111 value and should I grade it" },
+      { href: "/charizard-card-value-checker", label: "Base Set Charizard PSA 9 vs PSA 10" },
+      { href: "/psa-9-vs-psa-10-worth-it", label: "PSA 9 vs PSA 10: when the spread kills profit" },
+      { href: "/sports-card-value-checker", label: "Sports card value checker" },
+    ],
+  },
+  {
+    slug: "caitlin-clark-rookie-card-value",
+    title: "Caitlin Clark Rookie Card Value: Identify the Version Before You Grade",
+    description:
+      "Caitlin Clark rookie card value depends on the exact 2024 set and parallel. Identify your card, then compare raw vs PSA 9 vs PSA 10 on that copy before you pay grading fees.",
+    h1: "Caitlin Clark Rookie Card Value",
+    articleDescription:
+      "How to identify which Caitlin Clark rookie you have and decide whether grading that specific card is worth it.",
+    intro: [
+      "Caitlin Clark rookie card value is not one number. 2024 women’s basketball and college products include multiple rookies and parallels, and those copies do not share one raw, PSA 9, or PSA 10 market.",
+      "CardSnap does not have a verified Caitlin Clark variation in its card database. This page will not invent a card number, population count, or price. Name the exact card first, then analyze your copy.",
+    ],
+    sections: [
+      {
+        title: "Identify which Caitlin Clark rookie you have",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Read the back. Record year, brand, set name, and card number. Then note whether the card is a base, a color parallel, a numbered card, or an autograph. Those details change comps more than the player name does.",
+          },
+          {
+            kind: "bullet",
+            items: [
+              "Year and brand printed on the back",
+              "Set name (Draft Picks, Donruss, Select, and other 2024 products exist — confirm yours from the card, not from a search title)",
+              "Card number on the back",
+              "Parallel color, foil, or a numbered stamp",
+              "Licensed league marks versus college-only branding",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "If a sold listing omits the set or number, do not use it as your raw value. You need the same variation.",
+          },
+        ],
+      },
+      {
+        title: "Raw vs PSA 9 vs PSA 10",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "No verified raw, PSA 9, PSA 10, or population figures for a specific Caitlin Clark rookie are stored in CardSnap. Pull comps only after the variation is identified.",
+          },
+          {
+            kind: "paragraph",
+            text: "On that same card, compare raw sale, PSA 9 sale, and PSA 10 sale. Subtract grading service and shipping. If PSA 9 net is flat or negative, grading is a gem-only bet.",
+          },
+        ],
+      },
+      {
+        title: "Grading cost and risk",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "PSA charges by declared value and turnaround. CardSnap shows an all-in estimate on the scan. This page does not invent a current fee table.",
+          },
+          {
+            kind: "bullet",
+            items: [
+              "High-print base rookies often need a 10 to beat fees",
+              "Numbered or autograph copies can justify a submit if PSA 9 still clears cost — confirm with sold comps on that number",
+              "Soft corners and off-centering are common on modern chrome; inspect before you pay a tier",
+            ],
+          },
+        ],
+      },
+      {
+        title: "Should you grade this Caitlin Clark?",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Grade only when you can name set and number and the PSA 9 path still leaves room after fees. Otherwise sell raw or keep the card.",
+          },
+        ],
+      },
+    ],
+    cta: {
+      title: "Analyze your Caitlin Clark copy",
+      blocks: [
+        {
+          kind: "paragraph",
+          text: "Enter the exact card name, set, number, and condition in CardSnap. Use that result for raw vs graded math — not a generic “Clark rookie” average.",
+        },
+        { kind: "toolLink", lead: "Open the CardSnap analyzer:" },
+      ],
+      buttonText: "Analyze this card",
+    },
+    finalSection: {
+      title: "Conclusion",
+      paragraphs: [
+        "Caitlin Clark rookie card value is variation-specific. CardSnap cannot quote a verified price here because no Clark card record is in the app database.",
+        "Identify the card, then analyze it. If only a PSA 10 clears fees, treat grading as a gem chase.",
+      ],
+    },
+    relatedLinks: [
+      { href: "/should-i-grade-victor-wembanyama-rookie-card", label: "Victor Wembanyama rookie card value" },
+      { href: "/should-i-grade/michael-jordan-1986-fleer-57-value", label: "1986 Fleer Michael Jordan #57 value and should I grade it" },
+      { href: "/should-i-grade/lebron-james-2003-topps-chrome-111-value", label: "2003 Topps Chrome LeBron James #111 value and should I grade it" },
+      { href: "/charizard-card-value-checker", label: "Base Set Charizard PSA 9 vs PSA 10" },
+      { href: "/psa-9-vs-psa-10-worth-it", label: "PSA 9 vs PSA 10: when the spread kills profit" },
+      { href: "/sports-card-value-checker", label: "Sports card value checker" },
+    ],
   },
   {
     slug: "psa-9-vs-psa-10-worth-it",

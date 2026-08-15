@@ -183,6 +183,26 @@ export function SeoGuidePage({ guide }: { guide: SeoGuideDefinition }) {
             ))}
           </section>
 
+          {guide.relatedLinks && guide.relatedLinks.length > 0 ? (
+            <section className="space-y-3 border-t border-zinc-800 pt-10">
+              <h2 className="text-2xl font-semibold text-white sm:text-[1.65rem]">
+                Related CardSnap pages
+              </h2>
+              <ul className="list-disc space-y-2 pl-6 marker:text-amber-400">
+                {guide.relatedLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="font-medium text-amber-400 underline decoration-amber-500/40 underline-offset-2 hover:text-amber-300"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
           {areCardAdSlotsEnabled() ? (
             <div className="mt-10">
               <AdSlot />

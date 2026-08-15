@@ -35,4 +35,5 @@ export type SeoGuideDefinition = {
     title: string;
     paragraphs: string[];
   };
+  relatedLinks?: { href: string; label: string }[];
 };

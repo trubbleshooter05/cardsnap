@@ -10,6 +10,7 @@ import type { Tier1Template } from "@/lib/tier1-seo";
 import {
   buildTier1Faqs,
   estimateAllInGradingCost,
+  getTier1IntentOverride,
   netVsRawMid,
   rawMid,
   tier1MetaDescription,
@@ -81,6 +82,7 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
   const worth = card.gradingVerdict === "worth_grading";
   const related = getRelatedCards(card.slug, 3);
   const faqs = buildTier1Faqs(card, template);
+  const intent = getTier1IntentOverride(template, card.slug);
 
   const breadcrumbSport =
     template === "should_grade"
@@ -111,11 +113,18 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
         </nav>
 
         <h1 className="text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          {tier1Title(card, template)}
+          {intent?.h1 ?? tier1Title(card, template)}
         </h1>
         <p className="mt-3 text-lg text-zinc-400">
           {tier1MetaDescription(card, template)}
         </p>
+        {intent ? (
+          <div className="mt-4 space-y-3 text-zinc-300">
+            {intent.intro.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+          </div>
+        ) : null}
         <PageAttribution className="mt-4" />
 
         <section className="mt-10">
@@ -243,9 +252,10 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
                 : "No — do not grade (most copies)"}
             </p>
             <p className="mt-2 text-sm text-zinc-300">
-              {worth
-                ? `Net uplift to PSA 9/10 usually clears illustrative fees vs raw mid for ${card.title}. Submit clean copies only.`
-                : `Fees and population dilute upside unless you have true gem eye appeal. Prefer selling raw or buying graded.`}
+              {intent?.conclusion
+                ?? (worth
+                  ? `Net uplift to PSA 9/10 usually clears illustrative fees vs raw mid for ${card.title}. Submit clean copies only.`
+                  : `Fees and population dilute upside unless you have true gem eye appeal. Prefer selling raw or buying graded.`)}
             </p>
           </div>
         </section>
@@ -295,16 +305,27 @@ export function Tier1SeoPage({ card, template, canonicalPath }: Props) {
                 Full card guide: {card.title}
               </Link>
             </li>
-            {related.map((r) => (
-              <li key={r.slug}>
-                <Link
-                  className="text-zinc-400 hover:text-zinc-200 underline"
-                  href={relatedHref(template, r.slug)}
-                >
-                  {r.title}
-                </Link>
-              </li>
-            ))}
+            {intent
+              ? intent.relatedLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      className="text-amber-400/90 hover:text-amber-300 underline"
+                      href={link.href}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))
+              : related.map((r) => (
+                  <li key={r.slug}>
+                    <Link
+                      className="text-zinc-400 hover:text-zinc-200 underline"
+                      href={relatedHref(template, r.slug)}
+                    >
+                      {r.title}
+                    </Link>
+                  </li>
+                ))}
           </ul>
         </section>
 

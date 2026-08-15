@@ -144,7 +144,7 @@ test("pokemon support pages target charizard and price tracker wedges", () => {
   assert.match(grading, /\/pokemon-card-value-checker/);
   assert.match(grading, /\/psa-grading-calculator/);
 
-  assert.match(charizard, /Charizard Card Value Checker/);
+  assert.match(charizard, /Base Set Charizard PSA 9 vs PSA 10/);
   assert.match(charizard, /charizard card value checker/i);
   assert.match(charizard, /Raw vs PSA 9 vs PSA 10/);
   assert.match(charizard, /Analyze your Charizard card/);

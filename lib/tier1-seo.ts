@@ -76,6 +76,70 @@ export function tier1Entry(
   return TIER1_SEO_PAGES.find((e) => e.template === template && e.cardSlug === slug);
 }
 
+
+export type Tier1IntentOverride = {
+  title: string;
+  description: string;
+  h1: string;
+  intro: string[];
+  conclusion: string;
+  relatedLinks: { href: string; label: string }[];
+};
+
+const TIER1_INTENT_OVERRIDES: Record<string, Tier1IntentOverride> = {
+  "should_grade:michael-jordan-1986-fleer-57-value": {
+    title: "1986 Fleer Michael Jordan #57 Value and Should I Grade It",
+    description:
+      "1986 Fleer Michael Jordan #57 value: CardSnap model raw, PSA 9, and PSA 10 figures, grading cost, and a plain grade-or-skip conclusion for this card.",
+    h1: "1986 Fleer Michael Jordan #57 Value and Should I Grade It",
+    intro: [
+      "This page is only for 1986 Fleer Michael Jordan #57 — the Fleer basketball rookie, card number 57. Other Jordan rookies and later Fleer issues are different comps.",
+      "Figures below come from CardSnap’s stored card record for this slug. They are model snapshots, not a live sold-comp feed. Confirm your copy against current listings before you submit.",
+    ],
+    conclusion:
+      "On CardSnap’s stored snapshot, PSA 9 and PSA 10 sit far above the raw band, so a sharp #57 can justify grading if you accept fee and time risk. A worn or badly centered copy should stay raw. Analyze your card for a copy-specific verdict.",
+    relatedLinks: [
+      { href: "/cards/michael-jordan-1986-fleer-57-value", label: "1986 Fleer Michael Jordan #57 value record" },
+      { href: "/should-i-grade/lebron-james-2003-topps-chrome-111-value", label: "2003 Topps Chrome LeBron James #111 value and should I grade it" },
+      { href: "/should-i-grade-victor-wembanyama-rookie-card", label: "Victor Wembanyama rookie card value" },
+      { href: "/caitlin-clark-rookie-card-value", label: "Caitlin Clark rookie card value" },
+      { href: "/charizard-card-value-checker", label: "Base Set Charizard PSA 9 vs PSA 10" },
+      { href: "/psa-9-vs-psa-10-worth-it", label: "PSA 9 vs PSA 10 spread" },
+    ],
+  },
+  "should_grade:lebron-james-2003-topps-chrome-111-value": {
+    title: "2003 Topps Chrome LeBron James #111 Value and Should I Grade It",
+    description:
+      "2003 Topps Chrome LeBron James #111 value: CardSnap model raw, PSA 9, and PSA 10 figures, grading cost, and whether this rookie is worth submitting.",
+    h1: "2003 Topps Chrome LeBron James #111 Value and Should I Grade It",
+    intro: [
+      "This page is only for 2003 Topps Chrome LeBron James #111. Other 2003 LeBron rookies (Topps base, Upper Deck, and parallels) are different cards with different comps.",
+      "Figures below come from CardSnap’s stored card record for this slug. They are model snapshots. Chrome surface scratches move grades; inspect the card before you pay a high-value tier.",
+    ],
+    conclusion:
+      "On CardSnap’s stored snapshot, PSA 9 already sits above the top of the raw band, and PSA 10 is a much larger jump. A clean, well-centered #111 can be worth grading; a scratched chrome copy should stay raw. Analyze your card before you ship.",
+    relatedLinks: [
+      { href: "/cards/lebron-james-2003-topps-chrome-111-value", label: "2003 Topps Chrome LeBron James #111 value record" },
+      { href: "/should-i-grade/michael-jordan-1986-fleer-57-value", label: "1986 Fleer Michael Jordan #57 value and should I grade it" },
+      { href: "/should-i-grade-victor-wembanyama-rookie-card", label: "Victor Wembanyama rookie card value" },
+      { href: "/caitlin-clark-rookie-card-value", label: "Caitlin Clark rookie card value" },
+      { href: "/charizard-card-value-checker", label: "Base Set Charizard PSA 9 vs PSA 10" },
+      { href: "/psa-9-vs-psa-10-worth-it", label: "PSA 9 vs PSA 10 spread" },
+    ],
+  },
+};
+
+export function tier1OverrideKey(template: Tier1Template, cardSlug: string): string {
+  return `${template}:${cardSlug}`;
+}
+
+export function getTier1IntentOverride(
+  template: Tier1Template,
+  cardSlug: string
+): Tier1IntentOverride | undefined {
+  return TIER1_INTENT_OVERRIDES[tier1OverrideKey(template, cardSlug)];
+}
+
 export function tier1Path(template: Tier1Template, cardSlug: string): string {
   if (template === "should_grade") return `/should-i-grade/${cardSlug}`;
   if (template === "psa10_value") return `/psa-10-value/${cardSlug}`;
@@ -83,6 +147,8 @@ export function tier1Path(template: Tier1Template, cardSlug: string): string {
 }
 
 export function tier1Title(card: CardPage, template: Tier1Template): string {
+  const override = getTier1IntentOverride(template, card.slug);
+  if (override) return override.title;
   const base = card.title;
   if (template === "should_grade") return `Should I Grade ${base}?`;
   if (template === "psa10_value") return `${base} PSA 10 Value`;
@@ -90,6 +156,8 @@ export function tier1Title(card: CardPage, template: Tier1Template): string {
 }
 
 export function tier1MetaDescription(card: CardPage, template: Tier1Template): string {
+  const override = getTier1IntentOverride(template, card.slug);
+  if (override) return override.description;
   const short = `${card.title}: raw ${card.rawValueLow}–${card.rawValueHigh}, PSA 9 ${card.psa9Value}, PSA 10 ${card.psa10Value}, ~${card.popCount.toLocaleString()} PSA pop.`;
   if (template === "should_grade") {
     return `Should you grade ${card.title}? ${short} Grading cost, ROI, and a clear grade/skip verdict.`;
